@@ -56,28 +56,144 @@ const CATEGORY_META = {
   Staff: { icon: "📊", color: "linear-gradient(90deg,#a78bfa,#60a5fa)" },
 };
 
-const EVENT_TEMPLATES = {
-  Match: [
+const EVENT_TEMPLATES = {const EVENT_TEMPLATES =: "vient réclamer sa chance",
+      trigger: "temps de jeu insuffisant",
+      hook: "Le joueur vient directement dans ton bureau après l'entraînement.",
+      choices: [
+        "Le titulariser au prochain match",
+        "Lui promettre 30 minutes",
+        "Lui fixer un objectif clair",
+        "Refuser de changer la hiérarchie",
+      ],
+    },
+    {
+      type: "staff",
+      title: "impressionne tout le staff",
+      trigger: "grosse semaine d'entraînement",
+      hook: "Le staff estime qu'il est impossible d'ignorer sa progression.",
+      choices: [
+        "Le lancer titulaire",
+        "Le garder comme joker",
+        "Changer son plan d'entraînement",
+        "Attendre confirmation",
+      ],
+    },
     {
       type: "direct",
-      title: "est dans une situation délicate",
-      trigger: "situation critique",
-      hook: "Un joueur se retrouve au cœur d’une situation sensible et demande ton intervention.",
-      choices: ["Le soutenir", "Le recadrer", "L’isoler", "Parler à la presse"],
+      title: "conteste son rôle actuel",
+      trigger: "frustration sportive",
+      hook: "Le joueur veut comprendre pourquoi il n'a pas plus de responsabilités.",
+      choices: [
+        "Lui expliquer ton plan",
+        "Le recadrer fermement",
+        "Lui donner un nouveau rôle",
+        "Le mettre en concurrence directe",
+      ],
+    },
+  ],
+
+  Moral: [
+    {
+      type: "direct",
+      title: "vient demander une discussion privée",
+      trigger: "moral instable",
+      hook: "Le joueur te demande cinq minutes loin du groupe.",
+      choices: [
+        "L'écouter calmement",
+        "Lui promettre plus de temps de jeu",
+        "Lui rappeler la concurrence",
+        "Reporter la discussion",
+      ],
+    },
+    {
+      type: "squad",
+      title: "est défendu par un cadre du vestiaire",
+      trigger: "solidarité interne",
+      hook: "Un cadre vient te voir pour défendre sa situation.",
+      choices: [
+        "Écouter le cadre",
+        "Garder ton autorité",
+        "Réunir le groupe",
+        "Changer la rotation",
+      ],
+    },
+    {
+      type: "direct",
+      title: "menace de décrocher mentalement",
+      trigger: "frustration accumulée",
+      hook: "Il estime donner beaucoup sans recevoir assez de confiance.",
+      choices: [
+        "Le rassurer",
+        "Lui fixer un objectif sur 3 matchs",
+        "Le mettre titulaire",
+        "Ne rien changer",
+      ],
+    },
+  ],
+
+  Vestiaire: [
+    {
+      type: "squad",
+      title: "divise le vestiaire",
+      trigger: "tension collective",
+      hook: "Deux groupes commencent à se former autour de sa situation.",
+      choices: [
+        "Organiser une réunion fermée",
+        "Choisir un leader fort",
+        "Écarter le problème",
+        "Changer la hiérarchie",
+      ],
+    },
+    {
+      type: "direct",
+      title: "demande plus de respect des cadres",
+      trigger: "conflit interne",
+      hook: "Il se sent ignoré par certains cadres du groupe.",
+      choices: [
+        "Le soutenir",
+        "Parler aux cadres",
+        "Lui demander de prouver",
+        "Ignorer",
+      ],
+    },
+  ],
+
+  Médias: [
+    {
+      type: "media",
+      title: "fait l'objet d'une fuite dans la presse",
+      trigger: "info sortie du vestiaire",
+      hook: "Une information interne arrive dans les médias.",
+      choices: [
+        "Démentir publiquement",
+        "Protéger le joueur",
+        "Chercher la fuite",
+        "Assumer la situation",
+      ],
     },
     {
       type: "media",
       title: "est annoncé mécontent par les journalistes",
-      trigger: "rumeur de vestiaire",
-      hook: "La presse affirme que le joueur ne comprend plus ton projet sportif.",
-      choices: ["Répondre calmement", "Attaquer les médias", "Parler au joueur", "Laisser passer"],
+      trigger: "rumeur médiatique",
+      hook: "La presse affirme que le joueur ne comprend plus ton projet.",
+      choices: [
+        "Répondre calmement",
+        "Attaquer les médias",
+        "Parler au joueur",
+        "Laisser passer",
+      ],
     },
     {
       type: "rival",
       title: "est utilisé par un coach rival pour te provoquer",
       trigger: "déclaration adverse",
-      hook: "Un coach rival glisse en conférence que tu ne sais pas gérer ton effectif.",
-      choices: ["Répondre sèchement", "Ignorer", "Motiver le joueur", "Protéger le groupe"],
+      hook: "Un coach rival glisse que tu ne sais pas gérer ton effectif.",
+      choices: [
+        "Répondre sèchement",
+        "Ignorer",
+        "Motiver le joueur",
+        "Protéger le groupe",
+      ],
     },
   ],
 
@@ -86,22 +202,37 @@ const EVENT_TEMPLATES = {
       type: "transfer",
       title: "demande officiellement à partir",
       trigger: "envie de transfert",
-      hook: "Le joueur vient directement t’annoncer qu’il veut quitter le club.",
-      choices: ["Refuser net", "Fixer un prix", "Le convaincre de rester", "Le placer sur la liste"],
+      hook: "Le joueur vient directement t'annoncer qu'il veut quitter le club.",
+      choices: [
+        "Refuser net",
+        "Fixer un prix",
+        "Le convaincre de rester",
+        "Le placer sur la liste des transferts",
+      ],
     },
     {
       type: "agent",
       title: "voit son agent mettre la pression",
       trigger: "pression contractuelle",
-      hook: "L’agent du joueur contacte la direction et réclame une décision rapide.",
-      choices: ["Négocier", "Refuser", "Gagner du temps", "Rencontrer le joueur"],
+      hook: "Son agent réclame des garanties sportives ou une ouverture au mercato.",
+      choices: [
+        "Négocier",
+        "Refuser",
+        "Gagner du temps",
+        "Rencontrer le joueur",
+      ],
     },
     {
       type: "star",
-      title: "est approché par une star adverse",
+      title: "est courtisé publiquement par une star adverse",
       trigger: "séduction mercato",
-      hook: "Une star d’un autre club parle publiquement du joueur et l’invite à viser plus haut.",
-      choices: ["Le blinder", "Répondre publiquement", "Lui proposer un rôle clé", "Écouter les offres"],
+      hook: "Une star d'un autre club dit qu'il mériterait un projet plus ambitieux.",
+      choices: [
+        "Le blinder",
+        "Répondre publiquement",
+        "Lui proposer un rôle clé",
+        "Écouter les offres",
+      ],
     },
   ],
 
@@ -109,16 +240,26 @@ const EVENT_TEMPLATES = {
     {
       type: "medical",
       title: "cache une gêne physique",
-      trigger: "fatigue et risque médical",
-      hook: "Le staff médical découvre que le joueur joue avec une douleur depuis plusieurs jours.",
-      choices: ["Le mettre au repos", "Réduire sa charge", "Le laisser décider", "Forcer les examens"],
+      trigger: "fatigue élevée",
+      hook: "Le staff découvre qu'il joue avec une douleur depuis plusieurs jours.",
+      choices: [
+        "Le mettre au repos",
+        "Réduire sa charge",
+        "Le laisser décider",
+        "Forcer les examens",
+      ],
     },
     {
       type: "medical",
-      title: "veut jouer malgré l’alerte médicale",
+      title: "veut jouer malgré l'alerte médicale",
       trigger: "match important",
-      hook: "Le joueur insiste pour jouer alors que le staff recommande la prudence.",
-      choices: ["Interdire le risque", "Le mettre sur le banc", "Le titulariser", "Adapter son rôle"],
+      hook: "Il insiste pour jouer alors que le staff recommande la prudence.",
+      choices: [
+        "Interdire le risque",
+        "Le mettre sur le banc",
+        "Le titulariser",
+        "Adapter son rôle",
+      ],
     },
   ],
 
@@ -126,16 +267,26 @@ const EVENT_TEMPLATES = {
     {
       type: "fans",
       title: "devient le favori des supporters",
-      trigger: "popularité en tribunes",
-      hook: "Les supporters réclament son nom et commencent à critiquer tes choix.",
-      choices: ["Le titulariser", "Expliquer ton choix", "Utiliser l’engouement", "Ne pas céder"],
+      trigger: "popularité tribunes",
+      hook: "Les supporters réclament son nom et critiquent tes choix.",
+      choices: [
+        "Le titulariser",
+        "Expliquer ton choix",
+        "Utiliser l'engouement",
+        "Ne pas céder",
+      ],
     },
     {
       type: "fans",
       title: "est pris en grippe par une partie du public",
       trigger: "mauvaise prestation",
-      hook: "Une partie des supporters perd patience et le joueur commence à le sentir.",
-      choices: ["Le protéger", "Le sortir du onze", "Lui parler", "Répondre aux supporters"],
+      hook: "Une partie du public perd patience avec lui.",
+      choices: [
+        "Le protéger",
+        "Le sortir du onze",
+        "Lui parler",
+        "Répondre aux supporters",
+      ],
     },
   ],
 
@@ -143,9 +294,14 @@ const EVENT_TEMPLATES = {
     {
       type: "board",
       title: "devient un dossier surveillé par la direction",
-      trigger: "enjeu sportif et financier",
-      hook: "La direction veut savoir si ce joueur fait encore partie du projet.",
-      choices: ["Le défendre", "Préparer une vente", "Demander du temps", "Le valoriser sportivement"],
+      trigger: "enjeu financier",
+      hook: "Le board veut savoir s'il fait encore partie du projet.",
+      choices: [
+        "Le défendre",
+        "Préparer une vente",
+        "Demander du temps",
+        "Le valoriser sportivement",
+      ],
     },
   ],
 
@@ -154,62 +310,20 @@ const EVENT_TEMPLATES = {
       type: "staff",
       title: "fait débat dans le staff",
       trigger: "analyse tactique",
-      hook: "Le staff n’est pas d’accord sur son utilisation. Certains veulent le relancer, d’autres non.",
-      choices: ["Suivre la data", "Suivre ton instinct", "Tester en match", "Reporter"],
-    },
-  ],
-
-  Moral: [
-    {
-      type: "direct",
-      title: "vient demander une discussion privée",
-      trigger: "moral personnel",
-      hook: "Le joueur te demande cinq minutes loin du groupe. Il veut parler franchement.",
-      choices: ["L’écouter calmement", "Lui promettre du temps de jeu", "Le recadrer", "Reporter la discussion"],
-    },
-    {
-      type: "direct",
-      title: "menace de décrocher mentalement",
-      trigger: "frustration accumulée",
-      hook: "Le joueur estime qu’il donne tout sans recevoir assez de confiance.",
-      choices: ["Le rassurer", "Lui fixer un objectif", "Le mettre titulaire", "Ne rien changer"],
-    },
-    {
-      type: "squad",
-      title: "est défendu par un cadre du vestiaire",
-      trigger: "solidarité interne",
-      hook: "Un cadre vient te voir pour défendre la situation du joueur.",
-      choices: ["Écouter le cadre", "Garder ton autorité", "Réunir le groupe", "Changer la rotation"],
-    },
-  ],
-
-  Vestiaire: [
-    {
-      type: "squad",
-      title: "crée une fracture dans le vestiaire",
-      trigger: "tension entre joueurs",
-      hook: "Deux groupes commencent à se former autour de la situation du joueur.",
-      choices: ["Organiser une réunion", "Choisir un camp", "Écarter le problème", "Nommer un leader"],
-    },
-    {
-      type: "direct",
-      title: "demande plus de respect des cadres",
-      trigger: "statut dans le groupe",
-      hook: "Le joueur se sent ignoré par certains cadres du vestiaire.",
-      choices: ["Le soutenir", "Parler aux cadres", "Lui demander de prouver", "Ignorer"],
-    },
-  ],
-
-  Médias: [
-    {
-      type: "media",
-      title: "fait l’objet d’une fuite dans la presse",
-      trigger: "information sortie du vestiaire",
-      hook: "Une info interne sort dans les médias et met le club sous pression.",
-      choices: ["Démentir", "Rester silencieux", "Protéger le joueur", "Changer de stratégie"],
+      hook: "Le staff n'est pas d'accord sur son utilisation.",
+      choices: [
+        "Suivre la data",
+        "Suivre ton instinct",
+        "Tester en match",
+        "Reporter la décision",
+      ],
     },
   ],
 };
+  Match: [
+    {
+      type: "direct",
+
 
 function clamp(n, min = 0, max = 100) {
   return Math.max(min, Math.min(max, Math.round(Number(n) || 0)));
@@ -383,29 +497,20 @@ function createSvgImage(category, title, playerName, clubName) {
 }
 
 function createLiveEditorEffects(category, consequences, playerName) {
-  const clubEffects = Object.entries(consequences || {}).map(([key, value]) => {
-    const formatted = value > 0 ? `+${value}` : `${value}`;
-    return `Club : ${key} ${formatted}`;
-  });
-
-  const playerEffects = {
-    Match: [
-      `Augmenter la forme de ${playerName}`,
-      `Donner plus de temps de jeu à ${playerName}`,
-      `Modifier son statut : rotation importante ou titulaire provisoire`,
+  const `Modifier son statut : rotation importante ou titulaire provisoire`,  const clubEffects = Object.entries(consequences).map(([key, value]) => {
     ],
     Blessures: [
-      `Baisser l’endurance de ${playerName}`,
+      `Baisser l'endurance de ${playerName}`,
       `Mettre ${playerName} au repos 1 match`,
-      `Réduire son intensité d’entraînement`,
+      `Réduire son intensité d'entraînement`,
     ],
     Moral: [
-      `Augmenter ou baisser le moral de ${playerName}`,
-      `Modifier son rôle dans l’effectif`,
+      `Modifier le moral de ${playerName} selon la décision`,
+      `Ajuster son rôle dans l'effectif`,
       `Changer son temps de jeu prévu`,
     ],
     Vestiaire: [
-      `Modifier l’importance de ${playerName} dans le groupe`,
+      `Modifier l'importance de ${playerName} dans le groupe`,
       `Surveiller sa relation avec les cadres`,
       `Ajuster son statut de leadership`,
     ],
@@ -430,7 +535,7 @@ function createLiveEditorEffects(category, consequences, playerName) {
       `Demander un objectif sportif sur 3 matchs`,
     ],
     Staff: [
-      `Changer le plan d’entraînement de ${playerName}`,
+      `Changer le plan d'entraînement de ${playerName}`,
       `Tester ${playerName} à un nouveau poste`,
       `Modifier son rôle tactique`,
     ],
@@ -438,6 +543,15 @@ function createLiveEditorEffects(category, consequences, playerName) {
 
   return [...clubEffects, ...(playerEffects[category] || [])];
 }
+    const formatted = value > 0 ? `+${value}` : `${value}`;
+    return `Club : ${key} ${formatted}`;
+  });
+
+  const playerEffects = {
+    Match: [
+      `Augmenter la forme de ${playerName}`,
+      `Donner plus de temps de jeu à ${playerName}`,
+
 
 function getEventRarity(resultDelta) {
   const roll = Math.random() * 100;
@@ -448,20 +562,14 @@ function getEventRarity(resultDelta) {
 }
 
 function buildContextualEvent(career, result) {
-  const category = chooseEventCategory(career, result.resultDelta);
-  const templates = EVENT_TEMPLATES[category] || EVENT_TEMPLATES.Match;
-  const recent = career.eventMemory || [];
-  const available = templates.filter((template) => {
-    return !recent.some(
-      (item) => item.category === category && item.templateTitle === template.title
-    );
-  });
-  const template = pick(available.length ? available : templates);
+  const category = choose pick(available.length ? available : templates);  const category = chooseEventCategory(career, result.resultDelta);
 
   const players = [...career.squad]
     .sort((a, b) => {
-      const scoreA = a.overall + a.form * 0.35 - a.fatigue * 0.2 + a.morale * 0.15;
-      const scoreB = b.overall + b.form * 0.35 - b.fatigue * 0.2 + b.morale * 0.15;
+      const scoreA =
+        a.overall + a.form * 0.35 - a.fatigue * 0.2 + a.morale * 0.15;
+      const scoreB =
+        b.overall + b.form * 0.35 - b.fatigue * 0.2 + b.morale * 0.15;
       return scoreB - scoreA;
     })
     .slice(0, 10);
@@ -469,9 +577,11 @@ function buildContextualEvent(career, result) {
   const player = pick(players.length ? players : career.squad);
   const fixtureText = result.summary || "semaine sans match officiel";
   const consequences = consequencesFor(category, result.resultDelta, career);
+
   const impact = Object.entries(consequences)
     .map(([key, value]) => `${key} ${value > 0 ? "+" : ""}${value}`)
     .join(" · ");
+
   const rarity = getEventRarity(result.resultDelta);
   const title = `${player.name} ${template.title} — ${career.club.name}`;
 
@@ -479,35 +589,35 @@ function buildContextualEvent(career, result) {
   let detail = "";
 
   if (template.type === "direct") {
-    description = `${player.name} vient te voir pour parler de sa situation dans l'équipe.`;
-    detail = `${player.name} veut savoir si tu comptes vraiment sur lui. Performance : ${player.form}, moral : ${player.morale}, fatigue : ${player.fatigue}.`;
+    description = `${player.name} vient directement te parler dans ton bureau. Il ne veut plus rester dans le flou : son rôle, son temps de jeu et sa place dans le projet doivent être clarifiés maintenant.`;
+    detail = `Il te dit : “Coach, j'ai besoin de savoir si vous comptez vraiment sur moi.” Profil : ${player.position}, OVR ${player.overall}, forme ${player.form}, moral ${player.morale}, fatigue ${player.fatigue}. Contexte : ${fixtureText}.`;
   } else if (template.type === "media") {
-    description = `Une fuite dans la presse évoque ${player.name} et met le club sous pression.`;
-    detail = `Les journalistes parlent déjà de malaise interne. Contexte : ${fixtureText}.`;
+    description = `Une fuite sort dans la presse : ${player.name} serait frustré par sa situation au club. Les journalistes parlent déjà d'un malaise interne.`;
+    detail = `L'information n'est pas confirmée officiellement, mais elle fragilise le vestiaire. Joueur : ${player.position}, OVR ${player.overall}, forme ${player.form}, moral ${player.morale}. Contexte : ${fixtureText}.`;
   } else if (template.type === "transfer") {
-    description = `${player.name} envisage un départ si sa situation ne change pas.`;
-    detail = `Valeur estimée : ${money(player.value)}. Poste : ${player.position}, OVR ${player.overall}.`;
+    description = `${player.name} vient te voir avec un message très clair : il veut envisager un départ si sa situation ne change pas rapidement.`;
+    detail = `Ce n'est pas une simple frustration. Le joueur parle ouvertement de transfert. Valeur estimée : ${money(player.value)}. Poste : ${player.position}. OVR ${player.overall}.`;
   } else if (template.type === "agent") {
-    description = `L’agent de ${player.name} met la pression sur la direction.`;
-    detail = `Le dossier peut devenir sensible si tu ne clarifies pas rapidement la situation du joueur.`;
+    description = `L'agent de ${player.name} met la pression sur la direction. Il demande des garanties sportives ou une ouverture pour un transfert.`;
+    detail = `Le dossier devient sensible : si tu gères mal la situation, le vestiaire et les médias peuvent s'en mêler. Joueur : ${player.name}, ${player.position}, OVR ${player.overall}.`;
   } else if (template.type === "rival") {
-    description = `Un coach rival te provoque en mentionnant ${player.name}.`;
-    detail = `Cette déclaration peut motiver ou démoraliser le joueur selon ta réponse.`;
+    description = `Un coach rival te provoque publiquement en conférence. Il estime que tu ne sais pas utiliser ${player.name} correctement.`;
+    detail = `Cette déclaration peut piquer l'orgueil du joueur ou le motiver. Tu peux répondre, ignorer ou utiliser cette attaque pour créer une réaction sportive.`;
   } else if (template.type === "star") {
-    description = `Une star adverse évoque ${player.name} comme un talent à surveiller.`;
-    detail = `Cette comparaison peut influencer son moral et sa valeur de mercato.`;
+    description = `Une star d'un autre club mentionne ${player.name} en interview et laisse entendre qu'il mériterait un plus grand projet.`;
+    detail = `Ce genre de déclaration peut faire tourner la tête du joueur. Le mercato peut s'agiter si tu ne clarifies pas vite son statut.`;
   } else if (template.type === "medical") {
-    description = `${player.name} est sous surveillance médicale.`;
-    detail = `Fatigue : ${player.fatigue}, forme : ${player.form}. Le staff recommande prudence.`;
+    description = `${player.name} est au centre d'une alerte médicale. Le staff pense qu'il y a un risque si tu continues à l'utiliser normalement.`;
+    detail = `Fatigue actuelle : ${player.fatigue}. Forme : ${player.form}. Le joueur veut peut-être jouer, mais le staff recommande la prudence.`;
   } else if (template.type === "fans") {
-    description = `Les supporters parlent beaucoup de ${player.name}.`;
-    detail = `La pression populaire monte et le club attend ta réaction.`;
+    description = `Les supporters commencent à prendre position sur ${player.name}. Sa situation devient un sujet en tribune et sur les réseaux.`;
+    detail = `La pression populaire peut t'aider ou te fragiliser selon ta décision. Contexte : ${fixtureText}.`;
   } else if (template.type === "board") {
-    description = `La direction veut un point clair sur ${player.name}.`;
-    detail = `Le joueur devient un dossier stratégique pour le board.`;
+    description = `La direction veut un point clair sur ${player.name}. Le board ne veut pas perdre de valeur sportive ou financière.`;
+    detail = `Le joueur représente un dossier stratégique. Tu dois choisir entre le protéger, le vendre ou le relancer.`;
   } else {
-    description = `${player.name} est au centre d’une situation importante.`;
-    detail = `Déclencheur : ${template.trigger}.`;
+    description = `${player.name} devient un sujet important dans la semaine du club. Le staff attend une décision claire.`;
+    detail = `Déclencheur : ${template.trigger}. Profil : ${player.name}, ${player.position}, OVR ${player.overall}, forme ${player.form}, moral ${player.morale}, fatigue ${player.fatigue}.`;
   }
 
   return {
@@ -534,13 +644,29 @@ function buildContextualEvent(career, result) {
     detail,
     impact,
     consequences,
-    liveEditorEffects: createLiveEditorEffects(category, consequences, player.name),
+    liveEditorEffects: createLiveEditorEffects(
+      category,
+      consequences,
+      player.name
+    ),
     status: "unread",
     choices: template.choices,
     templateTitle: template.title,
     eventType: template.type,
   };
 }
+  const templates = EVENT_TEMPLATES[category] || EVENT_TEMPLATES.Match;
+  const recent = career.eventMemory || [];
+
+  const available = templates.filter((template) => {
+    return !recent.some(
+      (item) =>
+        item.category === category &&
+        item.templateTitle === template.title
+    );
+  });
+
+
 
 function applyConsequences(career, event) {
   const next = { ...career };

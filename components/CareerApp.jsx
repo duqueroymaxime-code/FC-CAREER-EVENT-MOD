@@ -1,8 +1,13 @@
-"use client";
+﻿"use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-const STORAGE_KEY = "fifa-career-overhaul-final-clean-v1";
+const STORAGE_KEY = "fifa-career-overhaul-roadmap-v2";
+const DEFAULT_THEME = "dark";
+const DEFAULT_SCREEN = "home";
+const DEFAULT_TAB = "dashboard";
+const DEFAULT_TYPE = "manager";
+const EVENT_MEMORY_LIMIT = 12;
 
 const CLUBS = [
   {
@@ -56,274 +61,178 @@ const CATEGORY_META = {
   Staff: { icon: "📊", color: "linear-gradient(90deg,#a78bfa,#60a5fa)" },
 };
 
-const EVENT_TEMPLATES = {const EVENT_TEMPLATES =: "vient réclamer sa chance",
-      trigger: "temps de jeu insuffisant",
-      hook: "Le joueur vient directement dans ton bureau après l'entraînement.",
-      choices: [
-        "Le titulariser au prochain match",
-        "Lui promettre 30 minutes",
-        "Lui fixer un objectif clair",
-        "Refuser de changer la hiérarchie",
-      ],
-    },
-    {
-      type: "staff",
-      title: "impressionne tout le staff",
-      trigger: "grosse semaine d'entraînement",
-      hook: "Le staff estime qu'il est impossible d'ignorer sa progression.",
-      choices: [
-        "Le lancer titulaire",
-        "Le garder comme joker",
-        "Changer son plan d'entraînement",
-        "Attendre confirmation",
-      ],
-    },
+const EVENT_TEMPLATES = {
+  Match: [
     {
       type: "direct",
-      title: "conteste son rôle actuel",
-      trigger: "frustration sportive",
-      hook: "Le joueur veut comprendre pourquoi il n'a pas plus de responsabilités.",
-      choices: [
-        "Lui expliquer ton plan",
-        "Le recadrer fermement",
-        "Lui donner un nouveau rôle",
-        "Le mettre en concurrence directe",
-      ],
+      title: "est dans une situation délicate",
+      trigger: "situation critique",
+      hook: "Un joueur se retrouve au cœur d’une situation sensible et demande ton intervention.",
+      story: "Après le match, tout le vestiaire attend ta décision sur sa place dans le projet.",
+      choices: ["Le soutenir", "Le recadrer", "L’isoler", "Parler à la presse"],
+    },
+    {
+      type: "media",
+      title: "est annoncé mécontent par les journalistes",
+      trigger: "rumeur de vestiaire",
+      hook: "La presse affirme que le joueur ne comprend plus ton projet sportif.",
+      story: "Les commentaires s’emballent, et il faut gérer l’image du club tout en calmant le groupe.",
+      choices: ["Répondre calmement", "Attaquer les médias", "Parler au joueur", "Laisser passer"],
+    },
+    {
+      type: "performance",
+      title: "a livré une prestation controversée",
+      trigger: "analyse du match",
+      hook: "Ses performances oscillent trop, et le staff se pose des questions.",
+      story: "Entre les supporters et le rapport du coach, ta crédibilité est en jeu.",
+      choices: ["Changer sa position", "Lui donner du temps", "Le blâmer publiquement", "Expliquer ton plan"],
     },
   ],
-
+  Mercato: [
+    {
+      type: "transfer",
+      title: "demande officiellement à partir",
+      trigger: "envie de transfert",
+      hook: "Le joueur vient directement t’annoncer qu’il veut quitter le club.",
+      story: "C’est un dossier délicat qui peut affecter le groupe et le budget du club.",
+      choices: ["Refuser net", "Fixer un prix", "Le convaincre de rester", "Le placer sur la liste"],
+    },
+    {
+      type: "offer",
+      title: "reçoit une proposition inattendue",
+      trigger: "intérêt étranger",
+      hook: "Un club puissant a placé une offre sur sa table.",
+      story: "Tu dois choisir entre ambition personnelle du joueur et stabilité de l’équipe.",
+      choices: ["Laisser partir", "Négocier plus haut", "Le rassurer", "Garder le dossier secret"],
+    },
+  ],
+  Blessures: [
+    {
+      type: "medical",
+      title: "cache une gêne physique",
+      trigger: "fatigue élevée",
+      hook: "Le staff découvre qu’il joue avec une douleur depuis plusieurs jours.",
+      story: "Chaque minute sur le terrain pourrait aggraver sa condition et coûter un résultat.",
+      choices: ["Le mettre au repos", "Réduire sa charge", "Le laisser décider", "Forcer les examens"],
+    },
+    {
+      type: "rehab",
+      title: "relance un protocole de récupération",
+      trigger: "douleur persistante",
+      hook: "Il refuse de ralentir alors que le kiné reste inquiet.",
+      story: "Il faut trouver le bon équilibre entre récupération et continuité du groupe.",
+      choices: ["Insister sur le repos", "Lui donner une séance adaptée", "Changer le planning", "Prendre le risque"],
+    },
+  ],
   Moral: [
     {
       type: "direct",
       title: "vient demander une discussion privée",
       trigger: "moral instable",
       hook: "Le joueur te demande cinq minutes loin du groupe.",
-      choices: [
-        "L'écouter calmement",
-        "Lui promettre plus de temps de jeu",
-        "Lui rappeler la concurrence",
-        "Reporter la discussion",
-      ],
+      story: "Sa confiance vacille et il veut savoir si tu comptes encore sur lui.",
+      choices: ["L’écouter calmement", "Lui promettre plus de temps de jeu", "Lui rappeler la concurrence", "Reporter la discussion"],
     },
     {
-      type: "squad",
-      title: "est défendu par un cadre du vestiaire",
-      trigger: "solidarité interne",
-      hook: "Un cadre vient te voir pour défendre sa situation.",
-      choices: [
-        "Écouter le cadre",
-        "Garder ton autorité",
-        "Réunir le groupe",
-        "Changer la rotation",
-      ],
-    },
-    {
-      type: "direct",
-      title: "menace de décrocher mentalement",
-      trigger: "frustration accumulée",
-      hook: "Il estime donner beaucoup sans recevoir assez de confiance.",
-      choices: [
-        "Le rassurer",
-        "Lui fixer un objectif sur 3 matchs",
-        "Le mettre titulaire",
-        "Ne rien changer",
-      ],
+      type: "ambition",
+      title: "se sent désengagé du projet",
+      trigger: "niveaux de motivation",
+      hook: "Il doute du sens de sa place dans l’équipe.",
+      story: "Si tu ne regagnes pas sa confiance, la dynamique du vestiaire peut se briser.",
+      choices: ["Réaffirmer le plan", "Changer son rôle", "Le vendre", "L’encourager"],
     },
   ],
-
   Vestiaire: [
     {
       type: "squad",
       title: "divise le vestiaire",
       trigger: "tension collective",
       hook: "Deux groupes commencent à se former autour de sa situation.",
-      choices: [
-        "Organiser une réunion fermée",
-        "Choisir un leader fort",
-        "Écarter le problème",
-        "Changer la hiérarchie",
-      ],
+      story: "La cohésion du groupe est menacée et tu dois trancher avant que cela explose.",
+      choices: ["Organiser une réunion fermée", "Choisir un leader fort", "Écarter le problème", "Changer la hiérarchie"],
     },
     {
-      type: "direct",
-      title: "demande plus de respect des cadres",
-      trigger: "conflit interne",
-      hook: "Il se sent ignoré par certains cadres du groupe.",
-      choices: [
-        "Le soutenir",
-        "Parler aux cadres",
-        "Lui demander de prouver",
-        "Ignorer",
-      ],
+      type: "leadership",
+      title: "conteste le capitaine",
+      trigger: "autorité remise en cause",
+      hook: "Il ne supporte plus certaines décisions de son capitaine.",
+      story: "Ce conflit intérieur peut coûter cher si tu ne le règle pas rapidement.",
+      choices: ["Médiatiser la confiance", "Protéger le capitaine", "Rééquilibrer le groupe", "Punis les deux"],
     },
   ],
-
   Médias: [
     {
       type: "media",
-      title: "fait l'objet d'une fuite dans la presse",
+      title: "fait l’objet d’une fuite dans la presse",
       trigger: "info sortie du vestiaire",
       hook: "Une information interne arrive dans les médias.",
-      choices: [
-        "Démentir publiquement",
-        "Protéger le joueur",
-        "Chercher la fuite",
-        "Assumer la situation",
-      ],
+      story: "Le climat médiatique devient toxique et le club doit réagir.",
+      choices: ["Démentir publiquement", "Protéger le joueur", "Chercher la fuite", "Assumer la situation"],
     },
     {
-      type: "media",
-      title: "est annoncé mécontent par les journalistes",
-      trigger: "rumeur médiatique",
-      hook: "La presse affirme que le joueur ne comprend plus ton projet.",
-      choices: [
-        "Répondre calmement",
-        "Attaquer les médias",
-        "Parler au joueur",
-        "Laisser passer",
-      ],
-    },
-    {
-      type: "rival",
-      title: "est utilisé par un coach rival pour te provoquer",
-      trigger: "déclaration adverse",
-      hook: "Un coach rival glisse que tu ne sais pas gérer ton effectif.",
-      choices: [
-        "Répondre sèchement",
-        "Ignorer",
-        "Motiver le joueur",
-        "Protéger le groupe",
-      ],
+      type: "reputation",
+      title: "a une interview tendue",
+      trigger: "sortie médiatique",
+      hook: "Il lâche des phrases qui enflamment les réseaux.",
+      story: "Ta réponse doit contenir la crise sans l’aggraver.",
+      choices: ["Le recadrer", "L’interviewer en interne", "Le soutenir", "Ignorer"],
     },
   ],
-
-  Mercato: [
-    {
-      type: "transfer",
-      title: "demande officiellement à partir",
-      trigger: "envie de transfert",
-      hook: "Le joueur vient directement t'annoncer qu'il veut quitter le club.",
-      choices: [
-        "Refuser net",
-        "Fixer un prix",
-        "Le convaincre de rester",
-        "Le placer sur la liste des transferts",
-      ],
-    },
-    {
-      type: "agent",
-      title: "voit son agent mettre la pression",
-      trigger: "pression contractuelle",
-      hook: "Son agent réclame des garanties sportives ou une ouverture au mercato.",
-      choices: [
-        "Négocier",
-        "Refuser",
-        "Gagner du temps",
-        "Rencontrer le joueur",
-      ],
-    },
-    {
-      type: "star",
-      title: "est courtisé publiquement par une star adverse",
-      trigger: "séduction mercato",
-      hook: "Une star d'un autre club dit qu'il mériterait un projet plus ambitieux.",
-      choices: [
-        "Le blinder",
-        "Répondre publiquement",
-        "Lui proposer un rôle clé",
-        "Écouter les offres",
-      ],
-    },
-  ],
-
-  Blessures: [
-    {
-      type: "medical",
-      title: "cache une gêne physique",
-      trigger: "fatigue élevée",
-      hook: "Le staff découvre qu'il joue avec une douleur depuis plusieurs jours.",
-      choices: [
-        "Le mettre au repos",
-        "Réduire sa charge",
-        "Le laisser décider",
-        "Forcer les examens",
-      ],
-    },
-    {
-      type: "medical",
-      title: "veut jouer malgré l'alerte médicale",
-      trigger: "match important",
-      hook: "Il insiste pour jouer alors que le staff recommande la prudence.",
-      choices: [
-        "Interdire le risque",
-        "Le mettre sur le banc",
-        "Le titulariser",
-        "Adapter son rôle",
-      ],
-    },
-  ],
-
   Supporters: [
     {
       type: "fans",
       title: "devient le favori des supporters",
       trigger: "popularité tribunes",
       hook: "Les supporters réclament son nom et critiquent tes choix.",
-      choices: [
-        "Le titulariser",
-        "Expliquer ton choix",
-        "Utiliser l'engouement",
-        "Ne pas céder",
-      ],
+      story: "La pression des tribunes peut devenir un levier ou un piège.",
+      choices: ["Le titulariser", "Expliquer ton choix", "Utiliser l’engouement", "Ne pas céder"],
     },
     {
-      type: "fans",
-      title: "est pris en grippe par une partie du public",
-      trigger: "mauvaise prestation",
-      hook: "Une partie du public perd patience avec lui.",
-      choices: [
-        "Le protéger",
-        "Le sortir du onze",
-        "Lui parler",
-        "Répondre aux supporters",
-      ],
+      type: "protest",
+      title: "subit une campagne de banderoles",
+      trigger: "flamme populaire",
+      hook: "Les supporters brandissent son nom dans le stade.",
+      story: "L’ambiance devient un enjeu politique et sportif.",
+      choices: ["Jouer le jeu", "Calmer les supporters", "Changer de discours", "Le préserver"],
     },
   ],
-
   Direction: [
     {
       type: "board",
       title: "devient un dossier surveillé par la direction",
       trigger: "enjeu financier",
       hook: "Le board veut savoir s'il fait encore partie du projet.",
-      choices: [
-        "Le défendre",
-        "Préparer une vente",
-        "Demander du temps",
-        "Le valoriser sportivement",
-      ],
+      story: "Ta relation avec la direction est testée sur ce joueur.",
+      choices: ["Le défendre", "Préparer une vente", "Demander du temps", "Le valoriser sportivement"],
+    },
+    {
+      type: "contract",
+      title: "voit son contrat devenir un sujet de débat",
+      trigger: "renouvellement proche",
+      hook: "La direction surveille son rendement avant de trancher.",
+      story: "Il représente un enjeu financier et un message pour le reste de l’effectif.",
+      choices: ["Lui proposer une extension", "Le vendre", "Le faire patienter", "Relâcher la pression"],
     },
   ],
-
   Staff: [
     {
       type: "staff",
       title: "fait débat dans le staff",
       trigger: "analyse tactique",
       hook: "Le staff n'est pas d'accord sur son utilisation.",
-      choices: [
-        "Suivre la data",
-        "Suivre ton instinct",
-        "Tester en match",
-        "Reporter la décision",
-      ],
+      story: "Les choix tactiques autour de lui créent une fracture interne.",
+      choices: ["Suivre la data", "Suivre ton instinct", "Tester en match", "Reporter la décision"],
+    },
+    {
+      type: "training",
+      title: "remet en question son plan d’entraînement",
+      trigger: "capacité d’adaptation",
+      hook: "Certains membres du staff veulent changer son programme.",
+      story: "Il devient le symbole d’une préparation qui doit rester cohérente.",
+      choices: ["Changer le plan", "Maintenir la feuille", "Individualiser le suivi", "Impliquer le joueur"],
     },
   ],
 };
-  Match: [
-    {
-      type: "direct",
-
 
 function clamp(n, min = 0, max = 100) {
   return Math.max(min, Math.min(max, Math.round(Number(n) || 0)));
@@ -361,7 +270,16 @@ function createPlayer(index, clubName) {
 }
 
 function createFixtures(clubName) {
-  const opponents = ["Rival FC", "Athletic Club", "United 26", "Olympique Nord", "Sporting Sud", "Real Capital", "City Academy", "Dynamo Est"];
+  const opponents = [
+    "Rival FC",
+    "Athletic Club",
+    "United 26",
+    "Olympique Nord",
+    "Sporting Sud",
+    "Real Capital",
+    "City Academy",
+    "Dynamo Est",
+  ];
   return opponents.map((opponent, index) => ({
     id: uid("fixture"),
     week: index + 1,
@@ -440,7 +358,7 @@ function simulateResult(career) {
 
 function chooseEventCategory(career, resultDelta) {
   const categories = ["Match", "Moral", "Vestiaire", "Médias", "Mercato", "Staff", "Supporters", "Direction"];
-  if (career.squad.some((player) => player.fatigue > 72)) categories.push("Blessures", "Blessures");
+  if (career.squad.some((player) => player.fatigue > 72)) categories.push("Blessures");
   if (resultDelta < 0) categories.push("Direction", "Médias", "Moral");
   if (resultDelta > 0) categories.push("Supporters", "Match");
 
@@ -472,86 +390,43 @@ function createSvgImage(category, title, playerName, clubName) {
   const safeClub = String(clubName).replaceAll("<", "").replaceAll(">", "");
 
   const svg = `
-  <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
-    <defs>
-      <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#bef264"/>
-        <stop offset="50%" stop-color="#22d3ee"/>
-        <stop offset="100%" stop-color="#07111f"/>
-      </linearGradient>
-    </defs>
-    <rect width="1200" height="720" fill="url(#bg)"/>
-    <g opacity="0.18">
-      <rect x="80" y="90" width="1040" height="520" rx="48" fill="none" stroke="white" stroke-width="8"/>
-      <line x1="600" y1="90" x2="600" y2="610" stroke="white" stroke-width="6"/>
-      <circle cx="600" cy="350" r="110" fill="none" stroke="white" stroke-width="6"/>
-    </g>
-    <rect x="70" y="70" width="1060" height="170" rx="42" fill="rgba(0,0,0,.35)"/>
-    <text x="110" y="145" font-family="Arial" font-size="38" font-weight="900" fill="white">${meta.icon} ${safeClub}</text>
-    <text x="110" y="205" font-family="Arial" font-size="42" font-weight="900" fill="white">${safeTitle}</text>
-    <rect x="70" y="520" width="1060" height="120" rx="38" fill="rgba(0,0,0,.38)"/>
-    <text x="110" y="595" font-family="Arial" font-size="34" font-weight="900" fill="white">Joueur concerné : ${safePlayer}</text>
-  </svg>`;
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#bef264"/>
+      <stop offset="50%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#07111f"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="720" fill="url(#bg)"/>
+  <text x="80" y="140" font-family="Arial" font-size="40" font-weight="900" fill="white">${meta.icon} ${safeClub}</text>
+  <text x="80" y="220" font-family="Arial" font-size="46" font-weight="900" fill="white">${safeTitle}</text>
+  <text x="80" y="620" font-family="Arial" font-size="32" fill="white">Joueur : ${safePlayer}</text>
+</svg>`;
 
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
 function createLiveEditorEffects(category, consequences, playerName) {
-  const `Modifier son statut : rotation importante ou titulaire provisoire`,  const clubEffects = Object.entries(consequences).map(([key, value]) => {
-    ],
-    Blessures: [
-      `Baisser l'endurance de ${playerName}`,
-      `Mettre ${playerName} au repos 1 match`,
-      `Réduire son intensité d'entraînement`,
-    ],
-    Moral: [
-      `Modifier le moral de ${playerName} selon la décision`,
-      `Ajuster son rôle dans l'effectif`,
-      `Changer son temps de jeu prévu`,
-    ],
-    Vestiaire: [
-      `Modifier l'importance de ${playerName} dans le groupe`,
-      `Surveiller sa relation avec les cadres`,
-      `Ajuster son statut de leadership`,
-    ],
-    Médias: [
-      `Augmenter la pression médiatique autour de ${playerName}`,
-      `Modifier légèrement sa réputation`,
-      `Créer une storyline presse pendant 2 semaines`,
-    ],
-    Mercato: [
-      `Ajouter ${playerName} à une shortlist transfert`,
-      `Modifier son statut : ouvert aux offres ou intransférable`,
-      `Ajuster sa valeur ou son salaire demandé`,
-    ],
-    Supporters: [
-      `Augmenter la popularité de ${playerName}`,
-      `Le faire démarrer le prochain match si tu cèdes à la pression`,
-      `Créer une storyline supporters`,
-    ],
-    Direction: [
-      `Noter ${playerName} comme dossier board`,
-      `Préparer une vente si la situation empire`,
-      `Demander un objectif sportif sur 3 matchs`,
-    ],
-    Staff: [
-      `Changer le plan d'entraînement de ${playerName}`,
-      `Tester ${playerName} à un nouveau poste`,
-      `Modifier son rôle tactique`,
-    ],
-  };
-
-  return [...clubEffects, ...(playerEffects[category] || [])];
-}
+  const clubEffects = Object.entries(consequences || {}).map(([key, value]) => {
     const formatted = value > 0 ? `+${value}` : `${value}`;
     return `Club : ${key} ${formatted}`;
   });
 
   const playerEffects = {
-    Match: [
-      `Augmenter la forme de ${playerName}`,
-      `Donner plus de temps de jeu à ${playerName}`,
+    Match: [`Augmenter la forme de ${playerName}`, `Donner plus de temps de jeu à ${playerName}`],
+    Blessures: [`Mettre ${playerName} au repos 1 match`, `Réduire son intensité d'entraînement`],
+    Moral: [`Ajuster son rôle dans l'effectif`, `Changer son temps de jeu prévu`],
+    Vestiaire: [`Modifier l'importance de ${playerName} dans le groupe`, `Surveiller sa relation avec les cadres`],
+    Médias: [`Augmenter la pression médiatique autour de ${playerName}`, `Modifier légèrement sa réputation`],
+    Mercato: [`Ajouter ${playerName} à une shortlist transfert`, `Modifier son statut`],
+    Supporters: [`Augmenter la popularité de ${playerName}`, `Créer une storyline supporters`],
+    Direction: [`Noter ${playerName} comme dossier board`, `Demander un objectif sportif sur 3 matchs`],
+    Staff: [`Changer le plan d'entraînement de ${playerName}`, `Tester ${playerName} à un nouveau poste`],
+  };
 
+  return [...clubEffects, ...(playerEffects[category] || [])];
+}
 
 function getEventRarity(resultDelta) {
   const roll = Math.random() * 100;
@@ -561,15 +436,25 @@ function getEventRarity(resultDelta) {
   return "Commun";
 }
 
+function getMonthName(week) {
+  return MONTHS[Math.floor(week / 4)] || "Mai";
+}
+
+function getThemeClass(theme) {
+  return theme === "light" ? "light" : "";
+}
+
 function buildContextualEvent(career, result) {
-  const category = choose pick(available.length ? available : templates);  const category = chooseEventCategory(career, result.resultDelta);
+  const category = chooseEventCategory(career, result.resultDelta);
+  const templates = EVENT_TEMPLATES[category] || EVENT_TEMPLATES.Match;
+  const recent = career.eventMemory || [];
+  const available = templates.filter((template) => !recent.slice(0, 4).some((item) => item.category === category && item.templateTitle === template.title));
+  const template = pick(available.length ? available : templates);
 
   const players = [...career.squad]
     .sort((a, b) => {
-      const scoreA =
-        a.overall + a.form * 0.35 - a.fatigue * 0.2 + a.morale * 0.15;
-      const scoreB =
-        b.overall + b.form * 0.35 - b.fatigue * 0.2 + b.morale * 0.15;
+      const scoreA = a.overall + a.form * 0.35 - a.fatigue * 0.2 + a.morale * 0.15;
+      const scoreB = b.overall + b.form * 0.35 - b.fatigue * 0.2 + b.morale * 0.15;
       return scoreB - scoreA;
     })
     .slice(0, 10);
@@ -577,11 +462,7 @@ function buildContextualEvent(career, result) {
   const player = pick(players.length ? players : career.squad);
   const fixtureText = result.summary || "semaine sans match officiel";
   const consequences = consequencesFor(category, result.resultDelta, career);
-
-  const impact = Object.entries(consequences)
-    .map(([key, value]) => `${key} ${value > 0 ? "+" : ""}${value}`)
-    .join(" · ");
-
+  const impact = Object.entries(consequences).map(([key, value]) => `${key} ${value > 0 ? "+" : ""}${value}`).join(" · ");
   const rarity = getEventRarity(result.resultDelta);
   const title = `${player.name} ${template.title} — ${career.club.name}`;
 
@@ -589,35 +470,29 @@ function buildContextualEvent(career, result) {
   let detail = "";
 
   if (template.type === "direct") {
-    description = `${player.name} vient directement te parler dans ton bureau. Il ne veut plus rester dans le flou : son rôle, son temps de jeu et sa place dans le projet doivent être clarifiés maintenant.`;
-    detail = `Il te dit : “Coach, j'ai besoin de savoir si vous comptez vraiment sur moi.” Profil : ${player.position}, OVR ${player.overall}, forme ${player.form}, moral ${player.morale}, fatigue ${player.fatigue}. Contexte : ${fixtureText}.`;
-  } else if (template.type === "media") {
-    description = `Une fuite sort dans la presse : ${player.name} serait frustré par sa situation au club. Les journalistes parlent déjà d'un malaise interne.`;
-    detail = `L'information n'est pas confirmée officiellement, mais elle fragilise le vestiaire. Joueur : ${player.position}, OVR ${player.overall}, forme ${player.form}, moral ${player.morale}. Contexte : ${fixtureText}.`;
-  } else if (template.type === "transfer") {
-    description = `${player.name} vient te voir avec un message très clair : il veut envisager un départ si sa situation ne change pas rapidement.`;
-    detail = `Ce n'est pas une simple frustration. Le joueur parle ouvertement de transfert. Valeur estimée : ${money(player.value)}. Poste : ${player.position}. OVR ${player.overall}.`;
-  } else if (template.type === "agent") {
-    description = `L'agent de ${player.name} met la pression sur la direction. Il demande des garanties sportives ou une ouverture pour un transfert.`;
-    detail = `Le dossier devient sensible : si tu gères mal la situation, le vestiaire et les médias peuvent s'en mêler. Joueur : ${player.name}, ${player.position}, OVR ${player.overall}.`;
-  } else if (template.type === "rival") {
-    description = `Un coach rival te provoque publiquement en conférence. Il estime que tu ne sais pas utiliser ${player.name} correctement.`;
-    detail = `Cette déclaration peut piquer l'orgueil du joueur ou le motiver. Tu peux répondre, ignorer ou utiliser cette attaque pour créer une réaction sportive.`;
-  } else if (template.type === "star") {
-    description = `Une star d'un autre club mentionne ${player.name} en interview et laisse entendre qu'il mériterait un plus grand projet.`;
-    detail = `Ce genre de déclaration peut faire tourner la tête du joueur. Le mercato peut s'agiter si tu ne clarifies pas vite son statut.`;
-  } else if (template.type === "medical") {
-    description = `${player.name} est au centre d'une alerte médicale. Le staff pense qu'il y a un risque si tu continues à l'utiliser normalement.`;
-    detail = `Fatigue actuelle : ${player.fatigue}. Forme : ${player.form}. Le joueur veut peut-être jouer, mais le staff recommande la prudence.`;
-  } else if (template.type === "fans") {
-    description = `Les supporters commencent à prendre position sur ${player.name}. Sa situation devient un sujet en tribune et sur les réseaux.`;
-    detail = `La pression populaire peut t'aider ou te fragiliser selon ta décision. Contexte : ${fixtureText}.`;
-  } else if (template.type === "board") {
-    description = `La direction veut un point clair sur ${player.name}. Le board ne veut pas perdre de valeur sportive ou financière.`;
-    detail = `Le joueur représente un dossier stratégique. Tu dois choisir entre le protéger, le vendre ou le relancer.`;
+    description = `${player.name} veut une réponse claire sur son rôle, son temps de jeu et sa place dans le projet.`;
+    detail = `${template.story || "La situation demande une décision rapide."} Contexte : ${fixtureText}. Profil : ${player.position}, OVR ${player.overall}, forme ${player.form}, moral ${player.morale}, fatigue ${player.fatigue}.`;
+  } else if (template.type === "media" || template.type === "reputation") {
+    description = `Une histoire autour de ${player.name} sort dans les médias. Le club doit réagir avant que la situation ne prenne trop d'ampleur.`;
+    detail = `${template.hook} ${template.story || ""} Contexte : ${fixtureText}.`;
+  } else if (template.type === "transfer" || template.type === "offer") {
+    description = `${player.name} devient un vrai dossier mercato. Son avenir au club n'est plus totalement verrouillé.`;
+    detail = `${template.hook} Valeur estimée : ${money(player.value)}. Poste : ${player.position}. OVR ${player.overall}. Contexte : ${fixtureText}.`;
+  } else if (template.type === "medical" || template.type === "rehab") {
+    description = `${player.name} est au centre d'une alerte physique. Le staff médical demande une décision prudente.`;
+    detail = `${template.hook} Fatigue actuelle : ${player.fatigue}. Forme : ${player.form}. Contexte : ${fixtureText}.`;
+  } else if (template.type === "fans" || template.type === "protest") {
+    description = `${player.name} devient un sujet fort chez les supporters. La pression populaire influence désormais tes choix.`;
+    detail = `${template.story || template.hook} Contexte : ${fixtureText}.`;
+  } else if (template.type === "board" || template.type === "contract") {
+    description = `${player.name} devient un dossier suivi par la direction. Le board veut une décision claire.`;
+    detail = `${template.story || template.hook} Valeur : ${money(player.value)}. Contexte : ${fixtureText}.`;
+  } else if (template.type === "staff" || template.type === "training" || template.type === "performance") {
+    description = `${player.name} fait débat en interne. Le staff attend une décision sportive cohérente.`;
+    detail = `${template.hook} ${template.story || ""} Profil : ${player.position}, OVR ${player.overall}, forme ${player.form}. Contexte : ${fixtureText}.`;
   } else {
-    description = `${player.name} devient un sujet important dans la semaine du club. Le staff attend une décision claire.`;
-    detail = `Déclencheur : ${template.trigger}. Profil : ${player.name}, ${player.position}, OVR ${player.overall}, forme ${player.form}, moral ${player.morale}, fatigue ${player.fatigue}.`;
+    description = `${player.name} devient un sujet important de la semaine.`;
+    detail = `${template.hook} ${template.story || ""} Contexte : ${fixtureText}.`;
   }
 
   return {
@@ -644,29 +519,13 @@ function buildContextualEvent(career, result) {
     detail,
     impact,
     consequences,
-    liveEditorEffects: createLiveEditorEffects(
-      category,
-      consequences,
-      player.name
-    ),
+    liveEditorEffects: createLiveEditorEffects(category, consequences, player.name),
     status: "unread",
     choices: template.choices,
     templateTitle: template.title,
     eventType: template.type,
   };
 }
-  const templates = EVENT_TEMPLATES[category] || EVENT_TEMPLATES.Match;
-  const recent = career.eventMemory || [];
-
-  const available = templates.filter((template) => {
-    return !recent.some(
-      (item) =>
-        item.category === category &&
-        item.templateTitle === template.title
-    );
-  });
-
-
 
 function applyConsequences(career, event) {
   const next = { ...career };
@@ -726,48 +585,20 @@ function HomeScreen({ onChoose }) {
           <span className="gradient-text">Overhaul Mod</span>
         </h1>
         <p className="hero-subtitle">
-          Un mode carrière premium pour FC26 : événements roleplay, vestiaire,
-          médias, mercato, board, live editor et suivi de joueurs.
+          Un mode carrière premium pour FC26 : événements roleplay, vestiaire, médias, mercato, board, live editor et suivi de joueurs.
         </p>
 
         <div className="hero-actions">
-          <button type="button" className="big-choice manager" onClick={() => onChoose("manager")}>
+          <button type="button" className="big-choice manager" onClick={() => onChoose("manager")}> 
             <div className="stat-label">Kick-off</div>
             <h2>Manager Career</h2>
             <p>Contrôle le club, les décisions, la pression, les finances et les storylines.</p>
           </button>
-
-          <button type="button" className="big-choice player" onClick={() => onChoose("player")}>
+          <button type="button" className="big-choice player" onClick={() => onChoose("player")}> 
             <div className="stat-label">Player Path</div>
             <h2>Player Career</h2>
             <p>Suis un joueur, sa forme, son coach, sa réputation et ses choix.</p>
           </button>
-        </div>
-      </section>
-
-      <section className="preview">
-        <div className="preview-inner">
-          <div className="club-row">
-            <ClubBadge club={CLUBS[0]} size="large" />
-            <div>
-              <Kicker tone="cyan">Career Central</Kicker>
-              <h2>Girondins de Bordeaux</h2>
-              <p className="muted">Saison 1 · Semaine 1</p>
-            </div>
-          </div>
-
-          <div className="stat-grid" style={{ marginTop: 22 }}>
-            <Stat label="Moral" value="78" tone="lime" />
-            <Stat label="Board" value="64" tone="violet" />
-            <Stat label="Budget" value="42 M€" tone="cyan" />
-            <Stat label="Pression" value="31" tone="amber" />
-          </div>
-
-          <div className="card pitch" style={{ marginTop: 20 }}>
-            <Kicker tone="lime">New Event</Kicker>
-            <h3>Nino Bernard bouscule la hiérarchie</h3>
-            <p className="muted">Le staff doit choisir entre continuité et récompense sportive.</p>
-          </div>
         </div>
       </section>
     </main>
@@ -791,7 +622,6 @@ function ClubPicker({ type, onBack, onConfirm }) {
       <div className="bg-grid" />
       <div className="club-picker-inner">
         <button type="button" className="secondary-btn" onClick={onBack}>← Retour</button>
-
         <div className="club-row" style={{ marginTop: 30, justifyContent: "space-between" }}>
           <div>
             <Kicker tone="lime">Club Select</Kicker>
@@ -800,7 +630,6 @@ function ClubPicker({ type, onBack, onConfirm }) {
           </div>
           <ClubBadge club={selected} size="large" />
         </div>
-
         <div className="grid-3" style={{ marginTop: 28 }}>
           {CLUBS.map((club) => (
             <button key={club.name} type="button" className={`club-card ${selected.name === club.name ? "selected" : ""}`} onClick={() => selectClub(club)}>
@@ -811,20 +640,17 @@ function ClubPicker({ type, onBack, onConfirm }) {
             </button>
           ))}
         </div>
-
         <div className="panel" style={{ marginTop: 22 }}>
           <div className="grid-2">
             <label>
               <div className="stat-label">{type === "player" ? "Nom du joueur" : "Nom du coach"}</div>
               <input className="input" value={managerName} onChange={(event) => setManagerName(event.target.value)} />
             </label>
-
             <label>
               <div className="stat-label">Objectif personnalisé</div>
               <input className="input" value={objective} onChange={(event) => setObjective(event.target.value)} />
             </label>
           </div>
-
           <button type="button" className="primary-btn" style={{ marginTop: 18 }} onClick={() => onConfirm(type, selected, { managerName, objective })}>
             Commencer avec {selected.name}
           </button>
@@ -849,7 +675,6 @@ function Dashboard({ career }) {
           <Stat label="Cohésion" value={career.cohesion} tone="violet" />
         </div>
       </div>
-
       <div className="card">
         <div className="club-row">
           <ClubBadge club={career.club} />
@@ -858,12 +683,10 @@ function Dashboard({ career }) {
             <p className="muted">{career.club.league}</p>
           </div>
         </div>
-
         <div className="stat-grid" style={{ marginTop: 18 }}>
           <Stat label="Budget" value={money(career.budget)} tone="cyan" />
           <Stat label="Board" value={career.boardTrust} tone="violet" />
         </div>
-
         <p className="muted" style={{ marginTop: 18 }}>
           Objectif : <b className="soft">{career.customObjective}</b>
         </p>
@@ -873,32 +696,47 @@ function Dashboard({ career }) {
 }
 
 function EventsView({ career, onOpen }) {
+  const [filter, setFilter] = useState("all");
+  const visibleEvents = useMemo(
+    () => career.events.filter((event) => (filter === "all" ? true : event.status === filter)),
+    [career.events, filter]
+  );
+
   return (
     <div>
-      <h2>Inbox événements</h2>
+      <div className="club-row" style={{ justifyContent: "space-between", marginBottom: 16 }}>
+        <h2>Inbox événements</h2>
+        <div className="club-row">
+          <button type="button" className={`secondary-btn ${filter === "all" ? "active" : ""}`} onClick={() => setFilter("all")}>
+            Tous
+          </button>
+          <button type="button" className={`secondary-btn ${filter === "unread" ? "active" : ""}`} onClick={() => setFilter("unread")}>Nouveau</button>
+          <button type="button" className={`secondary-btn ${filter === "resolved" ? "active" : ""}`} onClick={() => setFilter("resolved")}>Résolu</button>
+        </div>
+      </div>
       <div className="grid-3">
-        {career.events.length ? (
-          career.events.map((event) => {
+        {visibleEvents.length ? (
+          visibleEvents.map((event) => {
             const meta = CATEGORY_META[event.category] || CATEGORY_META.Match;
+            const resolved = event.status === "resolved";
             return (
-              <button key={event.id} type="button" className="event-card" onClick={() => onOpen(event)}>
+              <button key={event.id} type="button" className="event-card" style={{ opacity: resolved ? 0.62 : 1 }} onClick={() => onOpen(event)}>
                 <div className="event-strip" style={{ background: meta.color }} />
                 <div className="event-body">
                   <div className="club-row" style={{ justifyContent: "space-between" }}>
                     <Kicker>{meta.icon} {event.category}</Kicker>
-                    <Kicker tone={event.status === "resolved" ? "green" : "amber"}>
-                      {event.status === "resolved" ? "Résolu" : "Nouveau"}
-                    </Kicker>
+                    <Kicker tone={resolved ? "green" : "amber"}>{resolved ? "Résolu" : "Nouveau"}</Kicker>
                   </div>
                   <h3>{event.title}</h3>
                   <p className="muted">{event.description}</p>
                   <p className="soft">{event.impact}</p>
+                  {resolved && event.choice ? (<p className="muted">Choix effectué : <b>{event.choice}</b></p>) : null}
                 </div>
               </button>
             );
           })
         ) : (
-          <div className="card">Aucun événement. Avance d’une semaine pour générer une storyline.</div>
+          <div className="card">Aucun événement dans ce filtre.</div>
         )}
       </div>
     </div>
@@ -920,18 +758,15 @@ function EventModal({ event, onClose, onDecision }) {
     <div className="modal-backdrop" role="dialog" aria-modal="true">
       <div className="modal">
         <div className="event-strip" style={{ background: meta.color }} />
-
         <div className="modal-grid">
           <aside className="modal-left">
             <img className="event-image" src={event.imageUrl} alt={event.title} />
-
             <div className="stat-grid" style={{ marginTop: 18 }}>
               <Stat label="Rareté" value={event.rarity} tone="amber" />
               <Stat label="Semaine" value={event.week} tone="cyan" />
               <Stat label="Joueur" value={playerName} tone="lime" />
               <Stat label="OVR" value={playerOverall} tone="violet" />
             </div>
-
             <div className="card" style={{ marginTop: 18 }}>
               <h3>Profil joueur</h3>
               <p>Nom : <b>{playerName}</b></p>
@@ -942,27 +777,21 @@ function EventModal({ event, onClose, onDecision }) {
               <p>Fatigue : <b>{playerFatigue}</b></p>
             </div>
           </aside>
-
           <section className="modal-right">
             <div className="club-row" style={{ justifyContent: "space-between" }}>
               <div className="club-row">
                 <Kicker>{meta.icon} {event.category}</Kicker>
                 <Kicker tone="amber">{event.rarity}</Kicker>
-                <Kicker tone={event.status === "resolved" ? "green" : "red"}>
-                  {event.status === "resolved" ? "Résolu" : "Décision requise"}
-                </Kicker>
+                <Kicker tone={event.status === "resolved" ? "green" : "red"}>{event.status === "resolved" ? "Résolu" : "Décision requise"}</Kicker>
               </div>
               <button type="button" className="close-btn" onClick={onClose}>×</button>
             </div>
-
             <h1>{event.title}</h1>
             <p className="soft">{event.description}</p>
-
             <div className="card media">
               <h3>Analyse roleplay</h3>
               <p className="muted">{event.detail}</p>
             </div>
-
             <div className="grid-2" style={{ marginTop: 14 }}>
               <div className="card pitch">
                 <h3>Impact club</h3>
@@ -973,31 +802,32 @@ function EventModal({ event, onClose, onDecision }) {
                 <p>{event.fixture}</p>
               </div>
             </div>
-
-            <div className="card" style={{ marginTop: 14 }}>
-              <h3>Effets à appliquer dans Live Editor</h3>
-              <ul className="effect-list">
-                {(event.liveEditorEffects || []).map((effect, index) => (
-                  <li key={`${effect}-${index}`}>
-                    <span style={{ color: "var(--amber)" }}>▸</span>
-                    <span>{effect}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="card" style={{ marginTop: 14 }}>
-              <h3>Décision narrative</h3>
-              <div className="choice-grid">
-                {(event.choices || []).map((choice) => (
-                  <button key={choice} type="button" className="choice-btn" onClick={() => onDecision(event, choice)}>
-                    {choice}
-                    <br />
-                    <small>Appliquer cette décision à la storyline.</small>
-                  </button>
-                ))}
+            {event.status === "resolved" ? (
+              <div className="card" style={{ marginTop: 14 }}>
+                <h3>Décision déjà prise</h3>
+                <p className="muted">
+                  Choix effectué : <b>{event.choice || "non précisé"}</b>
+                </p>
               </div>
-            </div>
+            ) : (
+              <div className="card" style={{ marginTop: 14 }}>
+                <h3>Décision narrative</h3>
+                <div className="choice-grid">
+                  {(event.choices || []).map((choice) => (
+                    <button
+                      key={choice}
+                      type="button"
+                      className="choice-btn"
+                      onClick={() => onDecision(event, choice)}
+                    >
+                      {choice}
+                      <br />
+                      <small>Appliquer cette décision à la storyline.</small>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </section>
         </div>
       </div>
@@ -1007,7 +837,6 @@ function EventModal({ event, onClose, onDecision }) {
 
 function SquadView({ career }) {
   const [query, setQuery] = useState("");
-
   const squad = useMemo(() => {
     return career.squad
       .filter((player) => player.name.toLowerCase().includes(query.toLowerCase()) || player.position.toLowerCase().includes(query.toLowerCase()))
@@ -1085,7 +914,6 @@ function HistoryView({ career }) {
           <p className="muted">Aucune décision.</p>
         )}
       </div>
-
       <div className="card">
         <h2>Storylines</h2>
         {career.activeStorylines.length ? (
@@ -1100,15 +928,253 @@ function HistoryView({ career }) {
   );
 }
 
+function DeltaLine({ label, before, after }) {
+  const delta = Number(after || 0) - Number(before || 0);
+  const positive = delta > 0;
+  const negative = delta < 0;
+  return (
+    <div className="fixture">
+      <span>{label}</span>
+      <strong className={positive ? "lime" : negative ? "red" : "muted"}>
+        {before} → {after} {delta !== 0 ? `(${delta > 0 ? "+" : ""}${delta})` : "(=)"}
+      </strong>
+    </div>
+  );
+}
+
+function WeekSummaryModal({ summary, onClose, onOpenEvent }) {
+  if (!summary) return null;
+  return (
+    <div className="modal-backdrop" role="dialog" aria-modal="true">
+      <div className="modal" style={{ maxWidth: 860 }}>
+        <div className="event-strip" style={{ background: "linear-gradient(90deg, var(--lime), var(--cyan))" }} />
+        <div style={{ padding: 28 }}>
+          <Kicker tone="lime">Résumé de semaine</Kicker>
+          <h1 style={{ marginTop: 14 }}>Semaine {summary.week}</h1>
+          <div className="card pitch" style={{ marginTop: 16 }}>
+            <h2>Résultat</h2>
+            <p className="soft" style={{ fontSize: 22, fontWeight: 900 }}>{summary.result}</p>
+            <p className="muted">Buteur notable : <b>{summary.scorerName || "aucun"}</b></p>
+          </div>
+          <div className="grid-2" style={{ marginTop: 16 }}>
+            <div className="card">
+              <h3>Variations du club</h3>
+              <DeltaLine label="Moral" before={summary.before.morale} after={summary.after.morale} />
+              <DeltaLine label="Réputation" before={summary.before.reputation} after={summary.after.reputation} />
+              <DeltaLine label="Popularité" before={summary.before.popularity} after={summary.after.popularity} />
+              <DeltaLine label="Pression" before={summary.before.pressure} after={summary.after.pressure} />
+              <DeltaLine label="Board" before={summary.before.boardTrust} after={summary.after.boardTrust} />
+            </div>
+            <div className="card media">
+              <h3>Événement tiré</h3>
+              <Kicker>{summary.eventCategory}</Kicker>
+              <h2>{summary.eventTitle}</h2>
+              <p className="muted">{summary.eventDescription}</p>
+            </div>
+          </div>
+          <div className="card" style={{ marginTop: 16 }}>
+            <h3>Article de presse</h3>
+            <p className="muted">{summary.article}</p>
+          </div>
+          <div className="club-row" style={{ marginTop: 18, justifyContent: "flex-end" }}>
+            <button type="button" className="secondary-btn" onClick={onOpenEvent}>Voir l’événement</button>
+            <button type="button" className="primary-btn" onClick={onClose}>Continuer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CareerApp() {
-  const [theme, setTheme] = useState("dark");
-  const [screen, setScreen] = useState("home");
-  const [pendingType, setPendingType] = useState("manager");
-  const [careers, setCareers] = useState(() => [createCareer("manager", CLUBS[0])]);
+  const [theme, setTheme] = useState(DEFAULT_THEME);
+  const [screen, setScreen] = useState(DEFAULT_SCREEN);
+  const [pendingType, setPendingType] = useState(DEFAULT_TYPE);
+  const [careers, setCareers] = useState(() => [createCareer(DEFAULT_TYPE, CLUBS[0])]);
   const [activeId, setActiveId] = useState("");
-  const [tab, setTab] = useState("dashboard");
+  const [tab, setTab] = useState(DEFAULT_TAB);
   const [activeEvent, setActiveEvent] = useState(null);
+  const [weekSummary, setWeekSummary] = useState(null);
   const [loaded, setLoaded] = useState(false);
+
+  const career = useMemo(() => careers.find((item) => item.id === activeId) || careers[0], [careers, activeId]);
+  const tabs = useMemo(
+    () => [
+      ["dashboard", "Hub"],
+      ["events", "Événements"],
+      ["squad", "Effectif"],
+      ["calendar", "Calendrier"],
+      ["news", "News"],
+      ["history", "Historique"],
+    ],
+    []
+  );
+  const pendingEvents = useMemo(
+    () => career.events.filter((event) => event.status === "unread").length,
+    [career.events]
+  );
+  const themeClass = useMemo(() => getThemeClass(theme), [theme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((current) => (current === "dark" ? "light" : "dark"));
+  }, []);
+
+  const selectCareer = useCallback((event) => {
+    setActiveId(event.target.value);
+  }, []);
+
+  const replaceCareer = useCallback((nextCareer) => {
+    setCareers((list) => list.map((item) => (item.id === nextCareer.id ? nextCareer : item)));
+  }, []);
+
+  const createNewCareer = useCallback((type, club, options) => {
+    const next = createCareer(type, club, options);
+    setCareers((list) => [next, ...list]);
+    setActiveId(next.id);
+    setScreen("career");
+    setTab(DEFAULT_TAB);
+  }, []);
+
+  const advanceWeek = useCallback(() => {
+    const before = {
+      morale: career.morale,
+      reputation: career.reputation,
+      popularity: career.popularity,
+      pressure: career.pressure,
+      boardTrust: career.boardTrust,
+    };
+
+    let nextCareer = {
+      ...career,
+      squad: career.squad.map((player) => ({ ...player })),
+      fixtures: career.fixtures.map((fixture) => ({ ...fixture })),
+    };
+
+    const result = simulateResult(nextCareer);
+
+    nextCareer.fixtures = result.fixtures;
+    nextCareer.squad = result.squad;
+    nextCareer.week += 1;
+    nextCareer.month = getMonthName(nextCareer.week);
+
+    nextCareer.morale = clamp(nextCareer.morale + result.resultDelta * 5);
+    nextCareer.reputation = clamp(nextCareer.reputation + result.resultDelta * 2);
+    nextCareer.popularity = clamp(nextCareer.popularity + result.resultDelta * 3);
+
+    const event = buildContextualEvent(nextCareer, result);
+    nextCareer = applyConsequences(nextCareer, event);
+    const article = generateArticle(nextCareer, event);
+
+    nextCareer.events = [event, ...nextCareer.events];
+    nextCareer.eventMemory = [
+      {
+        id: event.id,
+        category: event.category,
+        templateTitle: event.templateTitle,
+        player: event.player,
+        week: event.week,
+      },
+      ...(nextCareer.eventMemory || []),
+    ].slice(0, EVENT_MEMORY_LIMIT);
+    nextCareer.news = [article, ...nextCareer.news];
+
+    replaceCareer(nextCareer);
+    setTab("events");
+    setActiveEvent(null);
+
+    setWeekSummary({
+      week: nextCareer.week,
+      result: result.summary,
+      scorerName: result.scorerName,
+      before,
+      after: {
+        morale: nextCareer.morale,
+        reputation: nextCareer.reputation,
+        popularity: nextCareer.popularity,
+        pressure: nextCareer.pressure,
+        boardTrust: nextCareer.boardTrust,
+      },
+      eventId: event.id,
+      eventTitle: event.title,
+      eventCategory: event.category,
+      eventDescription: event.description,
+      article: article.body,
+    });
+  }, [career, replaceCareer]);
+
+  const handleDecision = useCallback((event, choice) => {
+    if (!event || event.status === "resolved") {
+      setActiveEvent(null);
+      return;
+    }
+
+    setCareers((list) =>
+      list.map((item) => {
+        if (item.id !== activeId) return item;
+
+        const updatedEvents = item.events.map((existingEvent) => {
+          if (existingEvent.id !== event.id) return existingEvent;
+
+          return {
+            ...existingEvent,
+            status: "resolved",
+            choice,
+            resolvedWeek: item.week,
+          };
+        });
+
+        return {
+          ...item,
+          events: updatedEvents,
+          decisions: [
+            {
+              id: uid("decision"),
+              week: item.week,
+              event: event.title,
+              choice,
+            },
+            ...(item.decisions || []),
+          ],
+          activeStorylines: [
+            {
+              id: uid("story"),
+              title: event.title,
+              category: event.category,
+              lastChoice: choice,
+            },
+            ...(item.activeStorylines || []),
+          ].slice(0, 8),
+        };
+      })
+    );
+
+    setActiveEvent(null);
+  }, [activeId]);
+
+  const openWeekEvent = useCallback(() => {
+    const found = career.events.find((event) => event.id === weekSummary?.eventId);
+    if (found) {
+      setActiveEvent(found);
+    }
+    setWeekSummary(null);
+  }, [career.events, weekSummary]);
+
+  function renderTabContent() {
+    switch (tab) {
+      case "events":
+        return <EventsView career={career} onOpen={setActiveEvent} />;
+      case "squad":
+        return <SquadView career={career} />;
+      case "calendar":
+        return <CalendarView career={career} />;
+      case "news":
+        return <NewsView career={career} />;
+      case "history":
+        return <HistoryView career={career} />;
+      default:
+        return <Dashboard career={career} />;
+    }
+  }
 
   useEffect(() => {
     try {
@@ -1120,11 +1186,11 @@ export default function CareerApp() {
           setActiveId(parsed[0].id);
         }
       } else {
-        setActiveId(careers[0].id);
+        setActiveId(careers[0]?.id || "");
       }
     } catch {
       localStorage.removeItem(STORAGE_KEY);
-      setActiveId(careers[0].id);
+      setActiveId(careers[0]?.id || "");
     } finally {
       setLoaded(true);
     }
@@ -1135,59 +1201,6 @@ export default function CareerApp() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(careers));
     }
   }, [careers, loaded]);
-
-  const career = careers.find((item) => item.id === activeId) || careers[0];
-
-  function replaceCareer(nextCareer) {
-    setCareers((list) => list.map((item) => (item.id === nextCareer.id ? nextCareer : item)));
-  }
-
-  function createNewCareer(type, club, options) {
-    const next = createCareer(type, club, options);
-    setCareers((list) => [next, ...list]);
-    setActiveId(next.id);
-    setScreen("career");
-    setTab("dashboard");
-  }
-
-  function advanceWeek() {
-    let next = {
-      ...career,
-      squad: career.squad.map((player) => ({ ...player })),
-      fixtures: career.fixtures.map((fixture) => ({ ...fixture })),
-    };
-
-    const result = simulateResult(next);
-    next.fixtures = result.fixtures;
-    next.squad = result.squad;
-    next.week += 1;
-    next.month = MONTHS[Math.floor(next.week / 4)] || "Mai";
-    next.morale = clamp(next.morale + result.resultDelta * 5);
-    next.reputation = clamp(next.reputation + result.resultDelta * 2);
-    next.popularity = clamp(next.popularity + result.resultDelta * 3);
-
-    const event = buildContextualEvent(next, result);
-    next = applyConsequences(next, event);
-    next.events = [event, ...next.events];
-    next.eventMemory = [
-      { id: event.id, category: event.category, templateTitle: event.templateTitle, player: event.player, week: event.week },
-      ...(next.eventMemory || []),
-    ].slice(0, 12);
-    next.news = [generateArticle(next, event), ...next.news];
-
-    replaceCareer(next);
-    setTab("events");
-    setActiveEvent(event);
-  }
-
-  function handleDecision(event, choice) {
-    let next = { ...career };
-    next.decisions = [{ id: uid("decision"), week: next.week, event: event.title, choice }, ...next.decisions];
-    next.events = next.events.map((item) => (item.id === event.id ? { ...item, status: "resolved", choice } : item));
-    next.activeStorylines = [{ id: uid("story"), title: event.title, category: event.category, lastChoice: choice }, ...next.activeStorylines].slice(0, 8);
-    replaceCareer(next);
-    setActiveEvent(null);
-  }
 
   if (!loaded) {
     return (
@@ -1201,39 +1214,24 @@ export default function CareerApp() {
 
   if (screen === "home") {
     return (
-      <div className={`app ${theme === "light" ? "light" : ""}`}>
+      <div className={`app ${themeClass}`}>
         <div className="bg-grid" />
-        <HomeScreen
-          onChoose={(type) => {
-            setPendingType(type);
-            setScreen("create");
-          }}
-        />
+        <HomeScreen onChoose={(type) => { setPendingType(type); setScreen("create"); }} />
       </div>
     );
   }
 
   if (screen === "create") {
     return (
-      <div className={`app ${theme === "light" ? "light" : ""}`}>
+      <div className={`app ${themeClass}`}>
         <ClubPicker type={pendingType} onBack={() => setScreen("home")} onConfirm={createNewCareer} />
       </div>
     );
   }
 
-  const tabs = [
-    ["dashboard", "Hub"],
-    ["events", "Événements"],
-    ["squad", "Effectif"],
-    ["calendar", "Calendrier"],
-    ["news", "News"],
-    ["history", "Historique"],
-  ];
-
   return (
-    <div className={`app ${theme === "light" ? "light" : ""}`}>
+    <div className={`app ${themeClass}`}>
       <div className="bg-grid" />
-
       <div className="shell">
         <div className="layout">
           <aside className="sidebar panel">
@@ -1244,33 +1242,30 @@ export default function CareerApp() {
                 <h2>{career.club.name}</h2>
               </div>
             </div>
-
             <p className="muted">Saison {career.season} · Semaine {career.week} · {career.month}</p>
-
-            <select className="select" value={activeId} onChange={(event) => setActiveId(event.target.value)}>
+            <select className="select" value={activeId} onChange={selectCareer}>
               {careers.map((item) => (
                 <option key={item.id} value={item.id}>{item.club.name} — {item.type}</option>
               ))}
             </select>
-
             <button type="button" className="secondary-btn" onClick={() => setScreen("home")}>Accueil</button>
-            <button type="button" className="secondary-btn" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-              Mode {theme === "dark" ? "clair" : "sombre"}
-            </button>
-
+            <button type="button" className="secondary-btn" onClick={toggleTheme}>Mode {theme === "dark" ? "clair" : "sombre"}</button>
             <nav className="nav">
               {tabs.map(([id, label]) => (
                 <button key={id} type="button" className={tab === id ? "active" : ""} onClick={() => setTab(id)}>
-                  {label}
+                  <span style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span>{label}</span>
+                    {id === "events" && pendingEvents > 0 ? (
+                      <span style={{ minWidth: 22, height: 22, borderRadius: 999, display: "grid", placeItems: "center", background: "var(--red)", color: "white", fontSize: 12, fontWeight: 1000 }}>{pendingEvents}</span>
+                    ) : null}
+                  </span>
                 </button>
               ))}
             </nav>
-
             <div style={{ marginTop: "auto", display: "grid", gap: 10 }}>
               <button type="button" className="primary-btn" onClick={advanceWeek}>▶ Avancer d’une semaine</button>
             </div>
           </aside>
-
           <main className="main">
             <header className="panel header-grid">
               <div>
@@ -1278,7 +1273,6 @@ export default function CareerApp() {
                 <h1 className="title-xl">{career.club.name}</h1>
                 <p className="muted">{career.customObjective}</p>
               </div>
-
               <div className="stat-grid">
                 <Stat label="Budget" value={money(career.budget)} tone="cyan" />
                 <Stat label="Moral" value={career.morale} tone="lime" />
@@ -1286,19 +1280,12 @@ export default function CareerApp() {
                 <Stat label="Direction" value={career.boardTrust} tone="violet" />
               </div>
             </header>
-
-            {tab === "dashboard" ? <Dashboard career={career} /> : null}
-            {tab === "events" ? <EventsView career={career} onOpen={setActiveEvent} /> : null}
-            {tab === "squad" ? <SquadView career={career} /> : null}
-            {tab === "calendar" ? <CalendarView career={career} /> : null}
-            {tab === "news" ? <NewsView career={career} /> : null}
-            {tab === "history" ? <HistoryView career={career} /> : null}
+            {renderTabContent()}
           </main>
         </div>
       </div>
-
       <EventModal event={activeEvent} onClose={() => setActiveEvent(null)} onDecision={handleDecision} />
+      <WeekSummaryModal summary={weekSummary} onClose={() => setWeekSummary(null)} onOpenEvent={openWeekEvent} />
     </div>
   );
 }
-

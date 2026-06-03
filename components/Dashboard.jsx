@@ -50,6 +50,35 @@ export default function Dashboard({ career }) {
       </Card>
     </div>
   );
+  {career.type === "player" ? (
+  <div className="card media">
+    <Kicker tone="cyan">Player Career</Kicker>
+    <h2>Marché personnel</h2>
+    <p className="muted">
+      Des clubs peuvent s’intéresser à ton profil selon ta forme, ta réputation
+      et ton temps de jeu.
+    </p>
+
+    <div className="grid-2" style={{ marginTop: 14 }}>
+      <div className="card">
+        <h3>Rumeur de transfert</h3>
+        <p>
+          Un recruteur de <b>Arsenal</b> suit tes performances et estime que ton
+          profil peut exploser dans un championnat plus intense.
+        </p>
+      </div>
+
+      <div className="card">
+        <h3>Message d’un cadre rival</h3>
+        <p>
+          Une star adverse déclare en interview : “Avec son potentiel, il devrait
+          viser un club qui joue plus haut.”
+        </p>
+      </div>
+    </div>
+  </div>
+) : null}
+``
 }
 
 // Import de ClubBadge (éviter la dépendance circulaire)

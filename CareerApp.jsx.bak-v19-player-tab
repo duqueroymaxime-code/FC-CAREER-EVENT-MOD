@@ -1,10 +1,9 @@
-import PlayerCareerProView from "./PlayerCareerProView";
 ﻿"use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-const STORAGE_KEY = "fifa-career-overhaul-v19-player-mode-pro";
-const BUILD_LABEL = "V19_PLAYER_MODE_PRO_ACTIVE";
+const STORAGE_KEY = "fifa-career-overhaul-v18-force-clubpicker";
+const BUILD_LABEL = "V18_FORCE_CLUBPICKER_ACTIVE";
 const FORCE_TRANSFER_OFFERS = false;
 const DEFAULT_THEME = "dark";
 const DEFAULT_SCREEN = "home";
@@ -4846,7 +4845,6 @@ export default function CareerApp() {
       ["history", "Historique"],
       ["settings", "Paramètres"],
       ["fc26", "Import FC26"],
-      ["player-pro", "Mode Joueur Pro"],
     ],
     [],
   );
@@ -5922,28 +5920,6 @@ const createNewCareer = useCallback((type, club, options = {}) => {
         );
       case "academy":
         return <AcademyView career={career} onAcademyAction={handleAcademyAction} />;
-      case "player-pro":
-        return (
-          <PlayerCareerProView
-            career={career}
-            onApply={(patch) =>
-              setCareers((list) =>
-                list.map((item) =>
-                  item.id === career.id
-                    ? normalizeCareer({
-                        ...item,
-                        playerCareer: {
-                          ...(item.playerCareer || {}),
-                          ...(patch.playerCareer || {}),
-                        },
-                      })
-                    : item,
-                ),
-              )
-            }
-          />
-        );
-
       case "fc26":
         return (
           <FC26ImportView

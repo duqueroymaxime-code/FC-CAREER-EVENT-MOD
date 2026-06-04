@@ -1,0 +1,73 @@
+{
+  "source": "fc26-live-editor",
+  "clubName": "Real Sociedad",
+  "league": "LaLiga",
+  "season": 1,
+  "week": 4,
+  "budget": 32,
+  "managerName": "Max",
+  "squad": [
+    {
+      "name": "Mikel Oyarzabal",
+      "position": "AG",
+      "age": 29,
+      "overall": 84,
+      "potential": 84,
+      "goals": 3,
+      "appearances": 4,
+      "contractYears": 3,
+      "wage": 2.4
+    },
+    {
+      "name": "Takefusa Kubo",
+      "position": "AD",
+      "age": 25,
+      "overall": 83,
+      "potential": 86,
+      "goals": 2,
+      "appearances": 4,
+      "contractYears": 4,
+      "wage": 2.1
+    }
+  ],
+  "fixtures": [
+    {
+      "week": 1,
+      "home": "Real Sociedad",
+      "away": "Villarreal",
+      "score": "2-1",
+      "competition": "Championnat"
+    },
+    {
+      "week": 2,
+      "home": "Athletic Club",
+      "away": "Real Sociedad",
+      "score": "0-0",
+      "competition": "Championnat"
+    }
+  ],
+  "leagueTable": [
+    {
+      "team": "Real Sociedad",
+      "played": 2,
+      "won": 1,
+      "drawn": 1,
+      "lost": 0,
+      "gf": 2,
+      "ga": 1,
+      "gd": 1,
+      "points": 4
+    },
+    {
+      "team": "Villarreal",
+      "played": 2,
+      "won": 1,
+      "drawn": 0,
+      "lost": 1,
+      "gf": 3,
+      "ga": 3,
+      "gd": 0,
+      "points": 3
+    }
+  ]
+}

@@ -1,11 +1,10 @@
-import PlayerCareerProView from "./PlayerCareerProView";
 ﻿"use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-const STORAGE_KEY = "fifa-career-overhaul-v19-player-mode-pro";
-const BUILD_LABEL = "V19_PLAYER_MODE_PRO_ACTIVE";
-const FORCE_TRANSFER_OFFERS = false;
+const STORAGE_KEY = "fifa-career-overhaul-media-hub-v16";
+const BUILD_LABEL = "MEDIA_HUB_V16_ACTIVE";
+const FORCE_TRANSFER_OFFERS = true;
 const DEFAULT_THEME = "dark";
 const DEFAULT_SCREEN = "home";
 const DEFAULT_TAB = "dashboard";
@@ -1083,7 +1082,7 @@ function maybeCreateInjuryReport(squad, week) {
   const target = pick(riskyPlayers);
 
   const fatigueRisk =
-    target.fatigue > 80 ? 0.13 : target.fatigue > 65 ? 0.07 : 0.025;
+    target.fatigue > 75 ? 0.16 : target.fatigue > 60 ? 0.09 : 0.04;
   const randomRisk = Math.random();
 
   if (randomRisk > fatigueRisk) return null;
@@ -1282,8 +1281,6 @@ function convertAcademyToPlayer(prospect, clubName) {
     goals: 0,
     appearances: 0,
     club: clubName,
-    portraitUrl: null,
-    avatarSeed: name,
     injury: null,
     injuryHistory: [],
     academyGraduate: true,
@@ -1487,8 +1484,6 @@ function normalizeCareer(career) {
         injury: null,
         injuryHistory: [],
         transferListed: false,
-        portraitUrl: null,
-        avatarSeed: player?.name || club.name,
         ...player,
       },
       club.budget,
@@ -1539,157 +1534,6 @@ function normalizeCareer(career) {
     contractsLog: career.contractsLog || [],
     seasonHistory: career.seasonHistory || [],
   };
-}
-
-
-function createClubFromFC26Import(importedData, fallbackClub = CLUBS[0]) {
-  const clubName =
-    importedData.clubName ||
-    importedData.club ||
-    importedData.team ||
-    fallbackClub.name;
-
-  return {
-    ...fallbackClub,
-    name: normalizeImportedName(clubName),
-    league: importedData.league || fallbackClub.league || "Ligue 1",
-    budget:
-      importedData.budget !== undefined
-        ? Number(importedData.budget)
-        : fallbackClub.budget,
-    reputation:
-      importedData.reputation !== undefined
-        ? clamp(Number(importedData.reputation), 35, 98)
-        : fallbackClub.reputation,
-    objectives:
-      importedData.objective ||
-      importedData.objectives ||
-      fallbackClub.objectives ||
-      "Construire un projet compétitif depuis les données FC26",
-  };
-}
-
-function createCareerFromFC26Import(type = "manager", importedData = {}, options = {}) {
-  const club = createClubFromFC26Import(importedData, CLUBS[0]);
-  const baseCareer = createCareer(type, club, {
-    managerName: importedData.managerName || options.managerName || "Coach",
-    objective:
-      importedData.objective ||
-      importedData.objectives ||
-      options.objective ||
-      club.objectives,
-  });
-
-  const importedPlayers = Array.isArray(importedData.squad)
-    ? importedData.squad.map((player) => createImportedPlayer(player, club.name))
-    : [];
-
-  const importedFixtures = Array.isArray(importedData.fixtures)
-    ? createImportedFixtures(importedData.fixtures, club.name)
-    : [];
-
-  const importedLeague = Array.isArray(importedData.leagueTable)
-    ? createImportedLeagueTable(importedData.leagueTable, club.name)
-    : [];
-
-  return normalizeCareer({
-    ...baseCareer,
-    source: "fc26",
-    importMode: importedData.importMode || "full",
-    club,
-    managerName: importedData.managerName || baseCareer.managerName,
-    customObjective:
-      importedData.objective ||
-      importedData.objectives ||
-      baseCareer.customObjective,
-    season: Number(importedData.season || baseCareer.season),
-    week: Number(importedData.week || baseCareer.week),
-    budget:
-      importedData.budget !== undefined
-        ? Number(importedData.budget)
-        : baseCareer.budget,
-    reputation:
-      importedData.reputation !== undefined
-        ? clamp(Number(importedData.reputation), 35, 98)
-        : baseCareer.reputation,
-    squad: importedPlayers.length ? importedPlayers : baseCareer.squad,
-    fixtures: importedFixtures.length ? importedFixtures : baseCareer.fixtures,
-    leagueTable: importedLeague.length ? importedLeague : baseCareer.leagueTable,
-    news: [
-      {
-        id: uid("news"),
-        week: Number(importedData.week || 1),
-        type: "Import FC26",
-        title: "Carrière créée depuis FC26",
-        body: "Les données de départ ont été chargées depuis un import FC26.",
-      },
-      ...(baseCareer.news || []),
-    ],
-  });
-}
-
-function mergePartialFC26Import(career, importedData = {}, mode = "auto") {
-  const nextClub =
-    importedData.clubName || importedData.club
-      ? createClubFromFC26Import(importedData, career.club)
-      : career.club;
-
-  const shouldImportSquad =
-    mode === "auto" || mode === "squad" || mode === "full";
-
-  const shouldImportFixtures =
-    mode === "auto" || mode === "fixtures" || mode === "results" || mode === "full";
-
-  const shouldImportTable =
-    mode === "auto" || mode === "table" || mode === "full";
-
-  const shouldImportBudget =
-    mode === "auto" || mode === "budget" || mode === "full";
-
-  const importedPlayers =
-    shouldImportSquad && Array.isArray(importedData.squad)
-      ? importedData.squad.map((player) => createImportedPlayer(player, nextClub.name))
-      : [];
-
-  const importedFixtures =
-    shouldImportFixtures && Array.isArray(importedData.fixtures)
-      ? createImportedFixtures(importedData.fixtures, nextClub.name)
-      : [];
-
-  const importedLeague =
-    shouldImportTable && Array.isArray(importedData.leagueTable)
-      ? createImportedLeagueTable(importedData.leagueTable, nextClub.name)
-      : [];
-
-  return normalizeCareer({
-    ...career,
-    club: nextClub,
-    budget:
-      shouldImportBudget && importedData.budget !== undefined
-        ? Number(importedData.budget)
-        : career.budget,
-    season:
-      importedData.season !== undefined
-        ? Number(importedData.season)
-        : career.season,
-    week:
-      importedData.week !== undefined
-        ? Number(importedData.week)
-        : career.week,
-    squad: importedPlayers.length ? importedPlayers : career.squad,
-    fixtures: importedFixtures.length ? importedFixtures : career.fixtures,
-    leagueTable: importedLeague.length ? importedLeague : career.leagueTable,
-    news: [
-      {
-        id: uid("news"),
-        week: career.week,
-        type: "Import FC26",
-        title: "Import partiel FC26 appliqué",
-        body: "Les données FC26 ont été fusionnées avec la carrière actuelle sans supprimer la narration existante.",
-      },
-      ...(career.news || []),
-    ],
-  });
 }
 
 function parseCsv(raw) {
@@ -1826,8 +1670,6 @@ function createImportedPlayer(player, clubName) {
       goals: Number(player.goals || 0),
       appearances: Number(player.appearances || 0),
       club: clubName,
-      portraitUrl: player.portraitUrl || null,
-      avatarSeed: player.avatarSeed || player.name,
       signedWeek: 1,
       injury: null,
       injuryHistory: [],
@@ -1866,32 +1708,20 @@ function createImportedFixtures(fixtures = [], clubName) {
 
 function createImportedLeagueTable(rows = [], clubName) {
   return (rows || [])
-    .filter((row) => row && (row.name || row.team))
-    .map((row, index) => {
-      const name = row.name || row.team;
-
-      return {
-        id: row.id || uid("table"),
-        position: Number(row.position || index + 1),
-        name,
-        team: name,
-        played: Number(row.played || row.p || 0),
-        wins: Number(row.wins || row.won || row.w || 0),
-        won: Number(row.won || row.wins || row.w || 0),
-        draws: Number(row.draws || row.drawn || row.d || 0),
-        drawn: Number(row.drawn || row.draws || row.d || 0),
-        losses: Number(row.losses || row.lost || row.l || 0),
-        lost: Number(row.lost || row.losses || row.l || 0),
-        gf: Number(row.gf || row.goalsFor || row.goalsfor || 0),
-        ga: Number(row.ga || row.goalsAgainst || row.goalsagainst || 0),
-        gd: Number(row.gd || row.goalDifference || row.goaldifference || 0),
-        goalsFor: Number(row.goalsFor || row.gf || row.goalsfor || 0),
-        goalsAgainst: Number(row.goalsAgainst || row.ga || row.goalsagainst || 0),
-        goalDifference: Number(row.goalDifference || row.gd || row.goaldifference || 0),
-        points: Number(row.points || row.pts || row.pt || 0),
-        form: row.form || [],
-      };
-    })
+    .filter((row) => row && row.team)
+    .map((row, index) => ({
+      id: uid("table"),
+      position: Number(row.position || index + 1),
+      team: row.team,
+      played: Number(row.played || 0),
+      won: Number(row.won || 0),
+      drawn: Number(row.drawn || 0),
+      lost: Number(row.lost || 0),
+      goalsFor: Number(row.goalsFor || row.gf || 0),
+      goalsAgainst: Number(row.goalsAgainst || row.ga || 0),
+      goalDifference: Number(row.goalDifference || row.gd || 0),
+      points: Number(row.points || 0),
+    }))
     .sort((a, b) => a.position - b.position);
 }
 
@@ -1922,6 +1752,12 @@ function refreshRecruitmentMarket(career) {
 }
 
 function createTransferOffer(career) {
+  console.log("TRY TRANSFER OFFER", {
+    week: career.week,
+    window: getTransferWindowLabel(career.week),
+    isWindow: isTransferWindow(career.week),
+    squad: career.squad?.length,
+  });
 
   if (!isTransferWindow(career.week)) return null;
 
@@ -1933,7 +1769,7 @@ function createTransferOffer(career) {
 
   const roll = Math.random();
 
-  if (!FORCE_TRANSFER_OFFERS && roll > 0.35) return null;
+  if (!FORCE_TRANSFER_OFFERS && roll > 0.42) return null;
 
   const candidates = [...squad]
     .sort((a, b) => {
@@ -1954,6 +1790,13 @@ function createTransferOffer(career) {
       : randomBetween(0.85, 1.35);
 
   const amount = Number((marketValue * multiplier).toFixed(1));
+
+  console.log("TRANSFER OFFER CREATED", {
+    player: player.name,
+    buyer: buyer.name,
+    amount,
+    type: offerType,
+  });
 
   return {
     id: uid("offer"),
@@ -2036,7 +1879,7 @@ function simulateMatchScore(homeStrength, awayStrength) {
   let homeGoals = poisson(homeExpected);
   let awayGoals = poisson(awayExpected);
 
-  if (homeGoals + awayGoals >= 6 && Math.random() < 0.55) {
+  if (homeGoals + awayGoals >= 6 && Math.random() < 0.65) {
     if (homeGoals > awayGoals) homeGoals -= 1;
     else if (awayGoals > homeGoals) awayGoals -= 1;
     else homeGoals -= 1;
@@ -2250,7 +2093,7 @@ function getUserLeaguePosition(career) {
       : createLeagueTable(career.club),
   );
 
-  const index = table.findIndex((team) => (team.name || team.team) === career.club.name);
+  const index = table.findIndex((team) => team.name === career.club.name);
   return index >= 0 ? index + 1 : null;
 }
 
@@ -2319,6 +2162,7 @@ function createRealFixtures(clubName, league = "Ligue 1") {
     .map((team) => team.name);
 
   const selectedOpponents = opponents.slice(0, 12);
+  console.log("REAL FIXTURES USED", clubName, league, selectedOpponents);
   return selectedOpponents.map((opponent, index) => ({
     id: uid("fixture"),
     week: index + 1,
@@ -2365,7 +2209,7 @@ function sortLeagueTable(table) {
     if (b.points !== a.points) return b.points - a.points;
     if (b.gd !== a.gd) return b.gd - a.gd;
     if (b.gf !== a.gf) return b.gf - a.gf;
-    return String(a.name || a.team || "").localeCompare(String(b.name || b.team || ""));
+    return a.name.localeCompare(b.name);
   });
 }
 
@@ -2943,144 +2787,6 @@ function generateArticle(career, event) {
   };
 }
 
-
-function getInitials(name = "?") {
-  return String(name || "?")
-    .split(" ")
-    .filter(Boolean)
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
-
-function getAvatarGradient(seed = "career") {
-  const source = String(seed || "career");
-  let hash = 0;
-
-  for (let index = 0; index < source.length; index += 1) {
-    hash = source.charCodeAt(index) + ((hash << 5) - hash);
-  }
-
-  const hue = Math.abs(hash) % 360;
-
-  return (
-    "linear-gradient(135deg, hsl(" +
-    hue +
-    ", 82%, 52%), hsl(" +
-    ((hue + 55) % 360) +
-    ", 82%, 44%))"
-  );
-}
-
-
-
-
-
-
-
-
-
-
-function PlayerPortrait({ player, size = 54 }) {
-  const name = player?.name || "Joueur";
-  const portraitUrl = player?.portraitUrl;
-
-  if (portraitUrl) {
-    return (
-      <img
-        src={portraitUrl}
-        alt={name}
-        style={{
-          width: size,
-          height: size,
-          borderRadius: 18,
-          objectFit: "cover",
-          border: "1px solid var(--border)",
-          boxShadow: "0 16px 40px rgba(0,0,0,.26)",
-        }}
-      />
-    );
-  }
-
-  return (
-    <div
-      aria-label={name}
-      style={{
-        width: size,
-        height: size,
-        borderRadius: 18,
-        display: "grid",
-        placeItems: "center",
-        background: getAvatarGradient(player?.avatarSeed || name),
-        color: "white",
-        fontWeight: 1000,
-        border: "1px solid rgba(255,255,255,.18)",
-        boxShadow: "0 16px 40px rgba(0,0,0,.26)",
-      }}
-    >
-      {getInitials(name)}
-    </div>
-  );
-}
-
-function getLiveEditorActionPlan(event, choice = null) {
-  const playerName =
-    event?.playerContext?.name || event?.player || "joueur concerné";
-
-  const category = event?.category || "Général";
-
-  const actions = Array.isArray(event?.liveEditorEffects)
-    ? event.liveEditorEffects
-    : [];
-
-  return [
-    "Ouvrir FC Live Editor en mode carrière hors ligne.",
-    "Chercher " +
-      playerName +
-      " dans Players Editor si l’événement concerne un joueur.",
-    ...actions.map((action) => "Appliquer : " + action + "."),
-    choice
-      ? "Noter la décision narrative : " + choice + "."
-      : "Choisir une décision dans FC Career Hub.",
-    "Vérifier que la conséquence " +
-      category +
-      " est cohérente dans ta sauvegarde FC26.",
-    "Sauvegarder dans FC26, puis revenir dans FC Career Hub.",
-  ];
-}
-
-
-
-
-
-
-
-
-
-function BubbleStyles() {
-  const css = [
-    "html,body{min-height:100%;overflow-x:hidden}",
-    ".primary-btn,.secondary-btn,.choice-btn,.club-card,.event-card,.big-choice,.close-btn{position:relative;overflow:hidden;transform:translateZ(0);transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}",
-    ".primary-btn:hover,.secondary-btn:hover,.choice-btn:hover,.club-card:hover,.event-card:hover,.big-choice:hover,.close-btn:hover{transform:translateY(-2px) scale(1.012);box-shadow:0 18px 44px rgba(34,211,238,.16),inset 0 0 0 1px rgba(255,255,255,.08);filter:saturate(1.08)}",
-    ".primary-btn::after,.secondary-btn::after,.choice-btn::after,.club-card::after,.event-card::after,.big-choice::after,.close-btn::after{content:'';position:absolute;width:18px;height:18px;left:50%;top:50%;border-radius:999px;background:radial-gradient(circle,rgba(255,255,255,.38),rgba(255,255,255,0));transform:translate(-50%,-50%) scale(0);opacity:0;pointer-events:none;transition:transform .48s ease,opacity .48s ease}",
-    ".primary-btn:hover::after,.secondary-btn:hover::after,.choice-btn:hover::after,.club-card:hover::after,.event-card:hover::after,.big-choice:hover::after,.close-btn:hover::after{transform:translate(-50%,-50%) scale(18);opacity:.16}",
-    ".modal-backdrop{position:fixed!important;inset:0!important;z-index:9999!important;display:flex!important;align-items:flex-start!important;justify-content:center!important;overflow-y:auto!important;overflow-x:hidden!important;padding:18px!important;background:rgba(2,6,23,.76)!important;backdrop-filter:blur(12px)!important}",
-    ".modal{width:min(1180px,96vw)!important;max-height:calc(100vh - 36px)!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important}",
-    ".modal-grid{display:grid!important;grid-template-columns:minmax(260px,410px) minmax(0,1fr)!important;gap:22px!important}",
-    ".modal-left,.modal-right{max-height:none!important;overflow:visible!important;padding-right:4px!important;min-height:0!important}",
-    ".modal-right{max-height:none!important;overflow:visible!important;padding-right:4px!important;min-height:0!important}",
-    ".modal-actions-sticky{position:sticky!important;bottom:0!important;z-index:50!important;margin:18px -4px -4px!important;padding:16px!important;border-top:1px solid var(--border)!important;border-radius:18px!important;background:rgba(15,23,42,.96)!important;backdrop-filter:blur(18px)!important}",
-    ".slide-row{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 14px}",
-    ".slide-card{min-width:min(340px,82vw);scroll-snap-align:start}",
-    ".modal .primary-btn,.modal .secondary-btn{min-height:44px}",
-    "@media(max-width:900px){.modal{width:min(1180px,96vw)!important;max-height:calc(100vh - 36px)!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important}.modal-grid{grid-template-columns:1fr!important}.modal-right{max-height:none!important;overflow:visible!important;padding-right:4px!important;min-height:0!important}.modal{width:min(1180px,96vw)!important;max-height:calc(100vh - 36px)!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important}}",
-    "@media(max-width:640px){.modal .primary-btn,.modal .secondary-btn{width:100%;justify-content:center}.modal-backdrop{position:fixed!important;inset:0!important;z-index:9999!important;display:flex!important;align-items:flex-start!important;justify-content:center!important;overflow-y:auto!important;overflow-x:hidden!important;padding:18px!important;background:rgba(2,6,23,.76)!important;backdrop-filter:blur(12px)!important}.modal{width:min(1180px,96vw)!important;max-height:calc(100vh - 36px)!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important}}"
-  ].join("\\n");
-
-  return <style>{css}</style>;
-}
-
 function ClubBadge({ club, size = "" }) {
   const initials = club.name
     .split(" ")
@@ -3156,165 +2862,46 @@ function HomeScreen({ onChoose }) {
   );
 }
 
-
 function ClubPicker({ type, onBack, onConfirm }) {
   const [selectedName, setSelectedName] = useState(CLUBS[0].name);
   const [managerName, setManagerName] = useState(
     type === "player" ? "Mon Pro" : "Coach",
   );
   const [objective, setObjective] = useState(CLUBS[0].objectives);
-  const [creationMode, setCreationMode] = useState("simulated");
-  const [fc26Raw, setFc26Raw] = useState("");
-  const [fc26Error, setFc26Error] = useState("");
 
-  const selected =
-    CLUBS.find((club) => club.name === selectedName) || CLUBS[0];
+  const selected = CLUBS.find((club) => club.name === selectedName) || CLUBS[0];
 
   function selectClub(club) {
     setSelectedName(club.name);
     setObjective(club.objectives);
   }
 
-  function handleStartCareer() {
-    if (creationMode === "simulated") {
-      onConfirm(type, selected, {
-        managerName,
-        objective,
-        creationMode,
-      });
-      return;
-    }
-
-    const imported = safeJsonParse(fc26Raw);
-
-    if (!imported) {
-      setFc26Error("JSON ou CSV FC26 invalide.");
-      return;
-    }
-
-    const importedClub = {
-      ...selected,
-      name: normalizeImportedName(
-        imported.clubName || imported.club || imported.team || selected.name
-      ),
-      league: imported.league || selected.league,
-      budget:
-        imported.budget !== undefined
-          ? Number(imported.budget)
-          : selected.budget,
-      reputation:
-        imported.reputation !== undefined
-          ? clamp(Number(imported.reputation), 35, 98)
-          : selected.reputation,
-      objectives:
-        imported.objective ||
-        imported.objectives ||
-        selected.objectives,
-    };
-
-    onConfirm(type, importedClub, {
-      managerName: imported.managerName || managerName,
-      objective:
-        imported.objective ||
-        imported.objectives ||
-        objective,
-      creationMode,
-      importedData: imported,
-    });
-  }
-
   return (
     <main className="club-picker">
       <div className="bg-grid" />
-
       <div className="club-picker-inner">
         <button type="button" className="secondary-btn" onClick={onBack}>
           ← Retour
         </button>
-
         <div
           className="club-row"
           style={{ marginTop: 30, justifyContent: "space-between" }}
         >
           <div>
             <Kicker tone="lime">Club Select</Kicker>
-            <Kicker tone="red">V18_FORCE_CLUBPICKER_ACTIVE</Kicker>
             <h1 className="title-xl">
               Créer une carrière {type === "player" ? "Joueur" : "Manager"}
             </h1>
-            <p className="muted">
-              Choisis un club, démarre en simulation ou importe directement les données de ta carrière FC26.
-            </p>
+            <p className="muted">Choisis un club, un nom et un objectif.</p>
           </div>
-
           <ClubBadge club={selected} size="large" />
         </div>
-
-        <div className="card" style={{ marginTop: 22 }}>
-          <Kicker tone="cyan">Mode de création</Kicker>
-          <h2>Source de carrière</h2>
-          <p className="muted">
-            Sélectionne comment tu veux initialiser ton Career Hub.
-          </p>
-
-          <div
-            className="club-row"
-            style={{ gap: 10, flexWrap: "wrap", marginTop: 12 }}
-          >
-            <button
-              type="button"
-              className={"secondary-btn " + (creationMode === "simulated" ? "active" : "")}
-              onClick={() => setCreationMode("simulated")}
-            >
-              Carrière simulée
-            </button>
-
-            <button
-              type="button"
-              className={"secondary-btn " + (creationMode === "fc26" ? "active" : "")}
-              onClick={() => setCreationMode("fc26")}
-            >
-              Import FC26
-            </button>
-
-            <button
-              type="button"
-              className={"secondary-btn " + (creationMode === "hybrid" ? "active" : "")}
-              onClick={() => setCreationMode("hybrid")}
-            >
-              Hybride
-            </button>
-          </div>
-
-          {creationMode !== "simulated" ? (
-            <div style={{ marginTop: 16 }}>
-              <p className="muted">
-                Colle ici ton JSON FC26. Tu peux fournir clubName, league, season, week, budget, squad, fixtures et leagueTable.
-              </p>
-
-              <textarea
-                className="input"
-                rows={9}
-                value={fc26Raw}
-                onChange={(event) => {
-                  setFc26Raw(event.target.value);
-                  setFc26Error("");
-                }}
-                placeholder='{"clubName":"Real Sociedad","league":"Ligue 1","season":1,"week":4,"budget":32,"squad":[],"fixtures":[]}'
-                style={{ width: "100%", fontFamily: "monospace" }}
-              />
-
-              {fc26Error ? <p className="red">{fc26Error}</p> : null}
-            </div>
-          ) : null}
-        </div>
-
         <div className="grid-3" style={{ marginTop: 28 }}>
           {CLUBS.map((club) => (
             <button
               key={club.name}
               type="button"
-              className={"club-card " + (selected.name === club.name ? "selected" : "")}
+              className={`club-card ${selected.name === club.name ? "selected" : ""}`}
               onClick={() => selectClub(club)}
             >
               <ClubBadge club={club} size="small" />
@@ -3327,7 +2914,6 @@ function ClubPicker({ type, onBack, onConfirm }) {
             </button>
           ))}
         </div>
-
         <div className="panel" style={{ marginTop: 22 }}>
           <div className="grid-2">
             <label>
@@ -3340,7 +2926,6 @@ function ClubPicker({ type, onBack, onConfirm }) {
                 onChange={(event) => setManagerName(event.target.value)}
               />
             </label>
-
             <label>
               <div className="stat-label">Objectif personnalisé</div>
               <input
@@ -3350,16 +2935,15 @@ function ClubPicker({ type, onBack, onConfirm }) {
               />
             </label>
           </div>
-
           <button
             type="button"
             className="primary-btn"
             style={{ marginTop: 18 }}
-            onClick={handleStartCareer}
+            onClick={() =>
+              onConfirm(type, selected, { managerName, objective })
+            }
           >
-            {creationMode === "simulated"
-              ? "Commencer avec " + selected.name
-              : "Créer depuis données FC26"}
+            Commencer avec {selected.name}
           </button>
         </div>
       </div>
@@ -3616,17 +3200,6 @@ function EventsView({ career, onOpen }) {
                   style={{ background: meta.color }}
                 />
                 <div className="event-body">
-                  {event.imageUrl ? (
-                    <img
-                      src={event.imageUrl}
-                      alt={event.title}
-                      style={{
-                        width: "100%",
-                        borderRadius: 18,
-                        marginBottom: 12,
-                      }}
-                    />
-                  ) : null}
                   <div
                     className="club-row"
                     style={{ justifyContent: "space-between" }}
@@ -3672,14 +3245,7 @@ function EventModal({ event, onClose, onDecision }) {
 
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">
-      <div
-        className="modal"
-        style={{
-          background: UI_GRADIENTS.panel,
-          maxHeight: "calc(100vh - 36px)",
-          overflow: "auto",
-        }}
-      >
+      <div className="modal" style={{ background: UI_GRADIENTS.panel }}>
         <div className="event-strip" style={{ background: meta.color }} />
         <div className="modal-grid">
           <aside className="modal-left">
@@ -3794,18 +3360,6 @@ function EventModal({ event, onClose, onDecision }) {
                 </p>
               </div>
             ) : null}
-            <div className="card" style={{ marginTop: 14 }}>
-              <Kicker tone="cyan">FC Live Editor</Kicker>
-              <h3>Actions recommandées</h3>
-              <ol
-                className="muted"
-                style={{ display: "grid", gap: 6, paddingLeft: 20 }}
-              >
-                {getLiveEditorActionPlan(event).map((action) => (
-                  <li key={action}>{action}</li>
-                ))}
-              </ol>
-            </div>
             {event.status === "resolved" ? (
               <div className="card" style={{ marginTop: 14 }}>
                 <h3>Décision déjà prise</h3>
@@ -3814,7 +3368,7 @@ function EventModal({ event, onClose, onDecision }) {
                 </p>
               </div>
             ) : (
-              <div className="card modal-actions-sticky">
+              <div className="card" style={{ marginTop: 14 }}>
                 <h3>Décision narrative</h3>
                 <div className="choice-grid">
                   {(event.choices || []).map((choice) => (
@@ -3866,15 +3420,10 @@ function SquadView({ career }) {
               className="club-row"
               style={{ justifyContent: "space-between" }}
             >
-              <div className="club-row" style={{ gap: 12 }}>
-                <PlayerPortrait player={player} size={52} />
-                <div>
-                  <h3>{player.name}</h3>
-                  <p className="muted">{player.age} ans</p>
-                </div>
-              </div>
+              <h3>{player.name}</h3>
               <Kicker>{player.position}</Kicker>
             </div>
+            <p className="muted">{player.age} ans</p>
             {player.injury && player.injury.weeksRemaining > 0 ? (
               <p className="red">
                 🏥 {player.injury.label} — retour dans {player.injury.weeksRemaining} semaine(s)
@@ -4074,7 +3623,6 @@ function AcademyView({ career, onAcademyAction }) {
 function FC26ImportView({ career, onImportJson, onImportResults }) {
   const [rawJson, setRawJson] = useState("");
   const [quickResults, setQuickResults] = useState("");
-  const [partialMode, setPartialMode] = useState("auto");
 
   return (
     <div>
@@ -4099,29 +3647,14 @@ function FC26ImportView({ career, onImportJson, onImportResults }) {
             placeholder="Colle ici le JSON ou le CSV de FC26..."
             style={{ width: "100%", fontFamily: "monospace" }}
           />
-          <div className="club-row" style={{ gap: 10, flexWrap: "wrap", marginTop: 14 }}>
-            <select
-              className="select"
-              value={partialMode}
-              onChange={(event) => setPartialMode(event.target.value)}
-            >
-              <option value="auto">Auto</option>
-              <option value="full">Complet</option>
-              <option value="squad">Effectif uniquement</option>
-              <option value="fixtures">Calendrier uniquement</option>
-              <option value="results">Résultats uniquement</option>
-              <option value="table">Classement uniquement</option>
-              <option value="budget">Budget uniquement</option>
-            </select>
-
-            <button
-              type="button"
-              className="primary-btn"
-              onClick={() => onImportJson(rawJson, partialMode)}
-            >
-              Importer les données
-            </button>
-          </div>
+          <button
+            type="button"
+            className="primary-btn"
+            onClick={() => onImportJson(rawJson)}
+            style={{ marginTop: 14 }}
+          >
+            Importer les données
+          </button>
         </div>
 
         <div className="card">
@@ -4160,6 +3693,7 @@ function FC26ImportView({ career, onImportJson, onImportResults }) {
 }
 
 function MercatoView({ career, onDecision, onRecruitmentAction }) {
+  console.log("MERCATO VIEW ACTIVE", career.transferOffers);
   const offers = career.transferOffers || [];
   const pendingOffers = offers.filter((offer) => offer.status === "pending");
   const resolvedOffers = offers.filter((offer) => offer.status !== "pending");
@@ -4631,11 +4165,11 @@ function LeagueTableView({ career }) {
 
           <tbody>
             {table.map((team, index) => {
-              const isUser = (team.name || team.team) === career.club.name;
+              const isUser = team.name === career.club.name;
 
               return (
                 <tr
-                  key={`${team.name || team.team || "team"}-${index}`}
+                  key={team.name}
                   style={{
                     background: isUser
                       ? "rgba(190,242,100,.14)"
@@ -4645,7 +4179,7 @@ function LeagueTableView({ career }) {
                 >
                   <td style={{ padding: 10, fontWeight: 900 }}>{index + 1}</td>
                   <td style={{ padding: 10, fontWeight: isUser ? 1000 : 700 }}>
-                    {team.name || team.team}
+                    {team.name}
                   </td>
                   <td style={{ padding: 10, fontWeight: 1000 }}>
                     {team.points}
@@ -4689,15 +4223,7 @@ function WeekSummaryModal({ summary, onClose, onOpenEvent }) {
   if (!summary) return null;
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">
-      <div
-        className="modal"
-        style={{
-          maxWidth: 860,
-          maxHeight: "92vh",
-          overflowY: "auto",
-          paddingBottom: 0,
-        }}
-      >
+      <div className="modal" style={{ maxWidth: 860 }}>
         <div
           className="event-strip"
           style={{
@@ -4782,19 +4308,7 @@ function WeekSummaryModal({ summary, onClose, onOpenEvent }) {
           ) : null}
           <div
             className="club-row"
-            style={{
-              marginTop: 18,
-              justifyContent: "flex-end",
-              gap: 12,
-              flexWrap: "wrap",
-              position: "sticky",
-              bottom: 0,
-              zIndex: 20,
-              padding: "18px 0 2px",
-              background:
-                "linear-gradient(180deg, rgba(15,23,42,0), rgba(15,23,42,.96) 35%)",
-              backdropFilter: "blur(14px)",
-            }}
+            style={{ marginTop: 18, justifyContent: "flex-end" }}
           >
             <button
               type="button"
@@ -4846,12 +4360,11 @@ export default function CareerApp() {
       ["history", "Historique"],
       ["settings", "Paramètres"],
       ["fc26", "Import FC26"],
-      ["player-pro", "Mode Joueur Pro"],
     ],
     [],
   );
   const pendingEvents = useMemo(
-    () => (career.events || []).filter((event) => event.status === "unread").length,
+    () => career.events.filter((event) => event.status === "unread").length,
     [career.events],
   );
   const pendingTransferOffers = useMemo(
@@ -4880,70 +4393,13 @@ export default function CareerApp() {
     );
   }, []);
 
-  
-const createNewCareer = useCallback((type, club, options = {}) => {
-    const importedData = options?.importedData || null;
-
-    const nextBase = createCareer(type, club, options);
-
-    const importedPlayers =
-      importedData && Array.isArray(importedData.squad)
-        ? importedData.squad.map((player) =>
-            createImportedPlayer(player, club.name)
-          )
-        : [];
-
-    const importedFixtures =
-      importedData && Array.isArray(importedData.fixtures)
-        ? createImportedFixtures(importedData.fixtures, club.name)
-        : [];
-
-    const importedLeague =
-      importedData && Array.isArray(importedData.leagueTable)
-        ? createImportedLeagueTable(importedData.leagueTable, club.name)
-        : [];
-
-    const next = normalizeCareer({
-      ...nextBase,
-      source: importedData ? "fc26" : "simulated",
-      importMode: options?.creationMode || "simulated",
-      managerName: options?.managerName || nextBase.managerName,
-      customObjective: options?.objective || nextBase.customObjective,
-      season:
-        importedData?.season !== undefined
-          ? Number(importedData.season)
-          : nextBase.season,
-      week:
-        importedData?.week !== undefined
-          ? Number(importedData.week)
-          : nextBase.week,
-      budget:
-        importedData?.budget !== undefined
-          ? Number(importedData.budget)
-          : nextBase.budget,
-      squad: importedPlayers.length ? importedPlayers : nextBase.squad,
-      fixtures: importedFixtures.length ? importedFixtures : nextBase.fixtures,
-      leagueTable: importedLeague.length ? importedLeague : nextBase.leagueTable,
-      news: importedData
-        ? [
-            {
-              id: uid("news"),
-              week: Number(importedData.week || 1),
-              type: "Import FC26",
-              title: "Carrière créée depuis FC26",
-              body: "Les données de départ FC26 ont été chargées dans le Career Hub.",
-            },
-            ...(nextBase.news || []),
-          ]
-        : nextBase.news,
-    });
-
+  const createNewCareer = useCallback((type, club, options) => {
+    const next = createCareer(type, club, options);
     setCareers((list) => [next, ...list]);
     setActiveId(next.id);
     setScreen("career");
     setTab(DEFAULT_TAB);
   }, []);
-
 
   const advanceWeek = useCallback(() => {
     const before = {
@@ -5650,7 +5106,7 @@ const createNewCareer = useCallback((type, club, options = {}) => {
     );
   }, [activeId]);
 
-  const handleFC26Import = useCallback((rawData, mode = "auto") => {
+  const handleFC26Import = useCallback((rawData) => {
     setCareers((list) =>
       list.map((item) => {
         if (item.id !== activeId) return item;
@@ -5922,28 +5378,6 @@ const createNewCareer = useCallback((type, club, options = {}) => {
         );
       case "academy":
         return <AcademyView career={career} onAcademyAction={handleAcademyAction} />;
-      case "player-pro":
-        return (
-          <PlayerCareerProView
-            career={career}
-            onApply={(patch) =>
-              setCareers((list) =>
-                list.map((item) =>
-                  item.id === career.id
-                    ? normalizeCareer({
-                        ...item,
-                        playerCareer: {
-                          ...(item.playerCareer || {}),
-                          ...(patch.playerCareer || {}),
-                        },
-                      })
-                    : item,
-                ),
-              )
-            }
-          />
-        );
-
       case "fc26":
         return (
           <FC26ImportView
@@ -6004,7 +5438,6 @@ const createNewCareer = useCallback((type, club, options = {}) => {
   if (screen === "home") {
     return (
       <div className={`app ${themeClass}`}>
-      <BubbleStyles />
         <div className="bg-grid" />
         <HomeScreen
           onChoose={(type) => {
@@ -6019,7 +5452,6 @@ const createNewCareer = useCallback((type, club, options = {}) => {
   if (screen === "create") {
     return (
       <div className={`app ${themeClass}`}>
-      <BubbleStyles />
         <ClubPicker
           type={pendingType}
           onBack={() => setScreen("home")}
@@ -6031,7 +5463,6 @@ const createNewCareer = useCallback((type, club, options = {}) => {
 
   return (
     <div className={`app ${themeClass}`}>
-      <BubbleStyles />
       <div className="bg-grid" />
       <div className="shell">
         <div className="layout">
@@ -6074,7 +5505,7 @@ const createNewCareer = useCallback((type, club, options = {}) => {
             >
               Mercato {pendingTransferOffers > 0 ? `(${pendingTransferOffers})` : ""}
             </button>
-            <nav className="nav" style={{ maxHeight: "48vh", overflowY: "auto", paddingRight: 4 }}>
+            <nav className="nav">
               {tabs.map(([id, label]) => (
                 <button
                   key={id}

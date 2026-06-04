@@ -1,4 +1,4 @@
-import PlayerCareerProView from "./PlayerCareerProView";
+import PlayerCareerProView from "../components/PlayerCareerProView";
 ﻿"use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";

@@ -1,6 +1,6 @@
-import PlayerCareerProView from "./PlayerCareerProView";
 ﻿"use client";
 
+import PlayerCareerProView from "./components/PlayerCareerProView";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 const STORAGE_KEY = "fifa-career-overhaul-v19-player-mode-pro";
@@ -23,7 +23,7 @@ const CLUBS = [
     league: "National 2",
     budget: 4,
     reputation: 67,
-    objectives: "Remontée sportive et reconstruction du statut pro",
+    objectives: "RemontÃ©e sportive et reconstruction du statut pro",
     colors: ["#001b44", "#7f1734"],
   },
   {
@@ -31,7 +31,7 @@ const CLUBS = [
     league: "Ligue 1",
     budget: 180,
     reputation: 93,
-    objectives: "Titre national et parcours européen",
+    objectives: "Titre national et parcours europÃ©en",
     colors: ["#001f5b", "#e30613"],
   },
   {
@@ -39,7 +39,7 @@ const CLUBS = [
     league: "Ligue 1",
     budget: 72,
     reputation: 82,
-    objectives: "Top 4 et identité forte",
+    objectives: "Top 4 et identitÃ© forte",
     colors: ["#0ea5e9", "#ffffff"],
   },
   {
@@ -47,7 +47,7 @@ const CLUBS = [
     league: "Premier League",
     budget: 130,
     reputation: 89,
-    objectives: "Jouer le titre et développer les jeunes",
+    objectives: "Jouer le titre et dÃ©velopper les jeunes",
     colors: ["#dc2626", "#ffffff"],
   },
 ];
@@ -97,17 +97,17 @@ const LEAGUE_PRESETS = {
     { name: "Saumur OFC", strength: 58 },
     { name: "Stade Poitevin", strength: 57 },
     { name: "Blois Foot 41", strength: 56 },
-    { name: "Bergerac Périgord FC", strength: 59 },
-    { name: "Angoulême CFC", strength: 58 },
-    { name: "Trélissac FC", strength: 56 },
+    { name: "Bergerac PÃ©rigord FC", strength: 59 },
+    { name: "AngoulÃªme CFC", strength: 58 },
+    { name: "TrÃ©lissac FC", strength: 56 },
     { name: "Romorantin", strength: 55 },
     { name: "Bourges Foot 18", strength: 57 },
     { name: "La Roche VF", strength: 56 },
-    { name: "Saint-Pryvé Saint-Hilaire", strength: 56 },
+    { name: "Saint-PryvÃ© Saint-Hilaire", strength: 56 },
     { name: "GOAL FC", strength: 60 },
-    { name: "Andrézieux-Bouthéon", strength: 57 },
-    { name: "Hyères FC", strength: 58 },
-    { name: "Fréjus Saint-Raphaël", strength: 57 },
+    { name: "AndrÃ©zieux-BouthÃ©on", strength: 57 },
+    { name: "HyÃ¨res FC", strength: 58 },
+    { name: "FrÃ©jus Saint-RaphaÃ«l", strength: 57 },
   ],
 };
 
@@ -118,14 +118,14 @@ const SQUAD_PRESETS = {
     ["Marquinhos", "DC", 32, 85],
     ["Nuno Mendes", "DG", 24, 84],
     ["Vitinha", "MC", 26, 85],
-    ["Warren Zaïre-Emery", "MC", 20, 82],
-    ["Ousmane Dembélé", "AD", 29, 86],
+    ["Warren ZaÃ¯re-Emery", "MC", 20, 82],
+    ["Ousmane DembÃ©lÃ©", "AD", 29, 86],
     ["Bradley Barcola", "AG", 24, 83],
-    ["Gonçalo Ramos", "BU", 25, 82],
+    ["GonÃ§alo Ramos", "BU", 25, 82],
   ],
 
   "Olympique de Marseille": [
-    ["Pau López", "GB", 31, 79],
+    ["Pau LÃ³pez", "GB", 31, 79],
     ["Leonardo Balerdi", "DC", 27, 79],
     ["Quentin Merlin", "DG", 24, 77],
     ["Geoffrey Kondogbia", "MDC", 33, 78],
@@ -137,30 +137,30 @@ const SQUAD_PRESETS = {
   Arsenal: [
     ["David Raya", "GB", 30, 83],
     ["William Saliba", "DC", 25, 87],
-    ["Gabriel Magalhães", "DC", 28, 85],
+    ["Gabriel MagalhÃ£es", "DC", 28, 85],
     ["Ben White", "DD", 28, 82],
     ["Declan Rice", "MDC", 27, 87],
-    ["Martin Ødegaard", "MOC", 27, 88],
+    ["Martin Ã˜degaard", "MOC", 27, 88],
     ["Bukayo Saka", "AD", 24, 89],
     ["Gabriel Martinelli", "AG", 25, 84],
     ["Kai Havertz", "BU", 27, 83],
   ],
 
   "Girondins de Bordeaux": [
-    ["Lassana Diabaté", "GB", 28, 66],
+    ["Lassana DiabatÃ©", "GB", 28, 66],
     ["Jean Grillot", "DC", 22, 61],
     ["Adrien Louveau", "DC", 25, 62],
   ],
 };
 
 const MONTHS = [
-  "Août",
+  "AoÃ»t",
   "Septembre",
   "Octobre",
   "Novembre",
-  "Décembre",
+  "DÃ©cembre",
   "Janvier",
-  "Février",
+  "FÃ©vrier",
   "Mars",
   "Avril",
   "Mai",
@@ -196,22 +196,22 @@ const LAST_NAMES = [
   "Morel",
   "Martin",
   "Dubois",
-  "Lefèvre",
+  "LefÃ¨vre",
   "Silva",
   "Diallo",
-  "Traoré",
+  "TraorÃ©",
 ];
 
 const PLAYER_PRESETS = {
   "Paris Saint-Germain": [
-    { name: "Kylian Mbappé", position: "BU", overall: 92 },
+    { name: "Kylian MbappÃ©", position: "BU", overall: 92 },
     { name: "Neymar Jr", position: "MOC", overall: 90 },
     { name: "Achraf Hakimi", position: "DD", overall: 86 },
     { name: "Marquinhos", position: "DC", overall: 85 },
     { name: "Marco Verratti", position: "MC", overall: 85 },
     { name: "Gianluigi Donnarumma", position: "GB", overall: 88 },
     { name: "Presnel Kimpembe", position: "DC", overall: 84 },
-    { name: "Hugo Ekitiké", position: "BU", overall: 82 },
+    { name: "Hugo EkitikÃ©", position: "BU", overall: 82 },
     { name: "Carlos Soler", position: "MC", overall: 83 },
     { name: "Warren Zaire-Emery", position: "MDC", overall: 80 },
   ],
@@ -230,7 +230,7 @@ const PLAYER_PRESETS = {
   Arsenal: [
     { name: "Bukayo Saka", position: "AD", overall: 88 },
     { name: "Gabriel Martinelli", position: "AG", overall: 85 },
-    { name: "Martin Ødegaard", position: "MOC", overall: 86 },
+    { name: "Martin Ã˜degaard", position: "MOC", overall: 86 },
     { name: "William Saliba", position: "DC", overall: 85 },
     { name: "Oleksandr Zinchenko", position: "DG", overall: 83 },
     { name: "Gabriel Jesus", position: "BU", overall: 84 },
@@ -241,15 +241,15 @@ const PLAYER_PRESETS = {
   ],
   "Girondins de Bordeaux": [
     { name: "Calvin Ramsay", position: "DD", overall: 74 },
-    { name: "Jules Koundé", position: "DC", overall: 83 },
+    { name: "Jules KoundÃ©", position: "DC", overall: 83 },
     { name: "Hwang Ui-jo", position: "BU", overall: 79 },
-    { name: "M’Baye Niang", position: "BU", overall: 75 },
+    { name: "Mâ€™Baye Niang", position: "BU", overall: 75 },
     { name: "Yacine Adli", position: "MOC", overall: 77 },
     { name: "Loris Benito", position: "DG", overall: 74 },
-    { name: "Nicolas De Préville", position: "AD", overall: 73 },
+    { name: "Nicolas De PrÃ©ville", position: "AD", overall: 73 },
     { name: "Enzo Crivelli", position: "BU", overall: 76 },
     { name: "Toma Basic", position: "MC", overall: 74 },
-    { name: "Thomas Touré", position: "AG", overall: 73 },
+    { name: "Thomas TourÃ©", position: "AG", overall: 73 },
   ],
 };
 
@@ -278,35 +278,35 @@ function createSquadForClub(club) {
 
 const INJURY_TYPES = [
   {
-    label: "Entorse légère",
-    severity: "modérée",
+    label: "Entorse lÃ©gÃ¨re",
+    severity: "modÃ©rÃ©e",
     minWeeks: 2,
     maxWeeks: 3,
     formPenalty: 6,
   },
   {
     label: "Douleur musculaire",
-    severity: "légère",
+    severity: "lÃ©gÃ¨re",
     minWeeks: 1,
     maxWeeks: 2,
     formPenalty: 4,
   },
   {
-    label: "Élongation",
-    severity: "sérieuse",
+    label: "Ã‰longation",
+    severity: "sÃ©rieuse",
     minWeeks: 3,
     maxWeeks: 5,
     formPenalty: 9,
   },
   {
     label: "Blessure aux ischios",
-    severity: "sérieuse",
+    severity: "sÃ©rieuse",
     minWeeks: 4,
     maxWeeks: 7,
     formPenalty: 12,
   },
   {
-    label: "Lésion ligamentaire",
+    label: "LÃ©sion ligamentaire",
     severity: "grave",
     minWeeks: 8,
     maxWeeks: 12,
@@ -329,7 +329,7 @@ const BUYER_CLUBS = [
   { name: "Aston Villa", strength: 79 },
   { name: "Borussia Dortmund", strength: 82 },
   { name: "AC Milan", strength: 83 },
-  { name: "Atlético de Madrid", strength: 86 },
+  { name: "AtlÃ©tico de Madrid", strength: 86 },
 ];
 
 const MARKET_PLAYER_POOL = [
@@ -339,12 +339,12 @@ const MARKET_PLAYER_POOL = [
   ["Jean-Clair Todibo", "DC", 26, 81, 34],
   ["Maxence Lacroix", "DC", 26, 79, 24],
   ["Quentin Merlin", "DG", 24, 77, 16],
-  ["Rayan Aït-Nouri", "DG", 25, 80, 32],
+  ["Rayan AÃ¯t-Nouri", "DG", 25, 80, 32],
   ["Malo Gusto", "DD", 23, 80, 30],
   ["Khephren Thuram", "MC", 25, 80, 31],
-  ["Manu Koné", "MC", 25, 79, 27],
-  ["Enzo Le Fée", "MC", 26, 78, 22],
-  ["Désiré Doué", "MOC", 21, 81, 46],
+  ["Manu KonÃ©", "MC", 25, 79, 27],
+  ["Enzo Le FÃ©e", "MC", 26, 78, 22],
+  ["DÃ©sirÃ© DouÃ©", "MOC", 21, 81, 46],
   ["Rayan Cherki", "MOC", 23, 80, 34],
   ["Maghnes Akliouche", "MOC", 24, 79, 29],
   ["Johan Bakayoko", "AD", 23, 81, 40],
@@ -357,7 +357,7 @@ const MARKET_PLAYER_POOL = [
 
 const LOW_BUDGET_MARKET_POOL = [
   ["Mathis Picouleau", "MC", 25, 66, 1.2],
-  ["Amadou Konaté", "BU", 23, 68, 1.8],
+  ["Amadou KonatÃ©", "BU", 23, 68, 1.8],
   ["Noah Raveyre", "GB", 21, 65, 0.9],
   ["Ilyes Hamache", "AG", 23, 67, 1.4],
   ["Tidiane Keita", "MDC", 27, 67, 1.1],
@@ -389,30 +389,30 @@ const ACADEMY_COUNTRIES = [
   "Espagne",
   "Portugal",
   "Belgique",
-  "Sénégal",
-  "Côte d’Ivoire",
-  "Brésil",
+  "SÃ©nÃ©gal",
+  "CÃ´te dâ€™Ivoire",
+  "BrÃ©sil",
   "Argentine",
 ];
 
 const ACADEMY_ARCHETYPES = [
-  { label: "Gardien réflexe", positions: ["GB"], minOverall: 48, maxOverall: 62, minPotential: 70, maxPotential: 90 },
-  { label: "Défenseur rugueux", positions: ["DC", "DD", "DG"], minOverall: 48, maxOverall: 64, minPotential: 68, maxPotential: 88 },
+  { label: "Gardien rÃ©flexe", positions: ["GB"], minOverall: 48, maxOverall: 62, minPotential: 70, maxPotential: 90 },
+  { label: "DÃ©fenseur rugueux", positions: ["DC", "DD", "DG"], minOverall: 48, maxOverall: 64, minPotential: 68, maxPotential: 88 },
   { label: "Milieu technique", positions: ["MC", "MOC", "MDC"], minOverall: 50, maxOverall: 65, minPotential: 70, maxPotential: 91 },
   { label: "Ailier explosif", positions: ["AD", "AG"], minOverall: 49, maxOverall: 66, minPotential: 72, maxPotential: 92 },
   { label: "Buteur prometteur", positions: ["BU"], minOverall: 50, maxOverall: 66, minPotential: 70, maxPotential: 90 },
 ];
 
 const CATEGORY_META = {
-  Match: { icon: "⚽", color: "linear-gradient(90deg,#bef264,#22d3ee)" },
-  Moral: { icon: "🧠", color: "linear-gradient(90deg,#38bdf8,#22d3ee)" },
-  Vestiaire: { icon: "👥", color: "linear-gradient(90deg,#c084fc,#f0abfc)" },
-  Médias: { icon: "📰", color: "linear-gradient(90deg,#facc15,#fb923c)" },
-  Mercato: { icon: "✍️", color: "linear-gradient(90deg,#60a5fa,#818cf8)" },
-  Blessures: { icon: "🏥", color: "linear-gradient(90deg,#fb7185,#f97316)" },
-  Supporters: { icon: "🔥", color: "linear-gradient(90deg,#fb7185,#f43f5e)" },
-  Direction: { icon: "🏛️", color: "linear-gradient(90deg,#e2e8f0,#94a3b8)" },
-  Staff: { icon: "📊", color: "linear-gradient(90deg,#a78bfa,#60a5fa)" },
+  Match: { icon: "âš½", color: "linear-gradient(90deg,#bef264,#22d3ee)" },
+  Moral: { icon: "ðŸ§ ", color: "linear-gradient(90deg,#38bdf8,#22d3ee)" },
+  Vestiaire: { icon: "ðŸ‘¥", color: "linear-gradient(90deg,#c084fc,#f0abfc)" },
+  Medias: { icon: "ðŸ“°", color: "linear-gradient(90deg,#facc15,#fb923c)" },
+  Mercato: { icon: "âœï¸", color: "linear-gradient(90deg,#60a5fa,#818cf8)" },
+  Blessures: { icon: "ðŸ¥", color: "linear-gradient(90deg,#fb7185,#f97316)" },
+  Supporters: { icon: "ðŸ”¥", color: "linear-gradient(90deg,#fb7185,#f43f5e)" },
+  Direction: { icon: "ðŸ›ï¸", color: "linear-gradient(90deg,#e2e8f0,#94a3b8)" },
+  Staff: { icon: "ðŸ“Š", color: "linear-gradient(90deg,#a78bfa,#60a5fa)" },
 };
 
 const MEDIA_SENTIMENTS = {
@@ -443,11 +443,11 @@ const SOCIAL_AUTHORS = [
 ];
 
 const FAN_REACTIONS = [
-  "On veut plus d’ambition.",
-  "Le projet commence à prendre forme.",
+  "On veut plus dâ€™ambition.",
+  "Le projet commence Ã  prendre forme.",
   "Il faut faire confiance aux jeunes.",
   "Le coach doit assumer ses choix.",
-  "Ce joueur mérite plus de temps de jeu.",
+  "Ce joueur mÃ©rite plus de temps de jeu.",
   "La direction doit soutenir le projet.",
   "Le mercato peut tout changer.",
   "La dynamique est encourageante.",
@@ -457,38 +457,38 @@ const EVENT_TEMPLATES = {
   Match: [
     {
       type: "direct",
-      title: "est dans une situation délicate",
+      title: "est dans une situation dÃ©licate",
       trigger: "situation critique",
-      hook: "Un joueur se retrouve au cœur d’une situation sensible et demande ton intervention.",
+      hook: "Un joueur se retrouve au cÅ“ur dâ€™une situation sensible et demande ton intervention.",
       story:
-        "Après le match, tout le vestiaire attend ta décision sur sa place dans le projet.",
-      choices: ["Le soutenir", "Le recadrer", "L’isoler", "Parler à la presse"],
+        "AprÃ¨s le match, tout le vestiaire attend ta dÃ©cision sur sa place dans le projet.",
+      choices: ["Le soutenir", "Le recadrer", "Lâ€™isoler", "Parler Ã  la presse"],
     },
     {
       type: "media",
-      title: "est annoncé mécontent par les journalistes",
+      title: "est annoncÃ© mÃ©content par les journalistes",
       trigger: "rumeur de vestiaire",
       hook: "La presse affirme que le joueur ne comprend plus ton projet sportif.",
       story:
-        "Les commentaires s’emballent, et il faut gérer l’image du club tout en calmant le groupe.",
+        "Les commentaires sâ€™emballent, et il faut gÃ©rer lâ€™image du club tout en calmant le groupe.",
       choices: [
-        "Répondre calmement",
-        "Attaquer les médias",
+        "RÃ©pondre calmement",
+        "Attaquer les mÃ©dias",
         "Parler au joueur",
         "Laisser passer",
       ],
     },
     {
       type: "performance",
-      title: "a livré une prestation controversée",
+      title: "a livrÃ© une prestation controversÃ©e",
       trigger: "analyse du match",
       hook: "Ses performances oscillent trop, et le staff se pose des questions.",
       story:
-        "Entre les supporters et le rapport du coach, ta crédibilité est en jeu.",
+        "Entre les supporters et le rapport du coach, ta crÃ©dibilitÃ© est en jeu.",
       choices: [
         "Changer sa position",
         "Lui donner du temps",
-        "Le blâmer publiquement",
+        "Le blÃ¢mer publiquement",
         "Expliquer ton plan",
       ],
     },
@@ -496,11 +496,11 @@ const EVENT_TEMPLATES = {
   Mercato: [
     {
       type: "transfer",
-      title: "demande officiellement à partir",
+      title: "demande officiellement Ã  partir",
       trigger: "envie de transfert",
-      hook: "Le joueur vient directement t’annoncer qu’il veut quitter le club.",
+      hook: "Le joueur vient directement tâ€™annoncer quâ€™il veut quitter le club.",
       story:
-        "C’est un dossier délicat qui peut affecter le groupe et le budget du club.",
+        "Câ€™est un dossier dÃ©licat qui peut affecter le groupe et le budget du club.",
       choices: [
         "Refuser net",
         "Fixer un prix",
@@ -510,14 +510,14 @@ const EVENT_TEMPLATES = {
     },
     {
       type: "offer",
-      title: "reçoit une proposition inattendue",
-      trigger: "intérêt étranger",
-      hook: "Un club puissant a placé une offre sur sa table.",
+      title: "reÃ§oit une proposition inattendue",
+      trigger: "intÃ©rÃªt Ã©tranger",
+      hook: "Un club puissant a placÃ© une offre sur sa table.",
       story:
-        "Tu dois choisir entre ambition personnelle du joueur et stabilité de l’équipe.",
+        "Tu dois choisir entre ambition personnelle du joueur et stabilitÃ© de lâ€™Ã©quipe.",
       choices: [
         "Laisser partir",
-        "Négocier plus haut",
+        "NÃ©gocier plus haut",
         "Le rassurer",
         "Garder le dossier secret",
       ],
@@ -526,28 +526,28 @@ const EVENT_TEMPLATES = {
   Blessures: [
     {
       type: "medical",
-      title: "cache une gêne physique",
-      trigger: "fatigue élevée",
-      hook: "Le staff découvre qu’il joue avec une douleur depuis plusieurs jours.",
+      title: "cache une gÃªne physique",
+      trigger: "fatigue Ã©levÃ©e",
+      hook: "Le staff dÃ©couvre quâ€™il joue avec une douleur depuis plusieurs jours.",
       story:
-        "Chaque minute sur le terrain pourrait aggraver sa condition et coûter un résultat.",
+        "Chaque minute sur le terrain pourrait aggraver sa condition et coÃ»ter un rÃ©sultat.",
       choices: [
         "Le mettre au repos",
-        "Réduire sa charge",
-        "Le laisser décider",
+        "RÃ©duire sa charge",
+        "Le laisser dÃ©cider",
         "Forcer les examens",
       ],
     },
     {
       type: "rehab",
-      title: "relance un protocole de récupération",
+      title: "relance un protocole de rÃ©cupÃ©ration",
       trigger: "douleur persistante",
-      hook: "Il refuse de ralentir alors que le kiné reste inquiet.",
+      hook: "Il refuse de ralentir alors que le kinÃ© reste inquiet.",
       story:
-        "Il faut trouver le bon équilibre entre récupération et continuité du groupe.",
+        "Il faut trouver le bon Ã©quilibre entre rÃ©cupÃ©ration et continuitÃ© du groupe.",
       choices: [
         "Insister sur le repos",
-        "Lui donner une séance adaptée",
+        "Lui donner une sÃ©ance adaptÃ©e",
         "Changer le planning",
         "Prendre le risque",
       ],
@@ -556,13 +556,13 @@ const EVENT_TEMPLATES = {
   Moral: [
     {
       type: "direct",
-      title: "vient demander une discussion privée",
+      title: "vient demander une discussion privÃ©e",
       trigger: "moral instable",
       hook: "Le joueur te demande cinq minutes loin du groupe.",
       story:
         "Sa confiance vacille et il veut savoir si tu comptes encore sur lui.",
       choices: [
-        "L’écouter calmement",
+        "Lâ€™Ã©couter calmement",
         "Lui promettre plus de temps de jeu",
         "Lui rappeler la concurrence",
         "Reporter la discussion",
@@ -570,16 +570,16 @@ const EVENT_TEMPLATES = {
     },
     {
       type: "ambition",
-      title: "se sent désengagé du projet",
+      title: "se sent dÃ©sengagÃ© du projet",
       trigger: "niveaux de motivation",
-      hook: "Il doute du sens de sa place dans l’équipe.",
+      hook: "Il doute du sens de sa place dans lâ€™Ã©quipe.",
       story:
         "Si tu ne regagnes pas sa confiance, la dynamique du vestiaire peut se briser.",
       choices: [
-        "Réaffirmer le plan",
-        "Changer son rôle",
+        "RÃ©affirmer le plan",
+        "Changer son rÃ´le",
         "Le vendre",
-        "L’encourager",
+        "Lâ€™encourager",
       ],
     },
   ],
@@ -588,41 +588,41 @@ const EVENT_TEMPLATES = {
       type: "squad",
       title: "divise le vestiaire",
       trigger: "tension collective",
-      hook: "Deux groupes commencent à se former autour de sa situation.",
+      hook: "Deux groupes commencent Ã  se former autour de sa situation.",
       story:
-        "La cohésion du groupe est menacée et tu dois trancher avant que cela explose.",
+        "La cohÃ©sion du groupe est menacÃ©e et tu dois trancher avant que cela explose.",
       choices: [
-        "Organiser une réunion fermée",
+        "Organiser une rÃ©union fermÃ©e",
         "Choisir un leader fort",
-        "Écarter le problème",
-        "Changer la hiérarchie",
+        "Ã‰carter le problÃ¨me",
+        "Changer la hiÃ©rarchie",
       ],
     },
     {
       type: "leadership",
       title: "conteste le capitaine",
-      trigger: "autorité remise en cause",
-      hook: "Il ne supporte plus certaines décisions de son capitaine.",
+      trigger: "autoritÃ© remise en cause",
+      hook: "Il ne supporte plus certaines dÃ©cisions de son capitaine.",
       story:
-        "Ce conflit intérieur peut coûter cher si tu ne le règle pas rapidement.",
+        "Ce conflit intÃ©rieur peut coÃ»ter cher si tu ne le rÃ¨gle pas rapidement.",
       choices: [
-        "Médiatiser la confiance",
-        "Protéger le capitaine",
-        "Rééquilibrer le groupe",
+        "MÃ©diatiser la confiance",
+        "ProtÃ©ger le capitaine",
+        "RÃ©Ã©quilibrer le groupe",
         "Punis les deux",
       ],
     },
   ],
-  Médias: [
+  Medias: [
     {
       type: "media",
-      title: "fait l’objet d’une fuite dans la presse",
+      title: "fait lâ€™objet dâ€™une fuite dans la presse",
       trigger: "info sortie du vestiaire",
-      hook: "Une information interne arrive dans les médias.",
-      story: "Le climat médiatique devient toxique et le club doit réagir.",
+      hook: "Une information interne arrive dans les mÃ©dias.",
+      story: "Le climat mÃ©diatique devient toxique et le club doit rÃ©agir.",
       choices: [
-        "Démentir publiquement",
-        "Protéger le joueur",
+        "DÃ©mentir publiquement",
+        "ProtÃ©ger le joueur",
         "Chercher la fuite",
         "Assumer la situation",
       ],
@@ -630,12 +630,12 @@ const EVENT_TEMPLATES = {
     {
       type: "reputation",
       title: "a une interview tendue",
-      trigger: "sortie médiatique",
-      hook: "Il lâche des phrases qui enflamment les réseaux.",
-      story: "Ta réponse doit contenir la crise sans l’aggraver.",
+      trigger: "sortie mÃ©diatique",
+      hook: "Il lÃ¢che des phrases qui enflamment les rÃ©seaux.",
+      story: "Ta rÃ©ponse doit contenir la crise sans lâ€™aggraver.",
       choices: [
         "Le recadrer",
-        "L’interviewer en interne",
+        "Lâ€™interviewer en interne",
         "Le soutenir",
         "Ignorer",
       ],
@@ -645,14 +645,14 @@ const EVENT_TEMPLATES = {
     {
       type: "fans",
       title: "devient le favori des supporters",
-      trigger: "popularité tribunes",
-      hook: "Les supporters réclament son nom et critiquent tes choix.",
-      story: "La pression des tribunes peut devenir un levier ou un piège.",
+      trigger: "popularitÃ© tribunes",
+      hook: "Les supporters rÃ©clament son nom et critiquent tes choix.",
+      story: "La pression des tribunes peut devenir un levier ou un piÃ¨ge.",
       choices: [
         "Le titulariser",
         "Expliquer ton choix",
-        "Utiliser l’engouement",
-        "Ne pas céder",
+        "Utiliser lâ€™engouement",
+        "Ne pas cÃ©der",
       ],
     },
     {
@@ -660,65 +660,65 @@ const EVENT_TEMPLATES = {
       title: "subit une campagne de banderoles",
       trigger: "flamme populaire",
       hook: "Les supporters brandissent son nom dans le stade.",
-      story: "L’ambiance devient un enjeu politique et sportif.",
+      story: "Lâ€™ambiance devient un enjeu politique et sportif.",
       choices: [
         "Jouer le jeu",
         "Calmer les supporters",
         "Changer de discours",
-        "Le préserver",
+        "Le prÃ©server",
       ],
     },
   ],
   Direction: [
     {
       type: "board",
-      title: "devient un dossier surveillé par la direction",
+      title: "devient un dossier surveillÃ© par la direction",
       trigger: "enjeu financier",
       hook: "Le board veut savoir s'il fait encore partie du projet.",
-      story: "Ta relation avec la direction est testée sur ce joueur.",
+      story: "Ta relation avec la direction est testÃ©e sur ce joueur.",
       choices: [
-        "Le défendre",
-        "Préparer une vente",
+        "Le dÃ©fendre",
+        "PrÃ©parer une vente",
         "Demander du temps",
         "Le valoriser sportivement",
       ],
     },
     {
       type: "contract",
-      title: "voit son contrat devenir un sujet de débat",
+      title: "voit son contrat devenir un sujet de dÃ©bat",
       trigger: "renouvellement proche",
       hook: "La direction surveille son rendement avant de trancher.",
       story:
-        "Il représente un enjeu financier et un message pour le reste de l’effectif.",
+        "Il reprÃ©sente un enjeu financier et un message pour le reste de lâ€™effectif.",
       choices: [
         "Lui proposer une extension",
         "Le vendre",
         "Le faire patienter",
-        "Relâcher la pression",
+        "RelÃ¢cher la pression",
       ],
     },
   ],
   Staff: [
     {
       type: "staff",
-      title: "fait débat dans le staff",
+      title: "fait dÃ©bat dans le staff",
       trigger: "analyse tactique",
       hook: "Le staff n'est pas d'accord sur son utilisation.",
-      story: "Les choix tactiques autour de lui créent une fracture interne.",
+      story: "Les choix tactiques autour de lui crÃ©ent une fracture interne.",
       choices: [
         "Suivre la data",
         "Suivre ton instinct",
         "Tester en match",
-        "Reporter la décision",
+        "Reporter la dÃ©cision",
       ],
     },
     {
       type: "training",
-      title: "remet en question son plan d’entraînement",
-      trigger: "capacité d’adaptation",
+      title: "remet en question son plan dâ€™entraÃ®nement",
+      trigger: "capacitÃ© dâ€™adaptation",
       hook: "Certains membres du staff veulent changer son programme.",
       story:
-        "Il devient le symbole d’une préparation qui doit rester cohérente.",
+        "Il devient le symbole dâ€™une prÃ©paration qui doit rester cohÃ©rente.",
       choices: [
         "Changer le plan",
         "Maintenir la feuille",
@@ -733,28 +733,28 @@ const PLAYER_EVENT_TEMPLATES = {
   Match: [
     {
       type: "player_performance",
-      title: "doit réagir après son dernier match",
+      title: "doit rÃ©agir aprÃ¨s son dernier match",
       trigger: "note de match",
-      hook: "Le coach attend une réponse sur le terrain.",
-      story: "Ta place dans le onze dépend de ta capacité à confirmer rapidement.",
+      hook: "Le coach attend une rÃ©ponse sur le terrain.",
+      story: "Ta place dans le onze dÃ©pend de ta capacitÃ© Ã  confirmer rapidement.",
       choices: [
         "Demander plus de temps de jeu",
         "Travailler en silence",
         "Parler au coach",
-        "Répondre dans la presse",
+        "RÃ©pondre dans la presse",
       ],
     },
     {
       type: "coach_talk",
-      title: "est convoqué par le coach",
-      trigger: "gestion du rôle",
+      title: "est convoquÃ© par le coach",
+      trigger: "gestion du rÃ´le",
       hook: "Le coach veut clarifier ton statut dans le groupe.",
       story: "Cette discussion peut influencer ta titularisation dans les prochaines semaines.",
       choices: [
         "Accepter son plan",
         "Demander une place de titulaire",
         "Rester prudent",
-        "Montrer de l’agacement",
+        "Montrer de lâ€™agacement",
       ],
     },
   ],
@@ -764,12 +764,12 @@ const PLAYER_EVENT_TEMPLATES = {
       type: "player_morale",
       title: "doute de sa progression",
       trigger: "confiance personnelle",
-      hook: "Tu sens que ta carrière n’avance pas assez vite.",
+      hook: "Tu sens que ta carriÃ¨re nâ€™avance pas assez vite.",
       story: "Tu dois choisir entre patience, ambition et prise de risque.",
       choices: [
         "Demander un entretien",
-        "Changer d’entraînement",
-        "Forcer un départ",
+        "Changer dâ€™entraÃ®nement",
+        "Forcer un dÃ©part",
         "Rester patient",
       ],
     },
@@ -778,25 +778,25 @@ const PLAYER_EVENT_TEMPLATES = {
   Mercato: [
     {
       type: "player_transfer",
-      title: "reçoit un intérêt d’un autre club",
+      title: "reÃ§oit un intÃ©rÃªt dâ€™un autre club",
       trigger: "rumeur personnelle",
-      hook: "Un club suit ton évolution et prépare peut-être une approche.",
-      story: "Ton entourage pense que c’est peut-être le bon moment pour viser plus haut.",
+      hook: "Un club suit ton Ã©volution et prÃ©pare peut-Ãªtre une approche.",
+      story: "Ton entourage pense que câ€™est peut-Ãªtre le bon moment pour viser plus haut.",
       choices: [
         "Ouvrir la porte",
-        "Rester fidèle",
-        "Demander plus d’informations",
+        "Rester fidÃ¨le",
+        "Demander plus dâ€™informations",
         "Mettre la pression au club",
       ],
     },
     {
       type: "star_message",
-      title: "est mentionné par une star adverse",
-      trigger: "séduction mercato",
-      hook: "Une star d’un autre club parle de toi en interview.",
-      story: "Ce message peut faire monter ta cote et attirer les médias.",
+      title: "est mentionnÃ© par une star adverse",
+      trigger: "sÃ©duction mercato",
+      hook: "Une star dâ€™un autre club parle de toi en interview.",
+      story: "Ce message peut faire monter ta cote et attirer les mÃ©dias.",
       choices: [
-        "Répondre positivement",
+        "RÃ©pondre positivement",
         "Ignorer",
         "Flatter le club actuel",
         "Laisser planer le doute",
@@ -804,17 +804,17 @@ const PLAYER_EVENT_TEMPLATES = {
     },
   ],
 
-  Médias: [
+  Medias: [
     {
       type: "player_media",
-      title: "fait parler les médias",
+      title: "fait parler les mÃ©dias",
       trigger: "pression individuelle",
-      hook: "Les journalistes commencent à analyser ton avenir.",
-      story: "Chaque phrase peut influencer ton image auprès du coach, des supporters et des recruteurs.",
+      hook: "Les journalistes commencent Ã  analyser ton avenir.",
+      story: "Chaque phrase peut influencer ton image auprÃ¨s du coach, des supporters et des recruteurs.",
       choices: [
         "Rester humble",
         "Afficher tes ambitions",
-        "Éviter les médias",
+        "Ã‰viter les mÃ©dias",
         "Envoyer un message fort",
       ],
     },
@@ -823,14 +823,14 @@ const PLAYER_EVENT_TEMPLATES = {
   Blessures: [
     {
       type: "player_injury",
-      title: "doit gérer une alerte physique",
+      title: "doit gÃ©rer une alerte physique",
       trigger: "fatigue personnelle",
-      hook: "Le staff médical te conseille de ralentir.",
-      story: "Tu peux préserver ton corps ou prendre le risque de jouer.",
+      hook: "Le staff mÃ©dical te conseille de ralentir.",
+      story: "Tu peux prÃ©server ton corps ou prendre le risque de jouer.",
       choices: [
         "Accepter le repos",
-        "Demander à jouer",
-        "Adapter l’entraînement",
+        "Demander Ã  jouer",
+        "Adapter lâ€™entraÃ®nement",
         "Consulter le staff",
       ],
     },
@@ -850,7 +850,7 @@ function pick(list) {
 }
 
 function money(n) {
-  return `${Number(n || 0).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} M€`;
+  return `${Number(n || 0).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} Mâ‚¬`;
 }
 
 function getLastPlayedFixture(career) {
@@ -881,7 +881,7 @@ function getSentimentTone(sentiment) {
 
 function getSentimentLabel(sentiment) {
   if (sentiment === MEDIA_SENTIMENTS.POSITIVE) return "Positif";
-  if (sentiment === MEDIA_SENTIMENTS.NEGATIVE) return "Négatif";
+  if (sentiment === MEDIA_SENTIMENTS.NEGATIVE) return "NÃ©gatif";
   if (sentiment === MEDIA_SENTIMENTS.VIRAL) return "Viral";
   return "Neutre";
 }
@@ -895,20 +895,20 @@ function createSocialPost(career, context = {}) {
 
   if (fixture && fixture.score) {
     if (sentiment === MEDIA_SENTIMENTS.POSITIVE) {
-      text = `${career.club.name} confirme sa progression après ${fixture.home} ${fixture.score} ${fixture.away}.`;
+      text = `${career.club.name} confirme sa progression aprÃ¨s ${fixture.home} ${fixture.score} ${fixture.away}.`;
     } else if (sentiment === MEDIA_SENTIMENTS.NEGATIVE) {
-      text = `Déception autour de ${career.club.name} après ${fixture.home} ${fixture.score} ${fixture.away}.`;
+      text = `DÃ©ception autour de ${career.club.name} aprÃ¨s ${fixture.home} ${fixture.score} ${fixture.away}.`;
     } else {
-      text = `${career.club.name} reste sous observation après ${fixture.home} ${fixture.score} ${fixture.away}.`;
+      text = `${career.club.name} reste sous observation aprÃ¨s ${fixture.home} ${fixture.score} ${fixture.away}.`;
     }
   }
 
   if (context.type === "transfer") {
-    text = `Le mercato de ${career.club.name} fait beaucoup parler. Les supporters attendent une décision forte.`;
+    text = `Le mercato de ${career.club.name} fait beaucoup parler. Les supporters attendent une dÃ©cision forte.`;
   }
 
   if (context.type === "injury") {
-    text = `Le staff médical de ${career.club.name} est sous pression après une nouvelle alerte physique.`;
+    text = `Le staff mÃ©dical de ${career.club.name} est sous pression aprÃ¨s une nouvelle alerte physique.`;
   }
 
   return {
@@ -958,10 +958,10 @@ function createPressConference(career, result, event, transferOffer) {
     type: PRESS_QUESTION_TYPES.RESULT,
     question:
       sentiment === MEDIA_SENTIMENTS.POSITIVE
-        ? "Votre équipe semble en pleine confiance. Qu’est-ce qui a fait la différence ?"
+        ? "Votre Ã©quipe semble en pleine confiance. Quâ€™est-ce qui a fait la diffÃ©rence ?"
         : sentiment === MEDIA_SENTIMENTS.NEGATIVE
-          ? "Comment expliquez-vous ce résultat décevant ?"
-          : "Quel regard portez-vous sur ce match équilibré ?",
+          ? "Comment expliquez-vous ce rÃ©sultat dÃ©cevant ?"
+          : "Quel regard portez-vous sur ce match Ã©quilibrÃ© ?",
     choices: [
       {
         label: "Valoriser le groupe",
@@ -972,7 +972,7 @@ function createPressConference(career, result, event, transferOffer) {
         effects: { pressure: 2, development: 2, morale: -1 },
       },
       {
-        label: "Protéger les joueurs",
+        label: "ProtÃ©ger les joueurs",
         effects: { cohesion: 2, media: -1 },
       },
     ],
@@ -993,7 +993,7 @@ function createPressConference(career, result, event, transferOffer) {
           effects: { pressure: 2, development: 1, morale: -2 },
         },
         {
-          label: "Éviter le sujet",
+          label: "Ã‰viter le sujet",
           effects: { media: -1, popularity: -1 },
         },
       ],
@@ -1015,7 +1015,7 @@ function createPressConference(career, result, event, transferOffer) {
           effects: { transferTension: 3, budget: 0 },
         },
         {
-          label: "Protéger le joueur",
+          label: "ProtÃ©ger le joueur",
           effects: { morale: 1, media: -1 },
         },
       ],
@@ -1025,8 +1025,8 @@ function createPressConference(career, result, event, transferOffer) {
   return {
     id: uid("press"),
     week: career.week,
-    title: `Conférence de presse — Semaine ${career.week}`,
-    fixture: fixture ? `${fixture.home} ${fixture.score || "-"} ${fixture.away}` : "Aucun match récent",
+    title: `ConfÃ©rence de presse â€” Semaine ${career.week}`,
+    fixture: fixture ? `${fixture.home} ${fixture.score || "-"} ${fixture.away}` : "Aucun match rÃ©cent",
     sentiment,
     status: "pending",
     questions,
@@ -1198,7 +1198,7 @@ function createMarketPlayer([name, position, age, overall, price], career) {
     overall,
     potential: clamp(overall + randomBetween(1, 8), overall, 94),
     price: Number(price),
-    club: "Marché",
+    club: "MarchÃ©",
     scouted: false,
     shortlisted: false,
     wage: Number((price * randomBetween(0.035, 0.08)).toFixed(1)),
@@ -1206,8 +1206,8 @@ function createMarketPlayer([name, position, age, overall, price], career) {
       position === "BU" || position === "AD" || position === "AG"
         ? "Offensif"
         : position === "GB" || position === "DC"
-          ? "Défensif"
-          : "Équilibre",
+          ? "DÃ©fensif"
+          : "Ã‰quilibre",
   };
 }
 
@@ -1349,7 +1349,7 @@ function createDefaultTactics(squad = []) {
 
   return {
     formation: "4-3-3",
-    mentality: "équilibré",
+    mentality: "Ã©quilibrÃ©",
     pressing: 55,
     tempo: 55,
     starters,
@@ -1445,7 +1445,7 @@ function startNewSeason(career) {
     ...career,
     season: nextSeason,
     week: 1,
-    month: "Août",
+    month: "AoÃ»t",
     fixtures,
     leagueTable,
     squad: squadWithContracts.map((player) => ({
@@ -1471,7 +1471,7 @@ function startNewSeason(career) {
         id: uid("news"),
         week: 1,
         type: "Direction",
-        title: `Début de la saison ${nextSeason}`,
+        title: `DÃ©but de la saison ${nextSeason}`,
         body: "La direction fixe une nouvelle feuille de route pour la saison.",
       },
       ...(career.news || []),
@@ -1565,7 +1565,7 @@ function createClubFromFC26Import(importedData, fallbackClub = CLUBS[0]) {
       importedData.objective ||
       importedData.objectives ||
       fallbackClub.objectives ||
-      "Construire un projet compétitif depuis les données FC26",
+      "Construire un projet compÃ©titif depuis les donnÃ©es FC26",
   };
 }
 
@@ -1620,8 +1620,8 @@ function createCareerFromFC26Import(type = "manager", importedData = {}, options
         id: uid("news"),
         week: Number(importedData.week || 1),
         type: "Import FC26",
-        title: "Carrière créée depuis FC26",
-        body: "Les données de départ ont été chargées depuis un import FC26.",
+        title: "CarriÃ¨re crÃ©Ã©e depuis FC26",
+        body: "Les donnÃ©es de dÃ©part ont Ã©tÃ© chargÃ©es depuis un import FC26.",
       },
       ...(baseCareer.news || []),
     ],
@@ -1684,8 +1684,8 @@ function mergePartialFC26Import(career, importedData = {}, mode = "auto") {
         id: uid("news"),
         week: career.week,
         type: "Import FC26",
-        title: "Import partiel FC26 appliqué",
-        body: "Les données FC26 ont été fusionnées avec la carrière actuelle sans supprimer la narration existante.",
+        title: "Import partiel FC26 appliquÃ©",
+        body: "Les donnÃ©es FC26 ont Ã©tÃ© fusionnÃ©es avec la carriÃ¨re actuelle sans supprimer la narration existante.",
       },
       ...(career.news || []),
     ],
@@ -1975,7 +1975,7 @@ function createTransferOffer(career) {
 }
 
 function formatOfferType(type) {
-  return type === "loan" ? "Prêt" : "Transfert";
+  return type === "loan" ? "PrÃªt" : "Transfert";
 }
 
 function poisson(lambda) {
@@ -2200,7 +2200,7 @@ function createBoardObjectives(club) {
       title: lowBudget ? "Se rapprocher du haut de tableau" : "Finir dans le Top 4",
       description: lowBudget
         ? "La direction veut une progression sportive visible cette saison."
-        : "La direction attend une saison compétitive au classement.",
+        : "La direction attend une saison compÃ©titive au classement.",
       target: lowBudget ? 8 : 4,
       progress: 0,
       status: "active",
@@ -2221,8 +2221,8 @@ function createBoardObjectives(club) {
     {
       id: uid("objective"),
       type: BOARD_OBJECTIVE_TYPES.FINANCES,
-      title: "Contrôler les finances",
-      description: "Éviter de descendre sous un budget critique.",
+      title: "ContrÃ´ler les finances",
+      description: "Ã‰viter de descendre sous un budget critique.",
       target: lowBudget ? 1 : Math.max(10, Math.round(club.budget * 0.12)),
       progress: 0,
       status: "active",
@@ -2232,8 +2232,8 @@ function createBoardObjectives(club) {
     {
       id: uid("objective"),
       type: BOARD_OBJECTIVE_TYPES.DEVELOPMENT,
-      title: "Développer le projet sportif",
-      description: "Augmenter le développement du club au fil de la saison.",
+      title: "DÃ©velopper le projet sportif",
+      description: "Augmenter le dÃ©veloppement du club au fil de la saison.",
       target: highReputation ? 65 : 55,
       progress: 0,
       status: "active",
@@ -2305,9 +2305,9 @@ function getObjectiveTone(status) {
 
 function getObjectiveLabel(status) {
   if (status === "on_track") return "Dans les temps";
-  if (status === "at_risk") return "À risque";
-  if (status === "failed") return "Échec";
-  if (status === "completed") return "Réussi";
+  if (status === "at_risk") return "Ã€ risque";
+  if (status === "failed") return "Ã‰chec";
+  if (status === "completed") return "RÃ©ussi";
   return "Actif";
 }
 
@@ -2468,7 +2468,7 @@ function createCareer(type = "manager", club = CLUBS[0], options = {}) {
     customObjective: options.objective || club.objectives,
     season: 1,
     week: 1,
-    month: "Août",
+    month: "AoÃ»t",
     club: { ...club },
     squad,
     budget: club.budget,
@@ -2646,12 +2646,12 @@ function simulateResult(career) {
 function chooseEventCategory(career, resultDelta) {
   const categories =
     career.type === "player"
-      ? ["Match", "Moral", "Médias", "Mercato", "Blessures"]
+      ? ["Match", "Moral", "MÃ©dias", "Mercato", "Blessures"]
       : [
           "Match",
           "Moral",
           "Vestiaire",
-          "Médias",
+          "MÃ©dias",
           "Mercato",
           "Staff",
           "Supporters",
@@ -2663,10 +2663,10 @@ function chooseEventCategory(career, resultDelta) {
   }
 
   if (career.type === "player") {
-    if (resultDelta < 0) categories.push("Médias", "Moral");
+    if (resultDelta < 0) categories.push("MÃ©dias", "Moral");
     if (resultDelta > 0) categories.push("Match", "Mercato");
   } else {
-    if (resultDelta < 0) categories.push("Direction", "Médias", "Moral");
+    if (resultDelta < 0) categories.push("Direction", "MÃ©dias", "Moral");
     if (resultDelta > 0) categories.push("Supporters", "Match");
   }
 
@@ -2685,7 +2685,7 @@ function consequencesFor(category, resultDelta, career) {
     Blessures: { morale: -3, pressure: 5, cohesion: -2 },
     Moral: { morale: career.morale < 50 ? 7 : -2, cohesion: 2 },
     Vestiaire: { cohesion: career.cohesion < 50 ? 7 : -3, morale: -1 },
-    Médias: { media: 7, pressure: 3, reputation: sign },
+    Medias: { media: 7, pressure: 3, reputation: sign },
     Supporters: { popularity: 6, pressure: resultDelta < 0 ? 4 : -1 },
     Direction: { boardTrust: resultDelta < 0 ? -4 : 3, pressure: 3 },
     Mercato: { transferTension: 8, morale: -2, reputation: 1 },
@@ -2696,8 +2696,8 @@ function consequencesFor(category, resultDelta, career) {
 
 function getEventRarity(resultDelta) {
   const roll = Math.random() * 100;
-  if (roll > 97) return "Légendaire";
-  if (roll > 88) return "Épique";
+  if (roll > 97) return "LÃ©gendaire";
+  if (roll > 88) return "Ã‰pique";
   if (roll > 68 || resultDelta < 0) return "Rare";
   return "Commun";
 }
@@ -2742,9 +2742,9 @@ function createSvgImage(category, title, playerName, clubName) {
   <rect x="80" y="520" width="1040" height="120" rx="30" fill="url(#accent)" opacity="0.85" filter="url(#glow)" />
   <text x="90" y="155" font-family="Inter, Arial, sans-serif" font-size="48" font-weight="900" fill="white">${safeClub}</text>
   <text x="90" y="235" font-family="Inter, Arial, sans-serif" font-size="54" font-weight="900" fill="white">${safeTitle}</text>
-  <text x="90" y="320" font-family="Inter, Arial, sans-serif" font-size="32" fill="#d1d5db">Joueur concerné :</text>
+  <text x="90" y="320" font-family="Inter, Arial, sans-serif" font-size="32" fill="#d1d5db">Joueur concernÃ© :</text>
   <text x="90" y="370" font-family="Inter, Arial, sans-serif" font-size="40" font-weight="700" fill="white">${safePlayer}</text>
-  <text x="90" y="450" font-family="Inter, Arial, sans-serif" font-size="24" fill="#9ca3af">Événement premium généré par le Career Hub</text>
+  <text x="90" y="450" font-family="Inter, Arial, sans-serif" font-size="24" fill="#9ca3af">Ã‰vÃ©nement premium gÃ©nÃ©rÃ© par le Career Hub</text>
   <text x="90" y="640" font-family="Inter, Arial, sans-serif" font-size="26" fill="white">${meta.icon} ${category}</text>
 </svg>`;
 
@@ -2760,39 +2760,39 @@ function createLiveEditorEffects(category, consequences, playerName) {
   const playerEffects = {
     Match: [
       `Augmenter la forme de ${playerName}`,
-      `Donner plus de temps de jeu à ${playerName}`,
+      `Donner plus de temps de jeu Ã  ${playerName}`,
     ],
     Blessures: [
       `Mettre ${playerName} au repos 1 match`,
-      `Réduire son intensité d'entraînement`,
+      `RÃ©duire son intensitÃ© d'entraÃ®nement`,
     ],
     Moral: [
-      `Ajuster son rôle dans l'effectif`,
-      `Changer son temps de jeu prévu`,
+      `Ajuster son rÃ´le dans l'effectif`,
+      `Changer son temps de jeu prÃ©vu`,
     ],
     Vestiaire: [
       `Modifier l'importance de ${playerName} dans l'effectif`,
       `Surveiller sa relation avec les cadres`,
     ],
-    Médias: [
-      `Augmenter la pression médiatique autour de ${playerName}`,
-      `Modifier légèrement sa réputation`,
+    Medias: [
+      `Augmenter la pression mÃ©diatique autour de ${playerName}`,
+      `Modifier lÃ©gÃ¨rement sa rÃ©putation`,
     ],
     Mercato: [
-      `Ajouter ${playerName} à une shortlist transfert`,
+      `Ajouter ${playerName} Ã  une shortlist transfert`,
       `Modifier son statut`,
     ],
     Supporters: [
-      `Augmenter la popularité de ${playerName}`,
-      `Créer une storyline supporters`,
+      `Augmenter la popularitÃ© de ${playerName}`,
+      `CrÃ©er une storyline supporters`,
     ],
     Direction: [
       `Noter ${playerName} comme dossier board`,
       `Demander un objectif sportif sur 3 matchs`,
     ],
     Staff: [
-      `Changer le plan d'entraînement de ${playerName}`,
-      `Tester ${playerName} à un nouveau poste`,
+      `Changer le plan d'entraÃ®nement de ${playerName}`,
+      `Tester ${playerName} Ã  un nouveau poste`,
     ],
   };
 
@@ -2839,40 +2839,40 @@ function buildContextualEvent(career, result) {
   const consequences = consequencesFor(category, result.resultDelta, career);
   const impact = Object.entries(consequences)
     .map(([key, value]) => `${key} ${value > 0 ? "+" : ""}${value}`)
-    .join(" · ");
+    .join(" Â· ");
   const rarity = getEventRarity(result.resultDelta);
-  const title = `${player.name} ${template.title} — ${career.club.name}`;
+  const title = `${player.name} ${template.title} â€” ${career.club.name}`;
 
   let description = "";
   let detail = "";
 
   if (result.injuryReport) {
-    description = `${result.injuryReport.playerName} est touché physiquement. Le staff médical confirme une blessure : ${result.injuryReport.injury.label}.`;
-    detail = `Durée estimée : ${result.injuryReport.injury.weeksRemaining} semaine(s). Gravité : ${result.injuryReport.injury.severity}. Le joueur va perdre en forme et devra revenir progressivement. Contexte : ${fixtureText}.`;
+    description = `${result.injuryReport.playerName} est touchÃ© physiquement. Le staff mÃ©dical confirme une blessure : ${result.injuryReport.injury.label}.`;
+    detail = `DurÃ©e estimÃ©e : ${result.injuryReport.injury.weeksRemaining} semaine(s). GravitÃ© : ${result.injuryReport.injury.severity}. Le joueur va perdre en forme et devra revenir progressivement. Contexte : ${fixtureText}.`;
   } else if (template.type === "direct") {
-    description = `${player.name} veut une réponse claire sur son rôle, son temps de jeu et sa place dans le projet.`;
-    detail = `${template.story || "La situation demande une décision rapide."} Contexte : ${fixtureText}. Profil : ${player.position}, OVR ${player.overall}, forme ${player.form}, moral ${player.morale}, fatigue ${player.fatigue}.`;
+    description = `${player.name} veut une rÃ©ponse claire sur son rÃ´le, son temps de jeu et sa place dans le projet.`;
+    detail = `${template.story || "La situation demande une dÃ©cision rapide."} Contexte : ${fixtureText}. Profil : ${player.position}, OVR ${player.overall}, forme ${player.form}, moral ${player.morale}, fatigue ${player.fatigue}.`;
   } else if (template.type === "media" || template.type === "reputation") {
-    description = `Une histoire autour de ${player.name} sort dans les médias. Le club doit réagir avant que la situation ne prenne trop d'ampleur.`;
+    description = `Une histoire autour de ${player.name} sort dans les mÃ©dias. Le club doit rÃ©agir avant que la situation ne prenne trop d'ampleur.`;
     detail = `${template.hook} ${template.story || ""} Contexte : ${fixtureText}.`;
   } else if (template.type === "transfer" || template.type === "offer") {
-    description = `${player.name} devient un vrai dossier mercato. Son avenir au club n'est plus totalement verrouillé.`;
-    detail = `${template.hook} Valeur estimée : ${money(player.value)}. Poste : ${player.position}. OVR ${player.overall}. Contexte : ${fixtureText}.`;
+    description = `${player.name} devient un vrai dossier mercato. Son avenir au club n'est plus totalement verrouillÃ©.`;
+    detail = `${template.hook} Valeur estimÃ©e : ${money(player.value)}. Poste : ${player.position}. OVR ${player.overall}. Contexte : ${fixtureText}.`;
   } else if (template.type === "medical" || template.type === "rehab") {
-    description = `${player.name} est au centre d'une alerte physique. Le staff médical demande une décision prudente.`;
+    description = `${player.name} est au centre d'une alerte physique. Le staff mÃ©dical demande une dÃ©cision prudente.`;
     detail = `${template.hook} Fatigue actuelle : ${player.fatigue}. Forme : ${player.form}. Contexte : ${fixtureText}.`;
   } else if (template.type === "fans" || template.type === "protest") {
-    description = `${player.name} devient un sujet fort chez les supporters. La pression populaire influence désormais tes choix.`;
+    description = `${player.name} devient un sujet fort chez les supporters. La pression populaire influence dÃ©sormais tes choix.`;
     detail = `${template.story || template.hook} Contexte : ${fixtureText}.`;
   } else if (template.type === "board" || template.type === "contract") {
-    description = `${player.name} devient un dossier suivi par la direction. Le board veut une décision claire.`;
+    description = `${player.name} devient un dossier suivi par la direction. Le board veut une dÃ©cision claire.`;
     detail = `${template.story || template.hook} Valeur : ${money(player.value)}. Contexte : ${fixtureText}.`;
   } else if (
     template.type === "staff" ||
     template.type === "training" ||
     template.type === "performance"
   ) {
-    description = `${player.name} fait débat en interne. Le staff attend une décision sportive cohérente.`;
+    description = `${player.name} fait dÃ©bat en interne. Le staff attend une dÃ©cision sportive cohÃ©rente.`;
     detail = `${template.hook} ${template.story || ""} Profil : ${player.position}, OVR ${player.overall}, forme ${player.form}. Contexte : ${fixtureText}.`;
   } else {
     description = `${player.name} devient un sujet important de la semaine.`;
@@ -2939,7 +2939,7 @@ function generateArticle(career, event) {
     week: career.week,
     type: event.category,
     title: event.title,
-    body: `${event.description} Impact prévu : ${event.impact}.`,
+    body: `${event.description} Impact prÃ©vu : ${event.impact}.`,
   };
 }
 
@@ -3026,26 +3026,26 @@ function PlayerPortrait({ player, size = 54 }) {
 
 function getLiveEditorActionPlan(event, choice = null) {
   const playerName =
-    event?.playerContext?.name || event?.player || "joueur concerné";
+    event?.playerContext?.name || event?.player || "joueur concernÃ©";
 
-  const category = event?.category || "Général";
+  const category = event?.category || "GÃ©nÃ©ral";
 
   const actions = Array.isArray(event?.liveEditorEffects)
     ? event.liveEditorEffects
     : [];
 
   return [
-    "Ouvrir FC Live Editor en mode carrière hors ligne.",
+    "Ouvrir FC Live Editor en mode carriÃ¨re hors ligne.",
     "Chercher " +
       playerName +
-      " dans Players Editor si l’événement concerne un joueur.",
+      " dans Players Editor si lâ€™Ã©vÃ©nement concerne un joueur.",
     ...actions.map((action) => "Appliquer : " + action + "."),
     choice
-      ? "Noter la décision narrative : " + choice + "."
-      : "Choisir une décision dans FC Career Hub.",
-    "Vérifier que la conséquence " +
+      ? "Noter la dÃ©cision narrative : " + choice + "."
+      : "Choisir une dÃ©cision dans FC Career Hub.",
+    "VÃ©rifier que la consÃ©quence " +
       category +
-      " est cohérente dans ta sauvegarde FC26.",
+      " est cohÃ©rente dans ta sauvegarde FC26.",
     "Sauvegarder dans FC26, puis revenir dans FC Career Hub.",
   ];
 }
@@ -3123,8 +3123,8 @@ function HomeScreen({ onChoose }) {
           <span className="gradient-text">Overhaul Mod</span>
         </h1>
         <p className="hero-subtitle">
-          Un mode carrière premium pour FC26 : événements roleplay, vestiaire,
-          médias, mercato, board, live editor et suivi de joueurs.
+          Un mode carriÃ¨re premium pour FC26 : Ã©vÃ©nements roleplay, vestiaire,
+          mÃ©dias, mercato, board, live editor et suivi de joueurs.
         </p>
         <div className="hero-actions">
           <button
@@ -3135,7 +3135,7 @@ function HomeScreen({ onChoose }) {
             <div className="stat-label">Kick-off</div>
             <h2>Manager Career</h2>
             <p>
-              Contrôle le club, les décisions, la pression, les finances et les
+              ContrÃ´le le club, les dÃ©cisions, la pression, les finances et les
               storylines.
             </p>
           </button>
@@ -3147,7 +3147,7 @@ function HomeScreen({ onChoose }) {
             <div className="stat-label">Player Path</div>
             <h2>Player Career</h2>
             <p>
-              Suis un joueur, sa forme, son coach, sa réputation et ses choix.
+              Suis un joueur, sa forme, son coach, sa rÃ©putation et ses choix.
             </p>
           </button>
         </div>
@@ -3229,7 +3229,7 @@ function ClubPicker({ type, onBack, onConfirm }) {
 
       <div className="club-picker-inner">
         <button type="button" className="secondary-btn" onClick={onBack}>
-          ← Retour
+          â† Retour
         </button>
 
         <div
@@ -3240,10 +3240,10 @@ function ClubPicker({ type, onBack, onConfirm }) {
             <Kicker tone="lime">Club Select</Kicker>
             <Kicker tone="red">V18_FORCE_CLUBPICKER_ACTIVE</Kicker>
             <h1 className="title-xl">
-              Créer une carrière {type === "player" ? "Joueur" : "Manager"}
+              CrÃ©er une carriÃ¨re {type === "player" ? "Joueur" : "Manager"}
             </h1>
             <p className="muted">
-              Choisis un club, démarre en simulation ou importe directement les données de ta carrière FC26.
+              Choisis un club, dÃ©marre en simulation ou importe directement les donnÃ©es de ta carriÃ¨re FC26.
             </p>
           </div>
 
@@ -3251,10 +3251,10 @@ function ClubPicker({ type, onBack, onConfirm }) {
         </div>
 
         <div className="card" style={{ marginTop: 22 }}>
-          <Kicker tone="cyan">Mode de création</Kicker>
-          <h2>Source de carrière</h2>
+          <Kicker tone="cyan">Mode de crÃ©ation</Kicker>
+          <h2>Source de carriÃ¨re</h2>
           <p className="muted">
-            Sélectionne comment tu veux initialiser ton Career Hub.
+            SÃ©lectionne comment tu veux initialiser ton Career Hub.
           </p>
 
           <div
@@ -3266,7 +3266,7 @@ function ClubPicker({ type, onBack, onConfirm }) {
               className={"secondary-btn " + (creationMode === "simulated" ? "active" : "")}
               onClick={() => setCreationMode("simulated")}
             >
-              Carrière simulée
+              CarriÃ¨re simulÃ©e
             </button>
 
             <button
@@ -3321,7 +3321,7 @@ function ClubPicker({ type, onBack, onConfirm }) {
               <h2>{club.name}</h2>
               <p className="muted">{club.league}</p>
               <p>
-                Budget <b>{money(club.budget)}</b> · Rép.{" "}
+                Budget <b>{money(club.budget)}</b> Â· RÃ©p.{" "}
                 <b>{club.reputation}</b>
               </p>
             </button>
@@ -3342,7 +3342,7 @@ function ClubPicker({ type, onBack, onConfirm }) {
             </label>
 
             <label>
-              <div className="stat-label">Objectif personnalisé</div>
+              <div className="stat-label">Objectif personnalisÃ©</div>
               <input
                 className="input"
                 value={objective}
@@ -3359,7 +3359,7 @@ function ClubPicker({ type, onBack, onConfirm }) {
           >
             {creationMode === "simulated"
               ? "Commencer avec " + selected.name
-              : "Créer depuis données FC26"}
+              : "CrÃ©er depuis donnÃ©es FC26"}
           </button>
         </div>
       </div>
@@ -3377,16 +3377,16 @@ function MediaView({ career, onPressAnswer }) {
     <div>
       <div className="club-row" style={{ justifyContent: "space-between", marginBottom: 16 }}>
         <div>
-          <Kicker tone="amber">Médias</Kicker>
-          <h2>Réseaux sociaux & presse</h2>
+          <Kicker tone="amber">MÃ©dias</Kicker>
+          <h2>RÃ©seaux sociaux & presse</h2>
           <p className="muted">
-            Gère l’image publique du club, les réactions supporters et les conférences.
+            GÃ¨re lâ€™image publique du club, les rÃ©actions supporters et les confÃ©rences.
           </p>
         </div>
 
         <div className="stat-grid">
           <Stat label="Buzz" value={buzz} tone="amber" />
-          <Stat label="Popularité" value={career.popularity} tone="lime" />
+          <Stat label="PopularitÃ©" value={career.popularity} tone="lime" />
           <Stat label="Pression" value={career.pressure} tone="red" />
         </div>
       </div>
@@ -3394,7 +3394,7 @@ function MediaView({ career, onPressAnswer }) {
       {activeConference ? (
         <div className="card" style={{ marginBottom: 22 }}>
           <Kicker tone={getSentimentTone(activeConference.sentiment)}>
-            Conférence active
+            ConfÃ©rence active
           </Kicker>
           <h2>{activeConference.title}</h2>
           <p className="muted">{activeConference.fixture}</p>
@@ -3410,7 +3410,7 @@ function MediaView({ career, onPressAnswer }) {
                   <h3>{question.question}</h3>
 
                   {alreadyAnswered ? (
-                    <p className="muted">Question déjà traitée.</p>
+                    <p className="muted">Question dÃ©jÃ  traitÃ©e.</p>
                   ) : (
                     <div className="choice-grid">
                       {question.choices.map((choice) => (
@@ -3432,9 +3432,9 @@ function MediaView({ career, onPressAnswer }) {
         </div>
       ) : (
         <div className="card" style={{ marginBottom: 22 }}>
-          <h3>Aucune conférence en attente</h3>
+          <h3>Aucune confÃ©rence en attente</h3>
           <p className="muted">
-            Les conférences apparaissent automatiquement après certaines semaines.
+            Les confÃ©rences apparaissent automatiquement aprÃ¨s certaines semaines.
           </p>
         </div>
       )}
@@ -3455,12 +3455,12 @@ function MediaView({ career, onPressAnswer }) {
                 <h3>{post.author}</h3>
                 <p>{post.text}</p>
                 <p className="muted">
-                  {post.likes} likes · {post.replies} réponses
+                  {post.likes} likes Â· {post.replies} rÃ©ponses
                 </p>
               </div>
             ))
           ) : (
-            <p className="muted">Aucun post pour l’instant.</p>
+            <p className="muted">Aucun post pour lâ€™instant.</p>
           )}
         </div>
 
@@ -3472,12 +3472,12 @@ function MediaView({ career, onPressAnswer }) {
               <div key={conference.id} className="fixture">
                 <span>{conference.title}</span>
                 <strong>
-                  {conference.status === "resolved" ? "Terminée" : "En attente"}
+                  {conference.status === "resolved" ? "TerminÃ©e" : "En attente"}
                 </strong>
               </div>
             ))
           ) : (
-            <p className="muted">Aucune conférence enregistrée.</p>
+            <p className="muted">Aucune confÃ©rence enregistrÃ©e.</p>
           )}
         </div>
       </div>
@@ -3488,8 +3488,8 @@ function MediaView({ career, onPressAnswer }) {
 function SettingsView() {
   return (
     <div className="card">
-      <h2>Paramètres</h2>
-      <p className="muted">Ajustez les paramètres du mode carrière et les options de personnalisation.</p>
+      <h2>ParamÃ¨tres</h2>
+      <p className="muted">Ajustez les paramÃ¨tres du mode carriÃ¨re et les options de personnalisation.</p>
     </div>
   );
 }
@@ -3512,15 +3512,15 @@ function Dashboard({ career, onSeasonAdvance }) {
         </div>
         <div className="stat-grid">
           <Stat label="Moral" value={career.morale} tone="lime" />
-          <Stat label="Réputation" value={career.reputation} tone="cyan" />
+          <Stat label="RÃ©putation" value={career.reputation} tone="cyan" />
           <Stat label="Buzz" value={getMediaBuzz(career)} tone="amber" />
           <Stat label="Pression" value={career.pressure} tone="amber" />
-          <Stat label="Cohésion" value={career.cohesion} tone="violet" />
+          <Stat label="CohÃ©sion" value={career.cohesion} tone="violet" />
         </div>
         {nextFixture ? (
           <div className="card media" style={{ marginTop: 18, background: "rgba(255,255,255,0.04)" }}>
             <h3>Prochain match</h3>
-            <p className="muted">Journée {nextFixture.week}</p>
+            <p className="muted">JournÃ©e {nextFixture.week}</p>
             <p>
               <strong>{nextFixture.home}</strong> vs <strong>{nextFixture.away}</strong>
             </p>
@@ -3573,7 +3573,7 @@ function EventsView({ career, onOpen }) {
         className="club-row"
         style={{ justifyContent: "space-between", marginBottom: 16 }}
       >
-        <h2>Inbox événements</h2>
+        <h2>Inbox Ã©vÃ©nements</h2>
         <div className="club-row">
           <button
             type="button"
@@ -3594,7 +3594,7 @@ function EventsView({ career, onOpen }) {
             className={`secondary-btn ${filter === "resolved" ? "active" : ""}`}
             onClick={() => setFilter("resolved")}
           >
-            Résolu
+            RÃ©solu
           </button>
         </div>
       </div>
@@ -3635,7 +3635,7 @@ function EventsView({ career, onOpen }) {
                       {meta.icon} {event.category}
                     </Kicker>
                     <Kicker tone={resolved ? "green" : "amber"}>
-                      {resolved ? "Résolu" : "Nouveau"}
+                      {resolved ? "RÃ©solu" : "Nouveau"}
                     </Kicker>
                   </div>
                   <h3>{event.title}</h3>
@@ -3643,7 +3643,7 @@ function EventsView({ career, onOpen }) {
                   <p className="soft">{event.impact}</p>
                   {resolved && event.choice ? (
                     <p className="muted">
-                      Choix effectué : <b>{event.choice}</b>
+                      Choix effectuÃ© : <b>{event.choice}</b>
                     </p>
                   ) : null}
                 </div>
@@ -3651,7 +3651,7 @@ function EventsView({ career, onOpen }) {
             );
           })
         ) : (
-          <div className="card">Aucun événement dans ce filtre.</div>
+          <div className="card">Aucun Ã©vÃ©nement dans ce filtre.</div>
         )}
       </div>
     </div>
@@ -3663,7 +3663,7 @@ function EventModal({ event, onClose, onDecision }) {
 
   const meta = CATEGORY_META[event.category] || CATEGORY_META.Match;
   const playerName =
-    event.playerContext?.name || event.player || "Joueur concerné";
+    event.playerContext?.name || event.player || "Joueur concernÃ©";
   const playerPosition = event.playerContext?.position || "Poste inconnu";
   const playerOverall = event.playerContext?.overall || "?";
   const playerForm = event.playerContext?.form || "?";
@@ -3718,7 +3718,7 @@ function EventModal({ event, onClose, onDecision }) {
               </div>
             </div>
             <div className="stat-grid" style={{ marginTop: 18 }}>
-              <Stat label="Rareté" value={event.rarity} tone="amber" />
+              <Stat label="RaretÃ©" value={event.rarity} tone="amber" />
               <Stat label="Semaine" value={event.week} tone="cyan" />
               <Stat label="Joueur" value={playerName} tone="lime" />
               <Stat label="OVR" value={playerOverall} tone="violet" />
@@ -3756,11 +3756,11 @@ function EventModal({ event, onClose, onDecision }) {
                 </Kicker>
                 <Kicker tone="amber">{event.rarity}</Kicker>
                 <Kicker tone={event.status === "resolved" ? "green" : "red"}>
-                  {event.status === "resolved" ? "Résolu" : "Décision requise"}
+                  {event.status === "resolved" ? "RÃ©solu" : "DÃ©cision requise"}
                 </Kicker>
               </div>
               <button type="button" className="close-btn" onClick={onClose}>
-                ×
+                Ã—
               </button>
             </div>
             <h1>{event.title}</h1>
@@ -3781,22 +3781,22 @@ function EventModal({ event, onClose, onDecision }) {
             </div>
             {event.injuryReport ? (
               <div className="card" style={{ marginTop: 14 }}>
-                <Kicker tone="red">Rapport médical</Kicker>
+                <Kicker tone="red">Rapport mÃ©dical</Kicker>
                 <h3>{event.injuryReport.playerName}</h3>
                 <p>
                   Blessure : <b>{event.injuryReport.injury.label}</b>
                 </p>
                 <p>
-                  Gravité : <b>{event.injuryReport.injury.severity}</b>
+                  GravitÃ© : <b>{event.injuryReport.injury.severity}</b>
                 </p>
                 <p>
-                  Durée estimée : <b>{event.injuryReport.injury.weeksRemaining} semaine(s)</b>
+                  DurÃ©e estimÃ©e : <b>{event.injuryReport.injury.weeksRemaining} semaine(s)</b>
                 </p>
               </div>
             ) : null}
             <div className="card" style={{ marginTop: 14 }}>
               <Kicker tone="cyan">FC Live Editor</Kicker>
-              <h3>Actions recommandées</h3>
+              <h3>Actions recommandÃ©es</h3>
               <ol
                 className="muted"
                 style={{ display: "grid", gap: 6, paddingLeft: 20 }}
@@ -3808,14 +3808,14 @@ function EventModal({ event, onClose, onDecision }) {
             </div>
             {event.status === "resolved" ? (
               <div className="card" style={{ marginTop: 14 }}>
-                <h3>Décision déjà prise</h3>
+                <h3>DÃ©cision dÃ©jÃ  prise</h3>
                 <p className="muted">
-                  Choix effectué : <b>{event.choice || "non précisé"}</b>
+                  Choix effectuÃ© : <b>{event.choice || "non prÃ©cisÃ©"}</b>
                 </p>
               </div>
             ) : (
               <div className="card modal-actions-sticky">
-                <h3>Décision narrative</h3>
+                <h3>DÃ©cision narrative</h3>
                 <div className="choice-grid">
                   {(event.choices || []).map((choice) => (
                     <button
@@ -3826,7 +3826,7 @@ function EventModal({ event, onClose, onDecision }) {
                     >
                       {choice}
                       <br />
-                      <small>Appliquer cette décision à la storyline.</small>
+                      <small>Appliquer cette dÃ©cision Ã  la storyline.</small>
                     </button>
                   ))}
                 </div>
@@ -3877,11 +3877,11 @@ function SquadView({ career }) {
             </div>
             {player.injury && player.injury.weeksRemaining > 0 ? (
               <p className="red">
-                🏥 {player.injury.label} — retour dans {player.injury.weeksRemaining} semaine(s)
+                ðŸ¥ {player.injury.label} â€” retour dans {player.injury.weeksRemaining} semaine(s)
               </p>
             ) : player.loanedOut ? (
               <p className="amber">
-                Prêté à {player.loan?.club} — retour dans {player.loan?.weeksRemaining} semaine(s)
+                PrÃªtÃ© Ã  {player.loan?.club} â€” retour dans {player.loan?.weeksRemaining} semaine(s)
               </p>
             ) : (
               <p className="muted">Disponible</p>
@@ -3948,20 +3948,20 @@ function TacticsView({ career, onChange }) {
           </label>
 
           <label>
-            <div className="stat-label">Mentalité</div>
+            <div className="stat-label">MentalitÃ©</div>
             <select
               className="select"
               value={tactics.mentality}
               onChange={(event) => onChange({ mentality: event.target.value })}
             >
-              <option value="défensif">Défensif</option>
-              <option value="équilibré">Équilibré</option>
+              <option value="dÃ©fensif">DÃ©fensif</option>
+              <option value="Ã©quilibrÃ©">Ã‰quilibrÃ©</option>
               <option value="offensif">Offensif</option>
             </select>
           </label>
 
           <p className="muted" style={{ marginTop: 12 }}>
-            Titulaires sélectionnés : <b>{(tactics.starters || []).length}/11</b>
+            Titulaires sÃ©lectionnÃ©s : <b>{(tactics.starters || []).length}/11</b>
           </p>
         </div>
 
@@ -3970,12 +3970,12 @@ function TacticsView({ career, onChange }) {
           {starters.length ? (
             starters.map((player) => (
               <div key={player.id} className="fixture">
-                <span>{player.name} · {player.position}</span>
+                <span>{player.name} Â· {player.position}</span>
                 <strong>OVR {player.overall}</strong>
               </div>
             ))
           ) : (
-            <p className="muted">Aucun titulaire défini.</p>
+            <p className="muted">Aucun titulaire dÃ©fini.</p>
           )}
         </div>
       </div>
@@ -3994,8 +3994,8 @@ function TacticsView({ career, onChange }) {
                 onClick={() => toggleStarter(player)}
               >
                 <h3>{player.name}</h3>
-                <p className="muted">{player.position} · OVR {player.overall}</p>
-                <p className="muted">Forme {player.form} · Fatigue {player.fatigue}</p>
+                <p className="muted">{player.position} Â· OVR {player.overall}</p>
+                <p className="muted">Forme {player.form} Â· Fatigue {player.fatigue}</p>
                 <Kicker tone={selected ? "lime" : "cyan"}>
                   {selected ? "Titulaire" : "Disponible"}
                 </Kicker>
@@ -4015,10 +4015,10 @@ function AcademyView({ career, onAcademyAction }) {
     <div>
       <div className="club-row" style={{ justifyContent: "space-between", marginBottom: 16 }}>
         <div>
-          <Kicker tone="lime">Académie</Kicker>
+          <Kicker tone="lime">AcadÃ©mie</Kicker>
           <h2>Centre de formation</h2>
           <p className="muted">
-            Détecte, observe et promeut les meilleurs jeunes talents.
+            DÃ©tecte, observe et promeut les meilleurs jeunes talents.
           </p>
         </div>
 
@@ -4027,7 +4027,7 @@ function AcademyView({ career, onAcademyAction }) {
           className="secondary-btn"
           onClick={() => onAcademyAction(null, "refresh-academy")}
         >
-          Nouvelle détection
+          Nouvelle dÃ©tection
         </button>
       </div>
 
@@ -4038,20 +4038,20 @@ function AcademyView({ career, onAcademyAction }) {
               <div className="club-row" style={{ justifyContent: "space-between" }}>
                 <h3>{prospect.name}</h3>
                 <Kicker tone={prospect.revealedPotential ? "lime" : "amber"}>
-                  {prospect.revealedPotential ? `POT ${prospect.potential}` : "Potentiel caché"}
+                  {prospect.revealedPotential ? `POT ${prospect.potential}` : "Potentiel cachÃ©"}
                 </Kicker>
               </div>
 
               <p className="muted">
-                {prospect.country} · {prospect.position} · {prospect.age} ans
+                {prospect.country} Â· {prospect.position} Â· {prospect.age} ans
               </p>
 
-              <p>OVR estimé : <b>{prospect.overall}</b></p>
+              <p>OVR estimÃ© : <b>{prospect.overall}</b></p>
               <p className="soft">Profil : {prospect.archetype}</p>
               <p className="muted">Scouting : {prospect.scoutProgress}%</p>
 
               {prospect.promoted ? (
-                <p className="lime">Promu en équipe première</p>
+                <p className="lime">Promu en Ã©quipe premiÃ¨re</p>
               ) : (
                 <button
                   type="button"
@@ -4064,7 +4064,7 @@ function AcademyView({ career, onAcademyAction }) {
             </div>
           ))
         ) : (
-          <div className="card">Aucun prospect observé.</div>
+          <div className="card">Aucun prospect observÃ©.</div>
         )}
       </div>
     </div>
@@ -4081,9 +4081,9 @@ function FC26ImportView({ career, onImportJson, onImportResults }) {
       <div className="club-row" style={{ justifyContent: "space-between", marginBottom: 16 }}>
         <div>
           <Kicker tone="cyan">Import FC26</Kicker>
-          <h2>Importer des données réelles</h2>
+          <h2>Importer des donnÃ©es rÃ©elles</h2>
           <p className="muted">
-            Charge un fichier JSON/CSV ou colle des résultats rapides depuis FC26.
+            Charge un fichier JSON/CSV ou colle des rÃ©sultats rapides depuis FC26.
           </p>
         </div>
       </div>
@@ -4091,7 +4091,7 @@ function FC26ImportView({ career, onImportJson, onImportResults }) {
       <div className="grid-2" style={{ gap: 22 }}>
         <div className="card">
           <h3>Importer JSON/CSV</h3>
-          <p className="muted">Colle les données FC26 exportées depuis le jeu.</p>
+          <p className="muted">Colle les donnÃ©es FC26 exportÃ©es depuis le jeu.</p>
           <textarea
             rows={10}
             value={rawJson}
@@ -4109,7 +4109,7 @@ function FC26ImportView({ career, onImportJson, onImportResults }) {
               <option value="full">Complet</option>
               <option value="squad">Effectif uniquement</option>
               <option value="fixtures">Calendrier uniquement</option>
-              <option value="results">Résultats uniquement</option>
+              <option value="results">RÃ©sultats uniquement</option>
               <option value="table">Classement uniquement</option>
               <option value="budget">Budget uniquement</option>
             </select>
@@ -4119,14 +4119,14 @@ function FC26ImportView({ career, onImportJson, onImportResults }) {
               className="primary-btn"
               onClick={() => onImportJson(rawJson, partialMode)}
             >
-              Importer les données
+              Importer les donnÃ©es
             </button>
           </div>
         </div>
 
         <div className="card">
-          <h3>Importer résultats rapides</h3>
-          <p className="muted">Colle des lignes de scores FC26 pour mettre à jour le calendrier.</p>
+          <h3>Importer rÃ©sultats rapides</h3>
+          <p className="muted">Colle des lignes de scores FC26 pour mettre Ã  jour le calendrier.</p>
           <textarea
             rows={10}
             value={quickResults}
@@ -4146,14 +4146,14 @@ function FC26ImportView({ career, onImportJson, onImportResults }) {
       </div>
 
       <div className="card" style={{ marginTop: 20, background: UI_GRADIENTS.panel }}>
-        <h3>Résumé</h3>
+        <h3>RÃ©sumÃ©</h3>
         <p className="muted">
-          Votre club: <b>{career.club.name}</b> · Budget: <b>{money(career.budget)}</b>
+          Votre club: <b>{career.club.name}</b> Â· Budget: <b>{money(career.budget)}</b>
         </p>
         <p className="muted">
-          Joueurs FC26 importés: <b>{career.squad.length}</b> · Journée: <b>{career.week}</b>
+          Joueurs FC26 importÃ©s: <b>{career.squad.length}</b> Â· JournÃ©e: <b>{career.week}</b>
         </p>
-        <p className="muted">Les importations réelles sont prioritaires sur le calendrier et le classement.</p>
+        <p className="muted">Les importations rÃ©elles sont prioritaires sur le calendrier et le classement.</p>
       </div>
     </div>
   );
@@ -4175,7 +4175,7 @@ function MercatoView({ career, onDecision, onRecruitmentAction }) {
         <div>
           <h2>Mercato</h2>
           <p className="muted">
-            Fenêtre actuelle : <b>{getTransferWindowLabel(career.week)}</b>
+            FenÃªtre actuelle : <b>{getTransferWindowLabel(career.week)}</b>
           </p>
           <p className="muted">
             Tension mercato : <b>{career.transferTension}</b>
@@ -4186,7 +4186,7 @@ function MercatoView({ career, onDecision, onRecruitmentAction }) {
           className="secondary-btn"
           onClick={() => onRecruitmentAction(null, "refresh-market")}
         >
-          Actualiser le marché
+          Actualiser le marchÃ©
         </button>
       </div>
 
@@ -4204,7 +4204,7 @@ function MercatoView({ career, onDecision, onRecruitmentAction }) {
                     <div>
                       <h3>{offer.playerName}</h3>
                       <p className="muted">
-                        {offer.type === "loan" ? "Prêt" : "Transfert"}
+                        {offer.type === "loan" ? "PrÃªt" : "Transfert"}
                       </p>
                     </div>
                     <Kicker tone="amber">{offer.buyerClub}</Kicker>
@@ -4246,7 +4246,7 @@ function MercatoView({ career, onDecision, onRecruitmentAction }) {
           <div className="club-row" style={{ justifyContent: "space-between", gap: 12 }}>
             <div>
               <h3>Recrutement</h3>
-              <p className="muted">Marché actuel et shortlist de cibles.</p>
+              <p className="muted">MarchÃ© actuel et shortlist de cibles.</p>
             </div>
             <span className="muted">
               Budget : <b>{money(career.budget)}</b>
@@ -4259,7 +4259,7 @@ function MercatoView({ career, onDecision, onRecruitmentAction }) {
               shortlist.map((player) => (
                 <div key={player.id} className="transfer-line">
                   <p>
-                    {player.name} · {player.position} · OVR {player.overall}
+                    {player.name} Â· {player.position} Â· OVR {player.overall}
                   </p>
                   <div className="club-row" style={{ gap: 8, marginTop: 8 }}>
                     <button
@@ -4291,7 +4291,7 @@ function MercatoView({ career, onDecision, onRecruitmentAction }) {
                   <div>
                     <h3>{player.name}</h3>
                     <p className="muted">
-                      {player.position} · {player.age} ans
+                      {player.position} Â· {player.age} ans
                     </p>
                   </div>
                   <Kicker tone={player.shortlisted ? "lime" : "cyan"}>
@@ -4299,10 +4299,10 @@ function MercatoView({ career, onDecision, onRecruitmentAction }) {
                   </Kicker>
                 </div>
                 <p className="muted">
-                  OVR {player.overall} · POT {player.potential}
+                  OVR {player.overall} Â· POT {player.potential}
                 </p>
                 <p className="muted">
-                  Salaire estimé {money(player.wage)} · Prix {money(player.price)}
+                  Salaire estimÃ© {money(player.wage)} Â· Prix {money(player.price)}
                 </p>
                 <div className="club-row" style={{ gap: 8, marginTop: 12 }}>
                   <button
@@ -4337,21 +4337,21 @@ function MercatoView({ career, onDecision, onRecruitmentAction }) {
           resolvedOffers.map((offer) => (
             <div key={offer.id} className="transfer-line">
               <p>
-                S{offer.resolvedWeek || career.week} · {offer.playerName} → {offer.buyerClub}
+                S{offer.resolvedWeek || career.week} Â· {offer.playerName} â†’ {offer.buyerClub}
               </p>
               <p className="muted">
                 {offer.status === "accepted"
-                  ? `${offer.type === "loan" ? "Prêt" : "Vente"} pour ${money(offer.amount)}`
+                  ? `${offer.type === "loan" ? "PrÃªt" : "Vente"} pour ${money(offer.amount)}`
                   : offer.status === "rejected"
-                  ? `Offre refusée à ${money(offer.amount)}`
+                  ? `Offre refusÃ©e Ã  ${money(offer.amount)}`
                   : offer.status === "countered"
-                  ? `Contre-proposition demandée à ${money(offer.counterAmount)}`
+                  ? `Contre-proposition demandÃ©e Ã  ${money(offer.counterAmount)}`
                   : `Statut : ${offer.status}`}
               </p>
             </div>
           ))
         ) : (
-          <p className="muted">Aucun mouvement de mercato enregistré.</p>
+          <p className="muted">Aucun mouvement de mercato enregistrÃ©.</p>
         )}
       </div>
     </div>
@@ -4390,7 +4390,7 @@ function NewsView({ career }) {
           </div>
         ))
       ) : (
-        <div className="card">Aucune news pour l’instant.</div>
+        <div className="card">Aucune news pour lâ€™instant.</div>
       )}
     </div>
   );
@@ -4400,15 +4400,15 @@ function HistoryView({ career }) {
   return (
     <div className="grid-2">
       <div className="card">
-        <h2>Décisions</h2>
+        <h2>DÃ©cisions</h2>
         {career.decisions.length ? (
           career.decisions.map((decision) => (
             <p key={decision.id}>
-              S{decision.week} · {decision.event} → <b>{decision.choice}</b>
+              S{decision.week} Â· {decision.event} â†’ <b>{decision.choice}</b>
             </p>
           ))
         ) : (
-          <p className="muted">Aucune décision.</p>
+          <p className="muted">Aucune dÃ©cision.</p>
         )}
       </div>
       <div className="card">
@@ -4416,7 +4416,7 @@ function HistoryView({ career }) {
         {career.activeStorylines.length ? (
           career.activeStorylines.map((story) => (
             <p key={story.id}>
-              {story.title} · Dernier choix : <b>{story.lastChoice}</b>
+              {story.title} Â· Dernier choix : <b>{story.lastChoice}</b>
             </p>
           ))
         ) : (
@@ -4424,27 +4424,27 @@ function HistoryView({ career }) {
         )}
       </div>
       <div className="card">
-        <h2>Académie</h2>
+        <h2>AcadÃ©mie</h2>
         {career.academyLog && career.academyLog.length ? (
           career.academyLog.slice(0, 8).map((entry) => (
             <p key={entry.id}>
-              S{entry.week} · {entry.label || entry.playerName || entry.action}
+              S{entry.week} Â· {entry.label || entry.playerName || entry.action}
             </p>
           ))
         ) : (
-          <p className="muted">Aucun journal d’académie.</p>
+          <p className="muted">Aucun journal dâ€™acadÃ©mie.</p>
         )}
       </div>
       <div className="card">
-        <h2>Médias</h2>
+        <h2>MÃ©dias</h2>
         {(career.mediaLog || []).length ? (
           career.mediaLog.map((item) => (
             <p key={item.id}>
-              S{item.week} · {item.action} → <b>{item.label}</b>
+              S{item.week} Â· {item.action} â†’ <b>{item.label}</b>
             </p>
           ))
         ) : (
-          <p className="muted">Aucune action média.</p>
+          <p className="muted">Aucune action mÃ©dia.</p>
         )}
       </div>
       <div className="card">
@@ -4452,11 +4452,11 @@ function HistoryView({ career }) {
         {career.seasonHistory && career.seasonHistory.length ? (
           career.seasonHistory.slice(0, 8).map((entry) => (
             <p key={entry.id}>
-              Saison {entry.season} · Position {entry.position} · Top scorer {entry.topScorer || "-"}
+              Saison {entry.season} Â· Position {entry.position} Â· Top scorer {entry.topScorer || "-"}
             </p>
           ))
         ) : (
-          <p className="muted">Aucun résumé de saison.</p>
+          <p className="muted">Aucun rÃ©sumÃ© de saison.</p>
         )}
       </div>
       <div className="card">
@@ -4464,7 +4464,7 @@ function HistoryView({ career }) {
         {career.transferHistory && career.transferHistory.length ? (
           career.transferHistory.slice(0, 8).map((entry) => (
             <p key={entry.id}>
-              S{entry.week} · {entry.playerName} · {entry.action.replace("_", " ")}
+              S{entry.week} Â· {entry.playerName} Â· {entry.action.replace("_", " ")}
             </p>
           ))
         ) : (
@@ -4476,7 +4476,7 @@ function HistoryView({ career }) {
         {career.contractsLog && career.contractsLog.length ? (
           career.contractsLog.slice(0, 8).map((entry) => (
             <p key={entry.id}>
-              S{entry.week} · {entry.playerName} · {entry.action.replace("_", " ")}
+              S{entry.week} Â· {entry.playerName} Â· {entry.action.replace("_", " ")}
             </p>
           ))
         ) : (
@@ -4497,7 +4497,7 @@ function BoardView({ career, onContractAction }) {
         <div className="club-row" style={{ justifyContent: "space-between", marginBottom: 16 }}>
           <div>
             <h2>Direction</h2>
-            <p className="muted">Suivez les objectifs de la direction et gérez les contrats clés.</p>
+            <p className="muted">Suivez les objectifs de la direction et gÃ©rez les contrats clÃ©s.</p>
           </div>
           <Kicker tone="cyan">Confiance {career.boardTrust}%</Kicker>
         </div>
@@ -4532,7 +4532,7 @@ function BoardView({ career, onContractAction }) {
             contractAlerts.map((player) => (
               <div key={player.id} className="transfer-line">
                 <p>
-                  {player.name} · {player.position} · {player.contract.yearsRemaining} an(s) restants
+                  {player.name} Â· {player.position} Â· {player.contract.yearsRemaining} an(s) restants
                 </p>
                 <div className="club-row" style={{ gap: 8, marginTop: 8 }}>
                   {player.contract.yearsRemaining <= 1 ? (
@@ -4549,7 +4549,7 @@ function BoardView({ career, onContractAction }) {
                         className="secondary-btn"
                         onClick={() => onContractAction(player, "release")}
                       >
-                        Libérer
+                        LibÃ©rer
                       </button>
                     </>
                   ) : (
@@ -4575,10 +4575,10 @@ function BoardView({ career, onContractAction }) {
             career.contractsLog.slice(0, 8).map((entry) => (
               <div key={entry.id} className="transfer-line">
                 <p>
-                  S{entry.week} · {entry.playerName} · {entry.action.replace("_", " ")}
+                  S{entry.week} Â· {entry.playerName} Â· {entry.action.replace("_", " ")}
                 </p>
                 {entry.wage ? (
-                  <p className="muted">Salaire {money(entry.wage)} · Prime {money(entry.signingFee)}</p>
+                  <p className="muted">Salaire {money(entry.wage)} Â· Prime {money(entry.signingFee)}</p>
                 ) : null}
               </div>
             ))
@@ -4606,7 +4606,7 @@ function LeagueTableView({ career }) {
       >
         <div>
           <Kicker tone="cyan">Championnat</Kicker>
-          <h2>Classement simulé</h2>
+          <h2>Classement simulÃ©</h2>
         </div>
         <span className="muted">Semaine {career.week}</span>
       </div>
@@ -4678,7 +4678,7 @@ function DeltaLine({ label, before, after }) {
     <div className="fixture">
       <span>{label}</span>
       <strong className={positive ? "lime" : negative ? "red" : "muted"}>
-        {before} → {after}{" "}
+        {before} â†’ {after}{" "}
         {delta !== 0 ? `(${delta > 0 ? "+" : ""}${delta})` : "(=)"}
       </strong>
     </div>
@@ -4705,10 +4705,10 @@ function WeekSummaryModal({ summary, onClose, onOpenEvent }) {
           }}
         />
         <div style={{ padding: 28 }}>
-          <Kicker tone="lime">Résumé de semaine</Kicker>
+          <Kicker tone="lime">RÃ©sumÃ© de semaine</Kicker>
           <h1 style={{ marginTop: 14 }}>Semaine {summary.week}</h1>
           <div className="card pitch" style={{ marginTop: 16 }}>
-            <h2>Résultat</h2>
+            <h2>RÃ©sultat</h2>
             <p className="soft" style={{ fontSize: 22, fontWeight: 900 }}>
               {summary.result}
             </p>
@@ -4717,16 +4717,16 @@ function WeekSummaryModal({ summary, onClose, onOpenEvent }) {
             </p>
             {summary.injuryReport ? (
               <div className="card" style={{ marginTop: 16 }}>
-                <Kicker tone="red">Alerte médicale</Kicker>
-                <h3>{summary.injuryReport.playerName} est blessé</h3>
+                <Kicker tone="red">Alerte mÃ©dicale</Kicker>
+                <h3>{summary.injuryReport.playerName} est blessÃ©</h3>
                 <p className="muted">
                   Blessure : <b>{summary.injuryReport.injury.label}</b>
                 </p>
                 <p className="muted">
-                  Durée estimée : <b>{summary.injuryReport.injury.weeksRemaining} semaine(s)</b>
+                  DurÃ©e estimÃ©e : <b>{summary.injuryReport.injury.weeksRemaining} semaine(s)</b>
                 </p>
                 <p className="muted">
-                  Gravité : <b>{summary.injuryReport.injury.severity}</b>
+                  GravitÃ© : <b>{summary.injuryReport.injury.severity}</b>
                 </p>
               </div>
             ) : null}
@@ -4740,12 +4740,12 @@ function WeekSummaryModal({ summary, onClose, onOpenEvent }) {
                 after={summary.after.morale}
               />
               <DeltaLine
-                label="Réputation"
+                label="RÃ©putation"
                 before={summary.before.reputation}
                 after={summary.after.reputation}
               />
               <DeltaLine
-                label="Popularité"
+                label="PopularitÃ©"
                 before={summary.before.popularity}
                 after={summary.after.popularity}
               />
@@ -4761,7 +4761,7 @@ function WeekSummaryModal({ summary, onClose, onOpenEvent }) {
               />
             </div>
             <div className="card media">
-              <h3>Événement tiré</h3>
+              <h3>Ã‰vÃ©nement tirÃ©</h3>
               <Kicker>{summary.eventCategory}</Kicker>
               <h2>{summary.eventTitle}</h2>
               <p className="muted">{summary.eventDescription}</p>
@@ -4773,10 +4773,10 @@ function WeekSummaryModal({ summary, onClose, onOpenEvent }) {
           </div>
           {summary.mediaBuzz !== undefined ? (
             <div className="card" style={{ marginTop: 16 }}>
-              <Kicker tone="amber">Impact médias</Kicker>
-              <h3>Buzz médiatique : {summary.mediaBuzz}</h3>
+              <Kicker tone="amber">Impact mÃ©dias</Kicker>
+              <h3>Buzz mÃ©diatique : {summary.mediaBuzz}</h3>
               <p className="muted">
-                Les réseaux sociaux et la presse réagissent à la semaine du club.
+                Les rÃ©seaux sociaux et la presse rÃ©agissent Ã  la semaine du club.
               </p>
             </div>
           ) : null}
@@ -4801,7 +4801,7 @@ function WeekSummaryModal({ summary, onClose, onOpenEvent }) {
               className="secondary-btn"
               onClick={onOpenEvent}
             >
-              Voir l’événement
+              Voir lâ€™Ã©vÃ©nement
             </button>
             <button type="button" className="primary-btn" onClick={onClose}>
               Continuer
@@ -4833,18 +4833,18 @@ export default function CareerApp() {
   const tabs = useMemo(
     () => [
       ["dashboard", "Hub"],
-      ["events", "Événements"],
-      ["media", "Médias"],
+      ["events", "Ã‰vÃ©nements"],
+      ["media", "MÃ©dias"],
       ["squad", "Effectif"],
       ["tactics", "Tactique"],
       ["calendar", "Calendrier"],
       ["table", "Classement"],
       ["mercato", "Mercato"],
-      ["academy", "Académie"],
+      ["academy", "AcadÃ©mie"],
       ["board", "Direction"],
       ["news", "News"],
       ["history", "Historique"],
-      ["settings", "Paramètres"],
+      ["settings", "ParamÃ¨tres"],
       ["fc26", "Import FC26"],
       ["player-pro", "Mode Joueur Pro"],
     ],
@@ -4930,8 +4930,8 @@ const createNewCareer = useCallback((type, club, options = {}) => {
               id: uid("news"),
               week: Number(importedData.week || 1),
               type: "Import FC26",
-              title: "Carrière créée depuis FC26",
-              body: "Les données de départ FC26 ont été chargées dans le Career Hub.",
+              title: "CarriÃ¨re crÃ©Ã©e depuis FC26",
+              body: "Les donnÃ©es de dÃ©part FC26 ont Ã©tÃ© chargÃ©es dans le Career Hub.",
             },
             ...(nextBase.news || []),
           ]
@@ -4968,8 +4968,8 @@ const createNewCareer = useCallback((type, club, options = {}) => {
           id: uid("news"),
           week: nextCareer.week,
           type: "Mercato",
-          title: "Retour de prêt",
-          body: `${loanTick.returningPlayers.join(", ")} revient/reviennent de prêt.`,
+          title: "Retour de prÃªt",
+          body: `${loanTick.returningPlayers.join(", ")} revient/reviennent de prÃªt.`,
         },
         ...(nextCareer.news || []),
       ];
@@ -5015,7 +5015,7 @@ const createNewCareer = useCallback((type, club, options = {}) => {
           title: `${transferOffer.buyerClub} approche ${transferOffer.playerName}`,
           body:
             transferOffer.type === "loan"
-              ? `${transferOffer.buyerClub} propose un prêt pour ${transferOffer.playerName}.`
+              ? `${transferOffer.buyerClub} propose un prÃªt pour ${transferOffer.playerName}.`
               : `${transferOffer.buyerClub} propose ${money(transferOffer.amount)} pour ${transferOffer.playerName}.`,
         },
         ...(nextCareer.news || []),
@@ -5074,7 +5074,7 @@ const createNewCareer = useCallback((type, club, options = {}) => {
           id: uid("news"),
           week: nextCareer.week,
           type: "Direction",
-          title: "Contrats à surveiller",
+          title: "Contrats Ã  surveiller",
           body: `${contractAlerts.length} joueur(s) arrivent dans une zone contractuelle sensible.`,
         },
         ...nextCareer.news,
@@ -5235,7 +5235,7 @@ const createNewCareer = useCallback((type, club, options = {}) => {
                   title: `${existingOffer.playerName} rejoint ${existingOffer.buyerClub}`,
                   body:
                     existingOffer.type === "loan"
-                      ? `${existingOffer.playerName} part en prêt à ${existingOffer.buyerClub}.`
+                      ? `${existingOffer.playerName} part en prÃªt Ã  ${existingOffer.buyerClub}.`
                       : `${existingOffer.playerName} quitte le club pour ${money(existingOffer.amount)}.`,
                 },
                 ...(item.news || []),
@@ -5307,8 +5307,8 @@ const createNewCareer = useCallback((type, club, options = {}) => {
                   id: uid("news"),
                   week: item.week,
                   type: "Mercato",
-                  title: `Contre-proposition envoyée pour ${existingOffer.playerName}`,
-                  body: `Le club demande désormais ${money(counterAmount)} à ${existingOffer.buyerClub}.`,
+                  title: `Contre-proposition envoyÃ©e pour ${existingOffer.playerName}`,
+                  body: `Le club demande dÃ©sormais ${money(counterAmount)} Ã  ${existingOffer.buyerClub}.`,
                 },
                 ...(item.news || []),
               ],
@@ -5373,8 +5373,8 @@ const createNewCareer = useCallback((type, club, options = {}) => {
                   id: uid("news"),
                   week: item.week,
                   type: "Mercato",
-                  title: `${marketPlayer.name} intéresse ton entourage`,
-                  body: `Ce profil représente une piste de carrière ou un futur coéquipier potentiel.`,
+                  title: `${marketPlayer.name} intÃ©resse ton entourage`,
+                  body: `Ce profil reprÃ©sente une piste de carriÃ¨re ou un futur coÃ©quipier potentiel.`,
                 },
                 ...(item.news || []),
               ],
@@ -5432,8 +5432,8 @@ const createNewCareer = useCallback((type, club, options = {}) => {
                 id: uid("news"),
                 week: item.week,
                 type: "Mercato",
-                title: `${marketPlayer.name} signe à ${item.club.name}`,
-                body: `${item.club.name} officialise l’arrivée de ${marketPlayer.name} pour ${money(price)}.`,
+                title: `${marketPlayer.name} signe Ã  ${item.club.name}`,
+                body: `${item.club.name} officialise lâ€™arrivÃ©e de ${marketPlayer.name} pour ${money(price)}.`,
               },
               ...(item.news || []),
             ],
@@ -5450,7 +5450,7 @@ const createNewCareer = useCallback((type, club, options = {}) => {
                 week: item.week,
                 type: "Mercato",
                 title: "Nouvelle liste de recrutement disponible",
-                body: "Le staff a actualisé les profils observés sur le marché.",
+                body: "Le staff a actualisÃ© les profils observÃ©s sur le marchÃ©.",
               },
               ...(item.news || []),
             ],
@@ -5512,9 +5512,9 @@ const createNewCareer = useCallback((type, club, options = {}) => {
             {
               id: uid("social"),
               week: item.week,
-              author: "Conférence de presse",
+              author: "ConfÃ©rence de presse",
               sentiment: MEDIA_SENTIMENTS.VIRAL,
-              text: `Réponse presse : ${choice.label}`,
+              text: `RÃ©ponse presse : ${choice.label}`,
               likes: randomInt(250, 3200),
               replies: randomInt(20, 400),
               topic: "press",
@@ -5551,9 +5551,9 @@ const createNewCareer = useCallback((type, club, options = {}) => {
                 {
                   id: uid("news"),
                   week: item.week,
-                  type: "Académie",
+                  type: "AcadÃ©mie",
                   title: "Budget insuffisant pour le scouting",
-                  body: `Le club ne peut pas financer une nouvelle tournée de détection à ${money(cost)}.`,
+                  body: `Le club ne peut pas financer une nouvelle tournÃ©e de dÃ©tection Ã  ${money(cost)}.`,
                 },
                 ...(item.news || []),
               ],
@@ -5569,7 +5569,7 @@ const createNewCareer = useCallback((type, club, options = {}) => {
                 id: uid("academylog"),
                 week: item.week,
                 action: "refresh",
-                label: "Nouvelle génération de prospects",
+                label: "Nouvelle gÃ©nÃ©ration de prospects",
               },
               ...(item.academyLog || []),
             ],
@@ -5577,8 +5577,8 @@ const createNewCareer = useCallback((type, club, options = {}) => {
               {
                 id: uid("news"),
                 week: item.week,
-                type: "Académie",
-                title: "Nouvelle génération observée",
+                type: "AcadÃ©mie",
+                title: "Nouvelle gÃ©nÃ©ration observÃ©e",
                 body: "Le centre de formation propose une nouvelle liste de jeunes prospects.",
               },
               ...(item.news || []),
@@ -5601,9 +5601,9 @@ const createNewCareer = useCallback((type, club, options = {}) => {
                 {
                   id: uid("news"),
                   week: item.week,
-                  type: "Académie",
+                  type: "AcadÃ©mie",
                   title: `${found.name} est encore trop jeune`,
-                  body: "Le staff recommande d’attendre avant une promotion en équipe première.",
+                  body: "Le staff recommande dâ€™attendre avant une promotion en Ã©quipe premiÃ¨re.",
                 },
                 ...(item.news || []),
               ],
@@ -5636,9 +5636,9 @@ const createNewCareer = useCallback((type, club, options = {}) => {
               {
                 id: uid("news"),
                 week: item.week,
-                type: "Académie",
-                title: `${found.name} promu en équipe première`,
-                body: `${found.name}, ${found.position}, rejoint l’effectif professionnel.`,
+                type: "AcadÃ©mie",
+                title: `${found.name} promu en Ã©quipe premiÃ¨re`,
+                body: `${found.name}, ${found.position}, rejoint lâ€™effectif professionnel.`,
               },
               ...(item.news || []),
             ],
@@ -5674,8 +5674,8 @@ const createNewCareer = useCallback((type, club, options = {}) => {
               id: uid("news"),
               week: item.week,
               type: "Import",
-              title: "Import FC26 effectué",
-              body: "Les données FC26 ont été intégrées au club, avec renforts et calendrier actualisés.",
+              title: "Import FC26 effectuÃ©",
+              body: "Les donnÃ©es FC26 ont Ã©tÃ© intÃ©grÃ©es au club, avec renforts et calendrier actualisÃ©s.",
             },
             ...(item.news || []),
           ],
@@ -5713,8 +5713,8 @@ const createNewCareer = useCallback((type, club, options = {}) => {
               id: uid("news"),
               week: item.week,
               type: "Import",
-              title: "Résultats rapides importés",
-              body: "Les scores FC26 ont été appliqués aux rencontres du calendrier.",
+              title: "RÃ©sultats rapides importÃ©s",
+              body: "Les scores FC26 ont Ã©tÃ© appliquÃ©s aux rencontres du calendrier.",
             },
             ...(item.news || []),
           ],
@@ -5779,8 +5779,8 @@ const createNewCareer = useCallback((type, club, options = {}) => {
                   id: uid("news"),
                   week: item.week,
                   type: "Direction",
-                  title: `Renouvellement bloqué pour ${target.name}`,
-                  body: `Le club ne peut pas couvrir la prime estimée à ${money(signingFee)}.`,
+                  title: `Renouvellement bloquÃ© pour ${target.name}`,
+                  body: `Le club ne peut pas couvrir la prime estimÃ©e Ã  ${money(signingFee)}.`,
                 },
                 ...(item.news || []),
               ],
@@ -5823,7 +5823,7 @@ const createNewCareer = useCallback((type, club, options = {}) => {
                 week: item.week,
                 type: "Direction",
                 title: `${target.name} prolonge son contrat`,
-                body: `${target.name} signe une prolongation avec un salaire estimé à ${money(newWage)}.`,
+                body: `${target.name} signe une prolongation avec un salaire estimÃ© Ã  ${money(newWage)}.`,
               },
               ...(item.news || []),
             ],
@@ -5876,7 +5876,7 @@ const createNewCareer = useCallback((type, club, options = {}) => {
                 week: item.week,
                 type: "Direction",
                 title: `${target.name} quitte le club`,
-                body: `${target.name} est libéré à l’approche de la fin de son contrat.`,
+                body: `${target.name} est libÃ©rÃ© Ã  lâ€™approche de la fin de son contrat.`,
               },
               ...(item.news || []),
             ],
@@ -6044,12 +6044,12 @@ const createNewCareer = useCallback((type, club, options = {}) => {
               </div>
             </div>
             <p className="muted">
-              Saison {career.season} · Semaine {career.week} · {career.month}
+              Saison {career.season} Â· Semaine {career.week} Â· {career.month}
             </p>
             <select className="select" value={activeId} onChange={selectCareer}>
               {careers.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.club.name} — {item.type}
+                  {item.club.name} â€” {item.type}
                 </option>
               ))}
             </select>
@@ -6149,7 +6149,7 @@ const createNewCareer = useCallback((type, club, options = {}) => {
                 className="primary-btn"
                 onClick={advanceWeek}
               >
-                ▶ Avancer d’une semaine
+                â–¶ Avancer dâ€™une semaine
               </button>
             </div>
           </aside>
@@ -6167,7 +6167,7 @@ const createNewCareer = useCallback((type, club, options = {}) => {
                 <Stat label="Budget" value={money(career.budget)} tone="cyan" />
                 <Stat label="Moral" value={career.morale} tone="lime" />
                 <Stat
-                  label="Réputation"
+                  label="RÃ©putation"
                   value={career.reputation}
                   tone="cyan"
                 />
@@ -6195,3 +6195,6 @@ const createNewCareer = useCallback((type, club, options = {}) => {
     </div>
   );
 }
+
+
+

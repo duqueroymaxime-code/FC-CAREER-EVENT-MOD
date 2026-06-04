@@ -1,0 +1,76 @@
+MODE D'EMPLOI — IMPORT FC26 DANS FC CAREER HUB
+
+OBJECTIF
+Importer ta vraie carrière FC26 dans FC Career Hub sans écrire de JSON compliqué.
+
+MÉTHODE RECOMMANDÉE
+Tu remplis 4 fichiers simples :
+1. club.json
+2. squad.csv
+3. fixtures.csv
+4. table.csv
+
+PUIS TU LANCES :
+node tools\convert-fc26-import-pack.cjs
+
+LE SCRIPT GÉNÈRE :
+public\imports\fc26-career-import.json
+
+ENSUITE :
+1. Ouvre FC Career Hub.
+2. Clique Manager Career.
+3. Choisis Import FC26.
+4. Ouvre public\imports\fc26-career-import.json.
+5. Copie tout le contenu.
+6. Colle-le dans FC Career Hub.
+7. Clique Créer depuis données FC26.
+
+COMMENT REMPLIR LES FICHIERS
+
+club.json
+- clubName : nom du club dans FC26
+- league : ligue ou championnat
+- season : numéro de saison
+- week : semaine ou journée actuelle
+- budget : budget en millions
+- managerName : nom du coach
+
+squad.csv
+name : nom du joueur
+position : poste
+age : âge
+overall : note générale
+potential : potentiel
+goals : buts
+appearances : matchs joués
+contractYears : années de contrat restantes
+wage : salaire estimé en millions
+
+fixtures.csv
+week : journée
+home : équipe domicile
+away : équipe extérieur
+score : score au format 2-1
+competition : Championnat, Coupe, Europe, Amical...
+
+table.csv
+team : nom de l'équipe
+played : matchs joués
+won : victoires
+drawn : nuls
+lost : défaites
+gf : buts pour
+ga : buts contre
+gd : différence de buts
+points : points
+
+LIVE EDITOR
+Avec FC Live Editor, récupère les infos dans :
+- Players Editor pour l'effectif
+- Teams Editor pour le club et le budget
+- League Table pour le classement
+- Transfer History si tu veux ajouter les transferts plus tard
+
+CONSEIL
+Commence avec club.json + squad.csv + fixtures.csv.
+Tu peux ajouter table.csv plus tard.

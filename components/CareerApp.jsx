@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-const STORAGE_KEY = "fifa-career-overhaul-real-leagues-v6";
+const STORAGE_KEY = "fifa-career-overhaul-player-injuries-squads-v8";
 const DEFAULT_THEME = "dark";
 const DEFAULT_SCREEN = "home";
 const DEFAULT_TAB = "dashboard";
@@ -103,6 +103,48 @@ const LEAGUE_PRESETS = {
   ],
 };
 
+const SQUAD_PRESETS = {
+  "Paris Saint-Germain": [
+    ["Gianluigi Donnarumma", "GB", 26, 87],
+    ["Achraf Hakimi", "DD", 27, 84],
+    ["Marquinhos", "DC", 32, 85],
+    ["Nuno Mendes", "DG", 24, 84],
+    ["Vitinha", "MC", 26, 85],
+    ["Warren Zaïre-Emery", "MC", 20, 82],
+    ["Ousmane Dembélé", "AD", 29, 86],
+    ["Bradley Barcola", "AG", 24, 83],
+    ["Gonçalo Ramos", "BU", 25, 82],
+  ],
+
+  "Olympique de Marseille": [
+    ["Pau López", "GB", 31, 79],
+    ["Leonardo Balerdi", "DC", 27, 79],
+    ["Quentin Merlin", "DG", 24, 77],
+    ["Geoffrey Kondogbia", "MDC", 33, 78],
+    ["Amine Harit", "MOC", 29, 78],
+    ["Pierre-Emerick Aubameyang", "BU", 37, 81],
+    ["Iliman Ndiaye", "AD", 26, 78],
+  ],
+
+  Arsenal: [
+    ["David Raya", "GB", 30, 83],
+    ["William Saliba", "DC", 25, 87],
+    ["Gabriel Magalhães", "DC", 28, 85],
+    ["Ben White", "DD", 28, 82],
+    ["Declan Rice", "MDC", 27, 87],
+    ["Martin Ødegaard", "MOC", 27, 88],
+    ["Bukayo Saka", "AD", 24, 89],
+    ["Gabriel Martinelli", "AG", 25, 84],
+    ["Kai Havertz", "BU", 27, 83],
+  ],
+
+  "Girondins de Bordeaux": [
+    ["Lassana Diabaté", "GB", 28, 66],
+    ["Jean Grillot", "DC", 22, 61],
+    ["Adrien Louveau", "DC", 25, 62],
+  ],
+};
+
 const MONTHS = [
   "Août",
   "Septembre",
@@ -151,9 +193,83 @@ const LAST_NAMES = [
   "Diallo",
   "Traoré",
 ];
+
+const PLAYER_PRESETS = {
+  "Paris Saint-Germain": [
+    { name: "Kylian Mbappé", position: "BU", overall: 92 },
+    { name: "Neymar Jr", position: "MOC", overall: 90 },
+    { name: "Achraf Hakimi", position: "DD", overall: 86 },
+    { name: "Marquinhos", position: "DC", overall: 85 },
+    { name: "Marco Verratti", position: "MC", overall: 85 },
+    { name: "Gianluigi Donnarumma", position: "GB", overall: 88 },
+    { name: "Presnel Kimpembe", position: "DC", overall: 84 },
+    { name: "Hugo Ekitiké", position: "BU", overall: 82 },
+    { name: "Carlos Soler", position: "MC", overall: 83 },
+    { name: "Warren Zaire-Emery", position: "MDC", overall: 80 },
+  ],
+  "Olympique de Marseille": [
+    { name: "Dimitri Payet", position: "MOC", overall: 84 },
+    { name: "Matteo Guendouzi", position: "MDC", overall: 82 },
+    { name: "William Saliba", position: "DC", overall: 85 },
+    { name: "Pierre-Emerick Aubameyang", position: "BU", overall: 83 },
+    { name: "Konrad de la Fuente", position: "AG", overall: 78 },
+    { name: "Pape Gueye", position: "MDC", overall: 78 },
+    { name: "Gerson", position: "MC", overall: 80 },
+    { name: "Pol Lirola", position: "DG", overall: 79 },
+    { name: "Steve Mandanda", position: "GB", overall: 79 },
+    { name: "Luis Henrique", position: "AD", overall: 76 },
+  ],
+  Arsenal: [
+    { name: "Bukayo Saka", position: "AD", overall: 88 },
+    { name: "Gabriel Martinelli", position: "AG", overall: 85 },
+    { name: "Martin Ødegaard", position: "MOC", overall: 86 },
+    { name: "William Saliba", position: "DC", overall: 85 },
+    { name: "Oleksandr Zinchenko", position: "DG", overall: 83 },
+    { name: "Gabriel Jesus", position: "BU", overall: 84 },
+    { name: "Thomas Partey", position: "MDC", overall: 82 },
+    { name: "Ben White", position: "DC", overall: 82 },
+    { name: "Aaron Ramsdale", position: "GB", overall: 83 },
+    { name: "Jorginho", position: "MC", overall: 80 },
+  ],
+  "Girondins de Bordeaux": [
+    { name: "Calvin Ramsay", position: "DD", overall: 74 },
+    { name: "Jules Koundé", position: "DC", overall: 83 },
+    { name: "Hwang Ui-jo", position: "BU", overall: 79 },
+    { name: "M’Baye Niang", position: "BU", overall: 75 },
+    { name: "Yacine Adli", position: "MOC", overall: 77 },
+    { name: "Loris Benito", position: "DG", overall: 74 },
+    { name: "Nicolas De Préville", position: "AD", overall: 73 },
+    { name: "Enzo Crivelli", position: "BU", overall: 76 },
+    { name: "Toma Basic", position: "MC", overall: 74 },
+    { name: "Thomas Touré", position: "AG", overall: 73 },
+  ],
+};
+
+function createSquadForClub(club) {
+  const preset = SQUAD_PRESETS[club.name];
+
+  if (!preset) {
+    return Array.from({ length: 22 }, (_, index) =>
+      createPlayer(index, club.name),
+    );
+  }
+
+  const presetPlayers = preset.map((player) =>
+    createPresetPlayer(player, club.name),
+  );
+
+  const generatedPlayers = Array.from(
+    { length: Math.max(0, 22 - presetPlayers.length) },
+    (_, index) => createPlayer(index, club.name),
+  );
+
+  return [...presetPlayers, ...generatedPlayers];
+}
+
 const INJURY_TYPES = [
   {
     label: "Entorse légère",
+    severity: "modérée",
     minWeeks: 2,
     maxWeeks: 3,
     formPenalty: 6,
@@ -476,6 +592,114 @@ const EVENT_TEMPLATES = {
   ],
 };
 
+const PLAYER_EVENT_TEMPLATES = {
+  Match: [
+    {
+      type: "player_performance",
+      title: "doit réagir après son dernier match",
+      trigger: "note de match",
+      hook: "Le coach attend une réponse sur le terrain.",
+      story: "Ta place dans le onze dépend de ta capacité à confirmer rapidement.",
+      choices: [
+        "Demander plus de temps de jeu",
+        "Travailler en silence",
+        "Parler au coach",
+        "Répondre dans la presse",
+      ],
+    },
+    {
+      type: "coach_talk",
+      title: "est convoqué par le coach",
+      trigger: "gestion du rôle",
+      hook: "Le coach veut clarifier ton statut dans le groupe.",
+      story: "Cette discussion peut influencer ta titularisation dans les prochaines semaines.",
+      choices: [
+        "Accepter son plan",
+        "Demander une place de titulaire",
+        "Rester prudent",
+        "Montrer de l’agacement",
+      ],
+    },
+  ],
+
+  Moral: [
+    {
+      type: "player_morale",
+      title: "doute de sa progression",
+      trigger: "confiance personnelle",
+      hook: "Tu sens que ta carrière n’avance pas assez vite.",
+      story: "Tu dois choisir entre patience, ambition et prise de risque.",
+      choices: [
+        "Demander un entretien",
+        "Changer d’entraînement",
+        "Forcer un départ",
+        "Rester patient",
+      ],
+    },
+  ],
+
+  Mercato: [
+    {
+      type: "player_transfer",
+      title: "reçoit un intérêt d’un autre club",
+      trigger: "rumeur personnelle",
+      hook: "Un club suit ton évolution et prépare peut-être une approche.",
+      story: "Ton entourage pense que c’est peut-être le bon moment pour viser plus haut.",
+      choices: [
+        "Ouvrir la porte",
+        "Rester fidèle",
+        "Demander plus d’informations",
+        "Mettre la pression au club",
+      ],
+    },
+    {
+      type: "star_message",
+      title: "est mentionné par une star adverse",
+      trigger: "séduction mercato",
+      hook: "Une star d’un autre club parle de toi en interview.",
+      story: "Ce message peut faire monter ta cote et attirer les médias.",
+      choices: [
+        "Répondre positivement",
+        "Ignorer",
+        "Flatter le club actuel",
+        "Laisser planer le doute",
+      ],
+    },
+  ],
+
+  Médias: [
+    {
+      type: "player_media",
+      title: "fait parler les médias",
+      trigger: "pression individuelle",
+      hook: "Les journalistes commencent à analyser ton avenir.",
+      story: "Chaque phrase peut influencer ton image auprès du coach, des supporters et des recruteurs.",
+      choices: [
+        "Rester humble",
+        "Afficher tes ambitions",
+        "Éviter les médias",
+        "Envoyer un message fort",
+      ],
+    },
+  ],
+
+  Blessures: [
+    {
+      type: "player_injury",
+      title: "doit gérer une alerte physique",
+      trigger: "fatigue personnelle",
+      hook: "Le staff médical te conseille de ralentir.",
+      story: "Tu peux préserver ton corps ou prendre le risque de jouer.",
+      choices: [
+        "Accepter le repos",
+        "Demander à jouer",
+        "Adapter l’entraînement",
+        "Consulter le staff",
+      ],
+    },
+  ],
+};
+
 function clamp(n, min = 0, max = 100) {
   return Math.max(min, Math.min(max, Math.round(Number(n) || 0)));
 }
@@ -661,15 +885,16 @@ function simulateMatchScore(homeStrength, awayStrength) {
   };
 }
 
-function createPlayer(index, clubName) {
-  const overall = clamp(52 + Math.random() * 34, 45, 92);
-  return {
+function createPlayer(index, clubName, overrides = {}) {
+  const overall = clamp(overrides.overall ?? 52 + Math.random() * 34, 45, 92);
+  const player = {
     id: uid("player"),
-    name: `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`,
-    age: clamp(17 + Math.random() * 18, 16, 39),
-    position: pick(POSITIONS),
+    name: overrides.name || `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`,
+    age: overrides.age || clamp(17 + Math.random() * 18, 16, 39),
+    position: overrides.position || pick(POSITIONS),
     overall,
-    potential: clamp(overall + Math.random() * 12, overall, 96),
+    potential:
+      overrides.potential ?? clamp(overall + Math.random() * 12, overall, 96),
     value: Number(((overall * overall) / 120).toFixed(1)),
     morale: clamp(50 + Math.random() * 35),
     form: clamp(45 + Math.random() * 45),
@@ -679,6 +904,31 @@ function createPlayer(index, clubName) {
     goals: 0,
     appearances: 0,
     club: clubName,
+  };
+
+  return {
+    ...player,
+    ...overrides,
+  };
+}
+
+function createPresetPlayer([name, position, age, overall], clubName) {
+  return {
+    id: uid("player"),
+    name,
+    age,
+    position,
+    overall,
+    potential: clamp(overall + randomBetween(2, 10), overall, 94),
+    value: Number(((overall * overall) / 120).toFixed(1)),
+    morale: clamp(58 + randomBetween(-10, 16)),
+    form: clamp(55 + randomBetween(-12, 20)),
+    fatigue: clamp(randomBetween(8, 38)),
+    goals: 0,
+    appearances: 0,
+    club: clubName,
+    injury: null,
+    injuryHistory: [],
   };
 }
 
@@ -830,9 +1080,7 @@ function simulateLeagueWeek(table, userMatch) {
   return sortLeagueTable(nextTable);
 }
 function createCareer(type = "manager", club = CLUBS[0], options = {}) {
-  const squad = Array.from({ length: 22 }, (_, index) =>
-    createPlayer(index, club.name),
-  );
+  const squad = createSquadForClub(club);
   return {
     id: uid("career"),
     type,
@@ -994,20 +1242,31 @@ function simulateResult(career) {
 }
 
 function chooseEventCategory(career, resultDelta) {
-  const categories = [
-    "Match",
-    "Moral",
-    "Vestiaire",
-    "Médias",
-    "Mercato",
-    "Staff",
-    "Supporters",
-    "Direction",
-  ];
-  if (career.squad.some((player) => player.fatigue > 72))
+  const categories =
+    career.type === "player"
+      ? ["Match", "Moral", "Médias", "Mercato", "Blessures"]
+      : [
+          "Match",
+          "Moral",
+          "Vestiaire",
+          "Médias",
+          "Mercato",
+          "Staff",
+          "Supporters",
+          "Direction",
+        ];
+
+  if (career.squad.some((player) => player.fatigue > 72)) {
     categories.push("Blessures");
-  if (resultDelta < 0) categories.push("Direction", "Médias", "Moral");
-  if (resultDelta > 0) categories.push("Supporters", "Match");
+  }
+
+  if (career.type === "player") {
+    if (resultDelta < 0) categories.push("Médias", "Moral");
+    if (resultDelta > 0) categories.push("Match", "Mercato");
+  } else {
+    if (resultDelta < 0) categories.push("Direction", "Médias", "Moral");
+    if (resultDelta > 0) categories.push("Supporters", "Match");
+  }
 
   const recent = career.eventMemory || [];
   const filtered = categories.filter(
@@ -1125,7 +1384,11 @@ function buildContextualEvent(career, result) {
   const category = result.injuryReport
     ? "Blessures"
     : chooseEventCategory(career, result.resultDelta);
-  const templates = EVENT_TEMPLATES[category] || EVENT_TEMPLATES.Match;
+
+  const templateSource =
+    career.type === "player" ? PLAYER_EVENT_TEMPLATES : EVENT_TEMPLATES;
+
+  const templates = templateSource[category] || templateSource.Match;
   const recent = career.eventMemory || [];
   const available = templates.filter(
     (template) =>
@@ -1167,9 +1430,7 @@ function buildContextualEvent(career, result) {
   if (result.injuryReport) {
     description = `${result.injuryReport.playerName} est touché physiquement. Le staff médical confirme une blessure : ${result.injuryReport.injury.label}.`;
     detail = `Durée estimée : ${result.injuryReport.injury.weeksRemaining} semaine(s). Gravité : ${result.injuryReport.injury.severity}. Le joueur va perdre en forme et devra revenir progressivement. Contexte : ${fixtureText}.`;
-  }
-
-  if (template.type === "direct") {
+  } else if (template.type === "direct") {
     description = `${player.name} veut une réponse claire sur son rôle, son temps de jeu et sa place dans le projet.`;
     detail = `${template.story || "La situation demande une décision rapide."} Contexte : ${fixtureText}. Profil : ${player.position}, OVR ${player.overall}, forme ${player.form}, moral ${player.morale}, fatigue ${player.fatigue}.`;
   } else if (template.type === "media" || template.type === "reputation") {
@@ -1232,6 +1493,7 @@ function buildContextualEvent(career, result) {
     choices: template.choices,
     templateTitle: template.title,
     eventType: template.type,
+    injuryReport: result.injuryReport || null,
   };
 }
 
@@ -1636,6 +1898,21 @@ function EventModal({ event, onClose, onDecision }) {
                 <p>{event.fixture}</p>
               </div>
             </div>
+            {event.injuryReport ? (
+              <div className="card" style={{ marginTop: 14 }}>
+                <Kicker tone="red">Rapport médical</Kicker>
+                <h3>{event.injuryReport.playerName}</h3>
+                <p>
+                  Blessure : <b>{event.injuryReport.injury.label}</b>
+                </p>
+                <p>
+                  Gravité : <b>{event.injuryReport.injury.severity}</b>
+                </p>
+                <p>
+                  Durée estimée : <b>{event.injuryReport.injury.weeksRemaining} semaine(s)</b>
+                </p>
+              </div>
+            ) : null}
             {event.status === "resolved" ? (
               <div className="card" style={{ marginTop: 14 }}>
                 <h3>Décision déjà prise</h3>
@@ -1700,12 +1977,13 @@ function SquadView({ career }) {
               <Kicker>{player.position}</Kicker>
             </div>
             <p className="muted">{player.age} ans</p>
-            {player.injury ? (
+            {player.injury && player.injury.weeksRemaining > 0 ? (
               <p className="red">
-                🏥 {player.injury.label} — retour dans{" "}
-                {player.injury.weeksRemaining} semaine(s)
+                🏥 {player.injury.label} — retour dans {player.injury.weeksRemaining} semaine(s)
               </p>
-            ) : null}
+            ) : (
+              <p className="muted">Disponible</p>
+            )}
 
             <div className="stat-grid">
               <Stat label="OVR" value={player.overall} tone="lime" />
@@ -1897,6 +2175,13 @@ function WeekSummaryModal({ summary, onClose, onOpenEvent }) {
           <Kicker tone="lime">Résumé de semaine</Kicker>
           <h1 style={{ marginTop: 14 }}>Semaine {summary.week}</h1>
           <div className="card pitch" style={{ marginTop: 16 }}>
+            <h2>Résultat</h2>
+            <p className="soft" style={{ fontSize: 22, fontWeight: 900 }}>
+              {summary.result}
+            </p>
+            <p className="muted">
+              Buteur notable : <b>{summary.scorerName || "aucun"}</b>
+            </p>
             {summary.injuryReport ? (
               <div className="card" style={{ marginTop: 16 }}>
                 <Kicker tone="red">Alerte médicale</Kicker>
@@ -1905,21 +2190,13 @@ function WeekSummaryModal({ summary, onClose, onOpenEvent }) {
                   Blessure : <b>{summary.injuryReport.injury.label}</b>
                 </p>
                 <p className="muted">
-                  Durée estimée :{" "}
-                  <b>{summary.injuryReport.injury.weeksRemaining} semaine(s)</b>
+                  Durée estimée : <b>{summary.injuryReport.injury.weeksRemaining} semaine(s)</b>
                 </p>
                 <p className="muted">
                   Gravité : <b>{summary.injuryReport.injury.severity}</b>
                 </p>
               </div>
             ) : null}
-            <h2>Résultat</h2>
-            <p className="soft" style={{ fontSize: 22, fontWeight: 900 }}>
-              {summary.result}
-            </p>
-            <p className="muted">
-              Buteur notable : <b>{summary.scorerName || "aucun"}</b>
-            </p>
           </div>
           <div className="grid-2" style={{ marginTop: 16 }}>
             <div className="card">
@@ -2050,7 +2327,7 @@ export default function CareerApp() {
 
     let nextCareer = {
       ...career,
-      squad: career.squad.map((player) => ({ ...player })),
+      squad: career.squad.map((player) => tickPlayerInjury({ ...player })),
       fixtures: career.fixtures.map((fixture) => ({ ...fixture })),
     };
 
@@ -2100,10 +2377,10 @@ export default function CareerApp() {
       week: nextCareer.week,
       result: result.summary,
       scorerName: result.scorerName,
+      injuryReport: result.injuryReport,
       before,
       after: {
         morale: nextCareer.morale,
-        injuryReport: result.injuryReport,
         reputation: nextCareer.reputation,
         popularity: nextCareer.popularity,
         pressure: nextCareer.pressure,

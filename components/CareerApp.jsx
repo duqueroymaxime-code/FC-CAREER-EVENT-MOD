@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-const STORAGE_KEY = "fifa-career-overhaul-roadmap-v2";
+const STORAGE_KEY = "fifa-career-overhaul-real-leagues-v6";
 const DEFAULT_THEME = "dark";
 const DEFAULT_SCREEN = "home";
 const DEFAULT_TAB = "dashboard";
@@ -44,6 +44,65 @@ const CLUBS = [
   },
 ];
 
+const LEAGUE_PRESETS = {
+  "Ligue 1": [
+    { name: "Paris Saint-Germain", strength: 91 },
+    { name: "Olympique de Marseille", strength: 82 },
+    { name: "AS Monaco", strength: 80 },
+    { name: "Olympique Lyonnais", strength: 78 },
+    { name: "LOSC Lille", strength: 77 },
+    { name: "RC Lens", strength: 76 },
+    { name: "Stade Rennais", strength: 75 },
+    { name: "OGC Nice", strength: 75 },
+    { name: "Toulouse FC", strength: 70 },
+    { name: "FC Nantes", strength: 69 },
+    { name: "Montpellier HSC", strength: 68 },
+    { name: "RC Strasbourg", strength: 68 },
+    { name: "Stade Brestois", strength: 68 },
+    { name: "AJ Auxerre", strength: 66 },
+    { name: "Angers SCO", strength: 64 },
+    { name: "Le Havre AC", strength: 64 },
+  ],
+
+  "Premier League": [
+    { name: "Manchester City", strength: 91 },
+    { name: "Arsenal", strength: 89 },
+    { name: "Liverpool", strength: 88 },
+    { name: "Chelsea", strength: 84 },
+    { name: "Manchester United", strength: 82 },
+    { name: "Tottenham Hotspur", strength: 81 },
+    { name: "Newcastle United", strength: 80 },
+    { name: "Aston Villa", strength: 79 },
+    { name: "Brighton", strength: 76 },
+    { name: "West Ham United", strength: 75 },
+    { name: "Crystal Palace", strength: 73 },
+    { name: "Fulham", strength: 72 },
+    { name: "Everton", strength: 71 },
+    { name: "Brentford", strength: 71 },
+    { name: "Wolverhampton", strength: 70 },
+    { name: "Nottingham Forest", strength: 69 },
+  ],
+
+  "National 2": [
+    { name: "Girondins de Bordeaux", strength: 67 },
+    { name: "Les Herbiers VF", strength: 61 },
+    { name: "Saumur OFC", strength: 58 },
+    { name: "Stade Poitevin", strength: 57 },
+    { name: "Blois Foot 41", strength: 56 },
+    { name: "Bergerac Périgord FC", strength: 59 },
+    { name: "Angoulême CFC", strength: 58 },
+    { name: "Trélissac FC", strength: 56 },
+    { name: "Romorantin", strength: 55 },
+    { name: "Bourges Foot 18", strength: 57 },
+    { name: "La Roche VF", strength: 56 },
+    { name: "Saint-Pryvé Saint-Hilaire", strength: 56 },
+    { name: "GOAL FC", strength: 60 },
+    { name: "Andrézieux-Bouthéon", strength: 57 },
+    { name: "Hyères FC", strength: 58 },
+    { name: "Fréjus Saint-Raphaël", strength: 57 },
+  ],
+};
+``
 const MONTHS = ["Août", "Septembre", "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai"];
 const POSITIONS = ["GB", "DD", "DC", "DG", "MDC", "MC", "MOC", "AD", "AG", "BU"];
 const FIRST_NAMES = ["Nino", "Enzo", "Noah", "Ilyes", "Lucas", "Hugo", "Adam", "Yanis", "Rayan", "Nathan"];
@@ -250,6 +309,87 @@ function money(n) {
   return `${Number(n || 0).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} M€`;
 }
 
+function getLeaguePreset(league) {
+  return LEAGUE_PRESETS[league] || LEAGUE_PRESETS["Ligue 1"];
+}
+
+function getTeamStrength(teamName, league = "Ligue 1", fallback = 58) {
+  const preset = getLeaguePreset(league);
+  const found = preset.find((team) => team.name === teamName);
+  return found ? found.strength : fallback;
+}
+
+function randomBetween(min, max) {
+  return min + Math.random() * (max - min);
+}
+
+function poisson(lambda) {
+  const safeLambda = Math.max(0.05, Math.min(3.2, lambda));
+  const limit = Math.exp(-safeLambda);
+  let k = 0;
+  let p = 1;
+
+  do {
+    k += 1;
+    p *= Math.random();
+  } while (p > limit);
+
+  return Math.min(5, k - 1);
+}
+
+function getCareerStrength(career) {
+  const averageOverall =
+    career.squad.reduce((sum, player) => sum + player.overall, 0) /
+    Math.max(1, career.squad.length);
+
+  const averageFatigue =
+    career.squad.reduce((sum, player) => sum + player.fatigue, 0) /
+    Math.max(1, career.squad.length);
+
+  return clamp(
+    averageOverall * 0.55 +
+      career.reputation * 0.25 +
+      career.morale * 0.15 +
+      career.cohesion * 0.12 -
+      averageFatigue * 0.12,
+    35,
+    92
+  );
+}
+
+function simulateMatchScore(homeStrength, awayStrength) {
+  const diff = homeStrength - awayStrength;
+
+  const homeExpected = Math.max(
+    0.15,
+    Math.min(2.9, 1.15 + diff / 55 + 0.18 + randomBetween(-0.25, 0.25))
+  );
+
+  const awayExpected = Math.max(
+    0.12,
+    Math.min(2.7, 1.05 - diff / 65 + randomBetween(-0.25, 0.25))
+  );
+
+  let homeGoals = poisson(homeExpected);
+  let awayGoals = poisson(awayExpected);
+
+  if (homeGoals + awayGoals >= 6 && Math.random() < 0.65) {
+    if (homeGoals > awayGoals) homeGoals -= 1;
+    else if (awayGoals > homeGoals) awayGoals -= 1;
+    else homeGoals -= 1;
+  }
+
+  if (Math.random() < 0.12) {
+    homeGoals = Math.min(homeGoals, 1);
+    awayGoals = Math.min(awayGoals, 1);
+  }
+
+  return {
+    homeGoals: Math.max(0, homeGoals),
+    awayGoals: Math.max(0, awayGoals),
+  };
+}
+
 function createPlayer(index, clubName) {
   const overall = clamp(52 + Math.random() * 34, 45, 92);
   return {
@@ -269,18 +409,16 @@ function createPlayer(index, clubName) {
   };
 }
 
-function createFixtures(clubName) {
-  const opponents = [
-    "Rival FC",
-    "Athletic Club",
-    "United 26",
-    "Olympique Nord",
-    "Sporting Sud",
-    "Real Capital",
-    "City Academy",
-    "Dynamo Est",
-  ];
-  return opponents.map((opponent, index) => ({
+function createRealFixtures(clubName, league = "Ligue 1") {
+  const preset = getLeaguePreset(league);
+
+  const opponents = preset
+    .filter((team) => team.name !== clubName)
+    .map((team) => team.name);
+
+  const selectedOpponents = opponents.slice(0, 12);
+  console.log("REAL FIXTURES USED", clubName, league, selectedOpponents);
+  return selectedOpponents.map((opponent, index) => ({
     id: uid("fixture"),
     week: index + 1,
     competition: index % 5 === 0 ? "Coupe" : "Championnat",
@@ -291,6 +429,128 @@ function createFixtures(clubName) {
   }));
 }
 
+function createLeagueTable(club) {
+  const preset = getLeaguePreset(club.league);
+
+  const userTeam = {
+    name: club.name,
+    strength: clamp(club.reputation, 45, 94),
+    user: true,
+  };
+
+  const teams = [
+    userTeam,
+    ...preset.filter((team) => team.name !== club.name),
+  ].slice(0, 16);
+
+  return teams.map((team) => ({
+    name: team.name,
+    strength: team.strength,
+    user: Boolean(team.user),
+    played: 0,
+    wins: 0,
+    draws: 0,
+    losses: 0,
+    gf: 0,
+    ga: 0,
+    gd: 0,
+    points: 0,
+    form: [],
+  }));
+}
+
+function sortLeagueTable(table) {
+  return [...table].sort((a, b) => {
+    if (b.points !== a.points) return b.points - a.points;
+    if (b.gd !== a.gd) return b.gd - a.gd;
+    if (b.gf !== a.gf) return b.gf - a.gf;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+function applyTableResult(table, homeName, awayName, homeGoals, awayGoals) {
+  return table.map((team) => {
+    if (team.name !== homeName && team.name !== awayName) return team;
+
+    const isHome = team.name === homeName;
+    const gf = isHome ? homeGoals : awayGoals;
+    const ga = isHome ? awayGoals : homeGoals;
+
+    let points = 0;
+    let result = "D";
+    let wins = 0;
+    let draws = 0;
+    let losses = 0;
+
+    if (gf > ga) {
+      points = 3;
+      result = "V";
+      wins = 1;
+    } else if (gf === ga) {
+      points = 1;
+      result = "N";
+      draws = 1;
+    } else {
+      losses = 1;
+    }
+
+    return {
+      ...team,
+      played: team.played + 1,
+      wins: team.wins + wins,
+      draws: team.draws + draws,
+      losses: team.losses + losses,
+      gf: team.gf + gf,
+      ga: team.ga + ga,
+      gd: team.gd + gf - ga,
+      points: team.points + points,
+      form: [result, ...(team.form || [])].slice(0, 5),
+    };
+  });
+}
+
+function simulateLeagueWeek(table, userMatch) {
+  let nextTable = table && table.length ? table.map((team) => ({ ...team })) : [];
+
+  if (!nextTable.length) return nextTable;
+
+  if (userMatch) {
+    nextTable = applyTableResult(
+      nextTable,
+      userMatch.home,
+      userMatch.away,
+      userMatch.homeGoals,
+      userMatch.awayGoals
+    );
+  }
+
+  const unavailable = new Set(userMatch ? [userMatch.home, userMatch.away] : []);
+
+  const availableTeams = nextTable
+    .filter((team) => !unavailable.has(team.name))
+    .map((team) => team.name)
+    .sort(() => Math.random() - 0.5);
+
+  for (let index = 0; index < availableTeams.length - 1; index += 2) {
+    const home = availableTeams[index];
+    const away = availableTeams[index + 1];
+
+    const homeStrength = nextTable.find((team) => team.name === home)?.strength || 58;
+    const awayStrength = nextTable.find((team) => team.name === away)?.strength || 58;
+
+    const score = simulateMatchScore(homeStrength, awayStrength);
+
+    nextTable = applyTableResult(
+      nextTable,
+      home,
+      away,
+      score.homeGoals,
+      score.awayGoals
+    );
+  }
+
+  return sortLeagueTable(nextTable);
+}
 function createCareer(type = "manager", club = CLUBS[0], options = {}) {
   const squad = Array.from({ length: 22 }, (_, index) => createPlayer(index, club.name));
   return {
@@ -313,7 +573,8 @@ function createCareer(type = "manager", club = CLUBS[0], options = {}) {
     pressure: 35,
     development: 50,
     transferTension: 20,
-    fixtures: createFixtures(club.name),
+    fixtures: createRealFixtures(club.name, club.league),
+    leagueTable: createLeagueTable(club),
     events: [],
     news: [],
     decisions: [],
@@ -325,35 +586,76 @@ function createCareer(type = "manager", club = CLUBS[0], options = {}) {
 function simulateResult(career) {
   const fixtures = career.fixtures.map((fixture) => ({ ...fixture }));
   const fixture = fixtures.find((item) => !item.played);
+
   if (!fixture) {
-    return { fixtures, squad: career.squad, resultDelta: 0, summary: "Aucun match cette semaine", scorerName: null };
+    return {
+      fixtures,
+      squad: career.squad,
+      resultDelta: 0,
+      summary: "Aucun match cette semaine",
+      scorerName: null,
+      matchRecord: null,
+    };
   }
 
-  const power = clamp((career.morale + career.cohesion + career.reputation - career.pressure) / 3);
-  const ownGoals = Math.max(0, Math.floor(Math.random() * 4 * (power / 100) + Math.random()));
-  const oppGoals = Math.max(0, Math.floor(Math.random() * 4 * ((100 - power) / 100) + Math.random()));
+  const userStrength = getCareerStrength(career);
+  const opponentName =
+    fixture.home === career.club.name ? fixture.away : fixture.home;
+
+  const opponentStrength = getTeamStrength(
+    opponentName,
+    career.club.league,
+    58
+  );
+
+  const isHome = fixture.home === career.club.name;
+
+  const score = isHome
+    ? simulateMatchScore(userStrength, opponentStrength)
+    : simulateMatchScore(opponentStrength, userStrength);
+
+  const ownGoals = isHome ? score.homeGoals : score.awayGoals;
+  const oppGoals = isHome ? score.awayGoals : score.homeGoals;
 
   fixture.played = true;
-  fixture.score = `${ownGoals}-${oppGoals}`;
+  fixture.score = `${score.homeGoals}-${score.awayGoals}`;
 
   const squad = career.squad.map((player) => ({ ...player }));
   let scorerName = null;
 
   if (ownGoals > 0) {
-    const attackers = squad.filter((player) => ["BU", "AD", "AG", "MOC", "MC"].includes(player.position));
+    const attackers = squad.filter((player) =>
+      ["BU", "AD", "AG", "MOC", "MC"].includes(player.position)
+    );
+
     const scorer = pick(attackers.length ? attackers : squad);
     scorer.goals += 1;
     scorer.appearances += 1;
+    scorer.form = clamp(scorer.form + 3);
     scorerName = scorer.name;
   }
 
   squad.forEach((player) => {
     if (Math.random() < 0.25) player.appearances += 1;
-    player.fatigue = clamp(player.fatigue + Math.random() * 12);
+    player.fatigue = clamp(player.fatigue + randomBetween(4, 13));
+    player.form = clamp(player.form + randomBetween(-3, 3));
   });
 
   const resultDelta = ownGoals > oppGoals ? 1 : ownGoals === oppGoals ? 0 : -1;
-  return { fixtures, squad, resultDelta, summary: `${fixture.home} ${fixture.score} ${fixture.away}`, scorerName };
+
+  return {
+    fixtures,
+    squad,
+    resultDelta,
+    summary: `${fixture.home} ${fixture.score} ${fixture.away}`,
+    scorerName,
+    matchRecord: {
+      home: fixture.home,
+      away: fixture.away,
+      homeGoals: score.homeGoals,
+      awayGoals: score.awayGoals,
+    },
+  };
 }
 
 function chooseEventCategory(career, resultDelta) {
@@ -381,6 +683,22 @@ function consequencesFor(category, resultDelta, career) {
     Staff: { development: 5, cohesion: 1 },
   };
   return map[category] || { morale: 1 };
+}
+
+function getEventRarity(resultDelta) {
+  const roll = Math.random() * 100;
+  if (roll > 97) return "Légendaire";
+  if (roll > 88) return "Épique";
+  if (roll > 68 || resultDelta < 0) return "Rare";
+  return "Commun";
+}
+
+function getMonthName(week) {
+  return MONTHS[Math.floor((week - 1) / 4)] || "Mai";
+}
+
+function getThemeClass(theme) {
+  return theme === "light" ? "light" : "";
 }
 
 function createSvgImage(category, title, playerName, clubName) {
@@ -417,7 +735,7 @@ function createLiveEditorEffects(category, consequences, playerName) {
     Match: [`Augmenter la forme de ${playerName}`, `Donner plus de temps de jeu à ${playerName}`],
     Blessures: [`Mettre ${playerName} au repos 1 match`, `Réduire son intensité d'entraînement`],
     Moral: [`Ajuster son rôle dans l'effectif`, `Changer son temps de jeu prévu`],
-    Vestiaire: [`Modifier l'importance de ${playerName} dans le groupe`, `Surveiller sa relation avec les cadres`],
+    Vestiaire: [`Modifier l'importance de ${playerName} dans l'effectif`, `Surveiller sa relation avec les cadres`],
     Médias: [`Augmenter la pression médiatique autour de ${playerName}`, `Modifier légèrement sa réputation`],
     Mercato: [`Ajouter ${playerName} à une shortlist transfert`, `Modifier son statut`],
     Supporters: [`Augmenter la popularité de ${playerName}`, `Créer une storyline supporters`],
@@ -426,22 +744,6 @@ function createLiveEditorEffects(category, consequences, playerName) {
   };
 
   return [...clubEffects, ...(playerEffects[category] || [])];
-}
-
-function getEventRarity(resultDelta) {
-  const roll = Math.random() * 100;
-  if (roll > 97) return "Légendaire";
-  if (roll > 88) return "Épique";
-  if (roll > 68 || resultDelta < 0) return "Rare";
-  return "Commun";
-}
-
-function getMonthName(week) {
-  return MONTHS[Math.floor(week / 4)] || "Mai";
-}
-
-function getThemeClass(theme) {
-  return theme === "light" ? "light" : "";
 }
 
 function buildContextualEvent(career, result) {
@@ -587,7 +889,6 @@ function HomeScreen({ onChoose }) {
         <p className="hero-subtitle">
           Un mode carrière premium pour FC26 : événements roleplay, vestiaire, médias, mercato, board, live editor et suivi de joueurs.
         </p>
-
         <div className="hero-actions">
           <button type="button" className="big-choice manager" onClick={() => onChoose("manager")}> 
             <div className="stat-label">Kick-off</div>
@@ -666,7 +967,7 @@ function Dashboard({ career }) {
       <div className="card pitch">
         <div className="club-row" style={{ justifyContent: "space-between" }}>
           <h2>Central Hub</h2>
-          <Kicker tone="cyan">Semaine {career.week}</Kicker>
+          <Kicker tone="lime">Semaine {career.week}</Kicker>
         </div>
         <div className="stat-grid">
           <Stat label="Moral" value={career.morale} tone="lime" />
@@ -805,21 +1106,14 @@ function EventModal({ event, onClose, onDecision }) {
             {event.status === "resolved" ? (
               <div className="card" style={{ marginTop: 14 }}>
                 <h3>Décision déjà prise</h3>
-                <p className="muted">
-                  Choix effectué : <b>{event.choice || "non précisé"}</b>
-                </p>
+                <p className="muted">Choix effectué : <b>{event.choice || "non précisé"}</b></p>
               </div>
             ) : (
               <div className="card" style={{ marginTop: 14 }}>
                 <h3>Décision narrative</h3>
                 <div className="choice-grid">
                   {(event.choices || []).map((choice) => (
-                    <button
-                      key={choice}
-                      type="button"
-                      className="choice-btn"
-                      onClick={() => onDecision(event, choice)}
-                    >
+                    <button key={choice} type="button" className="choice-btn" onClick={() => onDecision(event, choice)}>
                       {choice}
                       <br />
                       <small>Appliquer cette décision à la storyline.</small>
@@ -927,6 +1221,75 @@ function HistoryView({ career }) {
     </div>
   );
 }
+function LeagueTableView({ career }) {
+  const table = sortLeagueTable(
+    career.leagueTable && career.leagueTable.length
+      ? career.leagueTable
+      : createLeagueTable(career.club)
+  );
+
+  return (
+    <div className="card">
+      <div className="club-row" style={{ justifyContent: "space-between", marginBottom: 18 }}>
+        <div>
+          <Kicker tone="cyan">Championnat</Kicker>
+          <h2>Classement simulé</h2>
+        </div>
+        <span className="muted">Semaine {career.week}</span>
+      </div>
+
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr className="muted" style={{ textAlign: "left" }}>
+              <th style={{ padding: 10 }}>#</th>
+              <th style={{ padding: 10 }}>Club</th>
+              <th style={{ padding: 10 }}>Pts</th>
+              <th style={{ padding: 10 }}>J</th>
+              <th style={{ padding: 10 }}>V</th>
+              <th style={{ padding: 10 }}>N</th>
+              <th style={{ padding: 10 }}>D</th>
+              <th style={{ padding: 10 }}>BP</th>
+              <th style={{ padding: 10 }}>BC</th>
+              <th style={{ padding: 10 }}>Diff</th>
+              <th style={{ padding: 10 }}>Forme</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {table.map((team, index) => {
+              const isUser = team.name === career.club.name;
+
+              return (
+                <tr
+                  key={team.name}
+                  style={{
+                    background: isUser ? "rgba(190,242,100,.14)" : "transparent",
+                    borderTop: "1px solid var(--border)",
+                  }}
+                >
+                  <td style={{ padding: 10, fontWeight: 900 }}>{index + 1}</td>
+                  <td style={{ padding: 10, fontWeight: isUser ? 1000 : 700 }}>{team.name}</td>
+                  <td style={{ padding: 10, fontWeight: 1000 }}>{team.points}</td>
+                  <td style={{ padding: 10 }}>{team.played}</td>
+                  <td style={{ padding: 10 }}>{team.wins}</td>
+                  <td style={{ padding: 10 }}>{team.draws}</td>
+                  <td style={{ padding: 10 }}>{team.losses}</td>
+                  <td style={{ padding: 10 }}>{team.gf}</td>
+                  <td style={{ padding: 10 }}>{team.ga}</td>
+                  <td style={{ padding: 10 }}>{team.gd}</td>
+                  <td style={{ padding: 10 }}>
+                    {(team.form || []).length ? team.form.join(" ") : "-"}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
 
 function DeltaLine({ label, before, after }) {
   const delta = Number(after || 0) - Number(before || 0);
@@ -999,16 +1362,17 @@ export default function CareerApp() {
 
   const career = useMemo(() => careers.find((item) => item.id === activeId) || careers[0], [careers, activeId]);
   const tabs = useMemo(
-    () => [
-      ["dashboard", "Hub"],
-      ["events", "Événements"],
-      ["squad", "Effectif"],
-      ["calendar", "Calendrier"],
-      ["news", "News"],
-      ["history", "Historique"],
-    ],
-    []
-  );
+  () => [
+    ["dashboard", "Hub"],
+    ["events", "Événements"],
+    ["squad", "Effectif"],
+    ["calendar", "Calendrier"],
+    ["table", "Classement"],
+    ["news", "News"],
+    ["history", "Historique"],
+  ],
+  []
+);
   const pendingEvents = useMemo(
     () => career.events.filter((event) => event.status === "unread").length,
     [career.events]
@@ -1054,6 +1418,12 @@ export default function CareerApp() {
 
     nextCareer.fixtures = result.fixtures;
     nextCareer.squad = result.squad;
+    const baseTable =
+  nextCareer.leagueTable && nextCareer.leagueTable.length
+    ? nextCareer.leagueTable
+    : createLeagueTable(nextCareer.club);
+
+nextCareer.leagueTable = simulateLeagueWeek(baseTable, result.matchRecord);
     nextCareer.week += 1;
     nextCareer.month = getMonthName(nextCareer.week);
 
@@ -1167,6 +1537,8 @@ export default function CareerApp() {
         return <SquadView career={career} />;
       case "calendar":
         return <CalendarView career={career} />;
+      case "table":
+        return <LeagueTableView career={career} />;
       case "news":
         return <NewsView career={career} />;
       case "history":

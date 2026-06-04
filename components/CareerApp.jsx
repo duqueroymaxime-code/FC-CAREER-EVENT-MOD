@@ -2,14 +2,19 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-const STORAGE_KEY = "fifa-career-overhaul-board-contracts-v12";
-const BUILD_LABEL = "BOARD_CONTRACTS_V12_ACTIVE";
+const STORAGE_KEY = "fifa-career-overhaul-media-hub-v16";
+const BUILD_LABEL = "MEDIA_HUB_V16_ACTIVE";
 const FORCE_TRANSFER_OFFERS = true;
 const DEFAULT_THEME = "dark";
 const DEFAULT_SCREEN = "home";
 const DEFAULT_TAB = "dashboard";
 const DEFAULT_TYPE = "manager";
 const EVENT_MEMORY_LIMIT = 12;
+
+const UI_GRADIENTS = {
+  panel: "linear-gradient(180deg, rgba(15,23,42,.92), rgba(15,23,42,.72))",
+  glass: "rgba(15,23,42,.58)",
+};
 
 const CLUBS = [
   {
@@ -377,6 +382,26 @@ const BOARD_OBJECTIVE_TYPES = {
   UNBEATEN_RUN: "unbeaten_run",
 };
 
+const ACADEMY_COUNTRIES = [
+  "France",
+  "Angleterre",
+  "Espagne",
+  "Portugal",
+  "Belgique",
+  "Sénégal",
+  "Côte d’Ivoire",
+  "Brésil",
+  "Argentine",
+];
+
+const ACADEMY_ARCHETYPES = [
+  { label: "Gardien réflexe", positions: ["GB"], minOverall: 48, maxOverall: 62, minPotential: 70, maxPotential: 90 },
+  { label: "Défenseur rugueux", positions: ["DC", "DD", "DG"], minOverall: 48, maxOverall: 64, minPotential: 68, maxPotential: 88 },
+  { label: "Milieu technique", positions: ["MC", "MOC", "MDC"], minOverall: 50, maxOverall: 65, minPotential: 70, maxPotential: 91 },
+  { label: "Ailier explosif", positions: ["AD", "AG"], minOverall: 49, maxOverall: 66, minPotential: 72, maxPotential: 92 },
+  { label: "Buteur prometteur", positions: ["BU"], minOverall: 50, maxOverall: 66, minPotential: 70, maxPotential: 90 },
+];
+
 const CATEGORY_META = {
   Match: { icon: "⚽", color: "linear-gradient(90deg,#bef264,#22d3ee)" },
   Moral: { icon: "🧠", color: "linear-gradient(90deg,#38bdf8,#22d3ee)" },
@@ -388,6 +413,44 @@ const CATEGORY_META = {
   Direction: { icon: "🏛️", color: "linear-gradient(90deg,#e2e8f0,#94a3b8)" },
   Staff: { icon: "📊", color: "linear-gradient(90deg,#a78bfa,#60a5fa)" },
 };
+
+const MEDIA_SENTIMENTS = {
+  POSITIVE: "positive",
+  NEUTRAL: "neutral",
+  NEGATIVE: "negative",
+  VIRAL: "viral",
+};
+
+const PRESS_QUESTION_TYPES = {
+  RESULT: "result",
+  PLAYER: "player",
+  BOARD: "board",
+  TRANSFER: "transfer",
+  INJURY: "injury",
+  TACTICS: "tactics",
+};
+
+const SOCIAL_AUTHORS = [
+  "FC Daily",
+  "Tribune Locale",
+  "CareerMode News",
+  "Inside Football",
+  "Ultra Zone",
+  "DataFoot",
+  "Le Vestiaire",
+  "Fans Talk",
+];
+
+const FAN_REACTIONS = [
+  "On veut plus d’ambition.",
+  "Le projet commence à prendre forme.",
+  "Il faut faire confiance aux jeunes.",
+  "Le coach doit assumer ses choix.",
+  "Ce joueur mérite plus de temps de jeu.",
+  "La direction doit soutenir le projet.",
+  "Le mercato peut tout changer.",
+  "La dynamique est encourageante.",
+];
 
 const EVENT_TEMPLATES = {
   Match: [
@@ -789,6 +852,220 @@ function money(n) {
   return `${Number(n || 0).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} M€`;
 }
 
+function getLastPlayedFixture(career) {
+  return [...(career.fixtures || [])].reverse().find((fixture) => fixture.played) || null;
+}
+
+function getResultSentimentFromFixture(career, fixture) {
+  if (!fixture || !fixture.score) return MEDIA_SENTIMENTS.NEUTRAL;
+
+  const parsed = parseScore(fixture.score);
+  if (!parsed) return MEDIA_SENTIMENTS.NEUTRAL;
+
+  const isHome = fixture.home === career.club.name;
+  const ownGoals = isHome ? parsed.homeGoals : parsed.awayGoals;
+  const oppGoals = isHome ? parsed.awayGoals : parsed.homeGoals;
+
+  if (ownGoals > oppGoals) return MEDIA_SENTIMENTS.POSITIVE;
+  if (ownGoals < oppGoals) return MEDIA_SENTIMENTS.NEGATIVE;
+  return MEDIA_SENTIMENTS.NEUTRAL;
+}
+
+function getSentimentTone(sentiment) {
+  if (sentiment === MEDIA_SENTIMENTS.POSITIVE) return "lime";
+  if (sentiment === MEDIA_SENTIMENTS.NEGATIVE) return "red";
+  if (sentiment === MEDIA_SENTIMENTS.VIRAL) return "amber";
+  return "cyan";
+}
+
+function getSentimentLabel(sentiment) {
+  if (sentiment === MEDIA_SENTIMENTS.POSITIVE) return "Positif";
+  if (sentiment === MEDIA_SENTIMENTS.NEGATIVE) return "Négatif";
+  if (sentiment === MEDIA_SENTIMENTS.VIRAL) return "Viral";
+  return "Neutre";
+}
+
+function createSocialPost(career, context = {}) {
+  const fixture = context.fixture || getLastPlayedFixture(career);
+  const sentiment = context.sentiment || getResultSentimentFromFixture(career, fixture);
+  const author = pick(SOCIAL_AUTHORS);
+
+  let text = pick(FAN_REACTIONS);
+
+  if (fixture && fixture.score) {
+    if (sentiment === MEDIA_SENTIMENTS.POSITIVE) {
+      text = `${career.club.name} confirme sa progression après ${fixture.home} ${fixture.score} ${fixture.away}.`;
+    } else if (sentiment === MEDIA_SENTIMENTS.NEGATIVE) {
+      text = `Déception autour de ${career.club.name} après ${fixture.home} ${fixture.score} ${fixture.away}.`;
+    } else {
+      text = `${career.club.name} reste sous observation après ${fixture.home} ${fixture.score} ${fixture.away}.`;
+    }
+  }
+
+  if (context.type === "transfer") {
+    text = `Le mercato de ${career.club.name} fait beaucoup parler. Les supporters attendent une décision forte.`;
+  }
+
+  if (context.type === "injury") {
+    text = `Le staff médical de ${career.club.name} est sous pression après une nouvelle alerte physique.`;
+  }
+
+  return {
+    id: uid("social"),
+    week: career.week,
+    author,
+    sentiment,
+    text,
+    likes: randomInt(80, sentiment === MEDIA_SENTIMENTS.VIRAL ? 8000 : 1800),
+    replies: randomInt(4, sentiment === MEDIA_SENTIMENTS.VIRAL ? 700 : 160),
+    topic: context.type || "general",
+  };
+}
+
+function createWeeklySocialFeed(career, context = {}) {
+  const basePosts = Array.from({ length: randomInt(3, 6) }, () =>
+    createSocialPost(career, context),
+  );
+
+  const eventPosts = (career.events || []).slice(0, 2).map((event) => ({
+    id: uid("social"),
+    week: career.week,
+    author: pick(SOCIAL_AUTHORS),
+    sentiment:
+      event.category === "Blessures" || event.category === "Direction"
+        ? MEDIA_SENTIMENTS.NEGATIVE
+        : event.category === "Supporters"
+          ? MEDIA_SENTIMENTS.VIRAL
+          : MEDIA_SENTIMENTS.NEUTRAL,
+    text: `${event.category} : ${event.title}`,
+    likes: randomInt(120, 2400),
+    replies: randomInt(8, 240),
+    topic: event.category,
+  }));
+
+  return [...eventPosts, ...basePosts];
+}
+
+function createPressConference(career, result, event, transferOffer) {
+  const fixture = getLastPlayedFixture(career);
+  const sentiment = getResultSentimentFromFixture(career, fixture);
+
+  const questions = [];
+
+  questions.push({
+    id: uid("question"),
+    type: PRESS_QUESTION_TYPES.RESULT,
+    question:
+      sentiment === MEDIA_SENTIMENTS.POSITIVE
+        ? "Votre équipe semble en pleine confiance. Qu’est-ce qui a fait la différence ?"
+        : sentiment === MEDIA_SENTIMENTS.NEGATIVE
+          ? "Comment expliquez-vous ce résultat décevant ?"
+          : "Quel regard portez-vous sur ce match équilibré ?",
+    choices: [
+      {
+        label: "Valoriser le groupe",
+        effects: { morale: 3, popularity: 1, pressure: -1 },
+      },
+      {
+        label: "Rester exigeant",
+        effects: { pressure: 2, development: 2, morale: -1 },
+      },
+      {
+        label: "Protéger les joueurs",
+        effects: { cohesion: 2, media: -1 },
+      },
+    ],
+  });
+
+  if (event?.player) {
+    questions.push({
+      id: uid("question"),
+      type: PRESS_QUESTION_TYPES.PLAYER,
+      question: `Un mot sur la situation de ${event.player} ?`,
+      choices: [
+        {
+          label: "Le soutenir publiquement",
+          effects: { morale: 2, cohesion: 1, media: 1 },
+        },
+        {
+          label: "Mettre la pression",
+          effects: { pressure: 2, development: 1, morale: -2 },
+        },
+        {
+          label: "Éviter le sujet",
+          effects: { media: -1, popularity: -1 },
+        },
+      ],
+    });
+  }
+
+  if (transferOffer) {
+    questions.push({
+      id: uid("question"),
+      type: PRESS_QUESTION_TYPES.TRANSFER,
+      question: `Des informations circulent sur une approche de ${transferOffer.buyerClub}. Pouvez-vous confirmer ?`,
+      choices: [
+        {
+          label: "Fermer la porte",
+          effects: { transferTension: 2, boardTrust: 1 },
+        },
+        {
+          label: "Rester ouvert",
+          effects: { transferTension: 3, budget: 0 },
+        },
+        {
+          label: "Protéger le joueur",
+          effects: { morale: 1, media: -1 },
+        },
+      ],
+    });
+  }
+
+  return {
+    id: uid("press"),
+    week: career.week,
+    title: `Conférence de presse — Semaine ${career.week}`,
+    fixture: fixture ? `${fixture.home} ${fixture.score || "-"} ${fixture.away}` : "Aucun match récent",
+    sentiment,
+    status: "pending",
+    questions,
+    answers: [],
+  };
+}
+
+function applyMediaEffects(career, effects = {}) {
+  return {
+    ...career,
+    morale: clamp(career.morale + (effects.morale || 0)),
+    cohesion: clamp(career.cohesion + (effects.cohesion || 0)),
+    popularity: clamp(career.popularity + (effects.popularity || 0)),
+    pressure: clamp(career.pressure + (effects.pressure || 0)),
+    media: clamp(career.media + (effects.media || 0)),
+    development: clamp(career.development + (effects.development || 0)),
+    boardTrust: clamp(career.boardTrust + (effects.boardTrust || 0)),
+    transferTension: clamp(career.transferTension + (effects.transferTension || 0)),
+    budget:
+      effects.budget !== undefined
+        ? Number((career.budget + effects.budget).toFixed(1))
+        : career.budget,
+  };
+}
+
+function getMediaBuzz(career) {
+  const recentPosts = (career.socialFeed || []).slice(0, 12);
+  const viralBonus = recentPosts.filter((post) => post.sentiment === MEDIA_SENTIMENTS.VIRAL).length * 8;
+  const negativePenalty = recentPosts.filter((post) => post.sentiment === MEDIA_SENTIMENTS.NEGATIVE).length * 4;
+
+  return clamp(
+    (career.media || 50) +
+      viralBonus +
+      Math.round((career.popularity || 50) / 8) -
+      negativePenalty,
+    0,
+    100,
+  );
+}
+
 function randomInt(min, max) {
   return Math.floor(min + Math.random() * (max - min + 1));
 }
@@ -941,6 +1218,513 @@ function createRecruitmentMarket(career) {
     .sort((a, b) => b.overall - a.overall);
 }
 
+function createAcademyProspect(career) {
+  const archetype = pick(ACADEMY_ARCHETYPES);
+  const overall = randomInt(archetype.minOverall, archetype.maxOverall);
+  const potential = randomInt(
+    Math.max(overall + 6, archetype.minPotential),
+    archetype.maxPotential,
+  );
+  const country = pick(ACADEMY_COUNTRIES);
+  const position = pick(archetype.positions);
+
+  return {
+    id: uid("academy"),
+    name: `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`,
+    age: randomInt(15, 18),
+    country,
+    position,
+    archetype: archetype.label,
+    overall,
+    potential,
+    revealedPotential: false,
+    weeksScouted: 0,
+    scoutProgress: 0,
+    promoted: false,
+    signedWeek: null,
+    estimatedValue: Number(((overall * potential) / 180).toFixed(1)),
+  };
+}
+
+function createInitialAcademy(career) {
+  return Array.from({ length: 5 }, () => createAcademyProspect(career));
+}
+
+function scoutAcademyProspects(career) {
+  return (career.academy || []).map((prospect) => {
+    if (prospect.promoted) return prospect;
+
+    const scoutGain = randomInt(12, 26);
+    const nextProgress = clamp(prospect.scoutProgress + scoutGain, 0, 100);
+
+    return {
+      ...prospect,
+      weeksScouted: prospect.weeksScouted + 1,
+      scoutProgress: nextProgress,
+      revealedPotential: nextProgress >= 75,
+    };
+  });
+}
+
+function convertAcademyToPlayer(prospect, clubName) {
+  const player = {
+    id: uid("player"),
+    name: prospect.name,
+    age: prospect.age,
+    position: prospect.position,
+    overall: prospect.overall,
+    potential: prospect.potential,
+    value: Number(((prospect.overall * prospect.potential) / 150).toFixed(1)),
+    morale: clamp(62 + randomBetween(-8, 12)),
+    form: clamp(55 + randomBetween(-10, 12)),
+    fatigue: clamp(randomBetween(5, 22)),
+    goals: 0,
+    appearances: 0,
+    club: clubName,
+    injury: null,
+    injuryHistory: [],
+    academyGraduate: true,
+    transferListed: false,
+  };
+
+  return withContract(player, 10);
+}
+
+function progressPlayer(player) {
+  if (isPlayerInjured(player)) {
+    return {
+      ...player,
+      form: clamp(player.form - 1),
+    };
+  }
+
+  const ageFactor =
+    player.age <= 21
+      ? 0.7
+      : player.age <= 25
+      ? 0.35
+      : player.age <= 29
+      ? 0.12
+      : player.age >= 33
+      ? -0.25
+      : 0;
+
+  const potentialGap = Math.max(0, Number(player.potential || player.overall) - player.overall);
+  const formFactor = (player.form - 50) / 220;
+  const moraleFactor = (player.morale - 50) / 260;
+  const appearanceFactor = player.appearances > 0 ? 0.08 : 0;
+
+  const growthChance =
+    ageFactor + formFactor + moraleFactor + appearanceFactor + potentialGap / 180;
+
+  if (growthChance > Math.random()) {
+    return {
+      ...player,
+      overall: clamp(player.overall + 1, 40, player.potential || 99),
+      value: Number((((player.overall + 1) * (player.overall + 1)) / 120).toFixed(1)),
+    };
+  }
+
+  if (ageFactor < 0 && Math.random() < Math.abs(ageFactor) * 0.25) {
+    return {
+      ...player,
+      overall: clamp(player.overall - 1, 35, 99),
+      value: Number((((player.overall - 1) * (player.overall - 1)) / 120).toFixed(1)),
+    };
+  }
+
+  return player;
+}
+
+function progressSquadWeekly(career) {
+  return (career.squad || []).map(progressPlayer);
+}
+
+function createDefaultTactics(squad = []) {
+  const bestByPosition = [...squad].sort((a, b) => b.overall - a.overall);
+  const starters = bestByPosition.slice(0, 11).map((player) => player.id);
+
+  return {
+    formation: "4-3-3",
+    mentality: "équilibré",
+    pressing: 55,
+    tempo: 55,
+    starters,
+  };
+}
+
+function getTacticalBonus(career) {
+  const tactics = career.tactics || createDefaultTactics(career.squad);
+  const starters = (career.squad || []).filter((player) =>
+    (tactics.starters || []).includes(player.id),
+  );
+
+  if (!starters.length) return 0;
+
+  const averageForm =
+    starters.reduce((sum, player) => sum + player.form, 0) /
+    Math.max(1, starters.length);
+
+  const averageFatigue =
+    starters.reduce((sum, player) => sum + player.fatigue, 0) /
+    Math.max(1, starters.length);
+
+  return clamp((averageForm - 50) * 0.08 - averageFatigue * 0.03, -5, 5);
+}
+
+function tickLoans(career) {
+  const returningPlayers = [];
+
+  const squad = (career.squad || []).map((player) => {
+    if (!player.loanedOut || !player.loan) return player;
+
+    const weeksRemaining = Math.max(0, Number(player.loan.weeksRemaining || 0) - 1);
+
+    if (weeksRemaining <= 0) {
+      returningPlayers.push(player.name);
+      return {
+        ...player,
+        loanedOut: false,
+        loan: null,
+        morale: clamp(player.morale + 2),
+        form: clamp(player.form + randomBetween(0, 4)),
+        overall: clamp(player.overall + (Math.random() < 0.35 ? 1 : 0), 35, player.potential || 99),
+      };
+    }
+
+    return {
+      ...player,
+      loan: {
+        ...player.loan,
+        weeksRemaining,
+      },
+    };
+  });
+
+  return {
+    squad,
+    returningPlayers,
+  };
+}
+
+function isSeasonOver(career) {
+  return (career.fixtures || []).every((fixture) => fixture.played);
+}
+
+function createSeasonSummary(career) {
+  const position = getUserLeaguePosition(career);
+  const topScorer = [...(career.squad || [])].sort((a, b) => b.goals - a.goals)[0];
+
+  return {
+    id: uid("season"),
+    season: career.season,
+    club: career.club.name,
+    position,
+    boardTrust: career.boardTrust,
+    topScorer: topScorer ? topScorer.name : null,
+    topScorerGoals: topScorer ? topScorer.goals : 0,
+    completedWeek: career.week,
+  };
+}
+
+function startNewSeason(career) {
+  const nextSeason = career.season + 1;
+  const renewedClub = { ...career.club };
+
+  const squadWithContracts = (career.squad || [])
+    .map(tickContractsAtSeasonTurn)
+    .filter((player) => Number(player.contract?.yearsRemaining || 0) > 0);
+
+  const fixtures = createRealFixtures(renewedClub.name, renewedClub.league);
+  const leagueTable = createLeagueTable(renewedClub);
+
+  return {
+    ...career,
+    season: nextSeason,
+    week: 1,
+    month: "Août",
+    fixtures,
+    leagueTable,
+    squad: squadWithContracts.map((player) => ({
+      ...player,
+      appearances: 0,
+      goals: 0,
+      fatigue: clamp(player.fatigue - 20),
+      form: clamp(player.form + randomBetween(-5, 8)),
+    })),
+    boardObjectives: evaluateBoardObjectives({
+      ...career,
+      season: nextSeason,
+      week: 1,
+      fixtures,
+      leagueTable,
+      squad: squadWithContracts,
+      boardObjectives: createBoardObjectives(renewedClub),
+    }),
+    academy: scoutAcademyProspects(career),
+    events: [],
+    news: [
+      {
+        id: uid("news"),
+        week: 1,
+        type: "Direction",
+        title: `Début de la saison ${nextSeason}`,
+        body: "La direction fixe une nouvelle feuille de route pour la saison.",
+      },
+      ...(career.news || []),
+    ],
+  };
+}
+
+function normalizeCareer(career) {
+  const club = career.club || CLUBS[0];
+  const squad = (career.squad || []).map((player) =>
+    withContract(
+      {
+        injury: null,
+        injuryHistory: [],
+        transferListed: false,
+        ...player,
+      },
+      club.budget,
+    ),
+  );
+
+  const leagueTable =
+    career.leagueTable && career.leagueTable.length
+      ? career.leagueTable
+      : createLeagueTable(club);
+
+  return {
+    ...career,
+    club,
+    squad,
+    fixtures:
+      career.fixtures && career.fixtures.length
+        ? career.fixtures
+        : createRealFixtures(club.name, club.league),
+    leagueTable,
+    tactics: career.tactics || createDefaultTactics(squad),
+    academy: career.academy || createInitialAcademy(career),
+    academyLog: career.academyLog || [],
+    transferOffers: career.transferOffers || [],
+    transferHistory: career.transferHistory || [],
+    recruitmentMarket:
+      career.recruitmentMarket || createRecruitmentMarket(career),
+    shortlist: career.shortlist || [],
+    socialFeed: career.socialFeed || [],
+    pressConferences: career.pressConferences || [],
+    mediaReputation: career.mediaReputation ?? 50,
+    mediaLog: career.mediaLog || [],
+    boardObjectives:
+      career.boardObjectives && career.boardObjectives.length
+        ? evaluateBoardObjectives({
+            ...career,
+            club,
+            squad,
+            leagueTable,
+          })
+        : evaluateBoardObjectives({
+            ...career,
+            club,
+            squad,
+            leagueTable,
+            boardObjectives: createBoardObjectives(club),
+          }),
+    contractsLog: career.contractsLog || [],
+    seasonHistory: career.seasonHistory || [],
+  };
+}
+
+function parseCsv(raw) {
+  const rows = String(raw || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (rows.length < 2) return null;
+
+  const headers = rows[0].split(/[,;\t]+/).map((header) => header.trim().toLowerCase());
+  const data = rows.slice(1).map((row) => {
+    const values = row.split(/[,;\t]+/).map((cell) => cell.trim());
+    return headers.reduce((acc, key, index) => {
+      acc[key] = values[index] || "";
+      return acc;
+    }, {});
+  });
+
+  return { data, headers };
+}
+
+function safeJsonParse(raw) {
+  if (!raw || !raw.trim()) return null;
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    const parsedCsv = parseCsv(raw);
+    if (!parsedCsv) return null;
+
+    const { headers, data } = parsedCsv;
+    const normalized = {};
+
+    if (headers.includes("name") && headers.includes("club")) {
+      normalized.squad = data.map((row) => ({
+        name: row.name,
+        age: row.age,
+        position: row.position,
+        overall: row.overall,
+        potential: row.potential,
+        value: row.value || row.wage,
+        wage: row.wage,
+        contractYears: row.contractyears || row.contract_years || 3,
+        goals: row.goals,
+        appearances: row.appearances,
+      }));
+    }
+
+    if (headers.includes("week") && headers.includes("home") && headers.includes("away")) {
+      normalized.fixtures = data.map((row) => ({
+        week: row.week,
+        home: row.home,
+        away: row.away,
+        score: row.score,
+        cup: row.cup === "true" || row.cup === "1",
+      }));
+    }
+
+    if (headers.includes("team") && headers.includes("points")) {
+      normalized.leagueTable = data.map((row, index) => ({
+        position: Number(row.position || index + 1),
+        team: row.team,
+        played: Number(row.played || row.p),
+        won: Number(row.won || row.w),
+        drawn: Number(row.drawn || row.d),
+        lost: Number(row.lost || row.l),
+        goalsFor: Number(row.goalsfor || row.gf || 0),
+        goalsAgainst: Number(row.goalsagainst || row.ga || 0),
+        goalDifference: Number(row.goaldifference || row.gd || 0),
+        points: Number(row.points || row.pt || 0),
+      }));
+    }
+
+    return normalized;
+  }
+}
+
+function normalizeImportedName(rawName) {
+  return String(rawName || "Inconnu")
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/\b([a-z])/g, (match) => match.toUpperCase());
+}
+
+function parseScore(scoreString) {
+  const parts = String(scoreString || "").trim().split(/[\-:]/);
+  if (parts.length !== 2) return null;
+  const home = Number(parts[0]);
+  const away = Number(parts[1]);
+  if (Number.isNaN(home) || Number.isNaN(away)) return null;
+  return { home, away };
+}
+
+function parseQuickResultsText(text) {
+  return String(text || "")
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const match = line.match(/^(.+)\s+(\d+)[:\-](\d+)\s+(.+)$/);
+      if (!match) return null;
+      const [, home, homeScore, awayScore, away] = match;
+      const scoreData = parseScore(`${homeScore}-${awayScore}`);
+      if (!scoreData) return null;
+      return {
+        home: home.trim(),
+        away: away.trim(),
+        score: `${scoreData.home}-${scoreData.away}`,
+        result:
+          scoreData.home > scoreData.away
+            ? "home"
+            : scoreData.home < scoreData.away
+            ? "away"
+            : "draw",
+      };
+    })
+    .filter(Boolean);
+}
+
+function createImportedPlayer(player, clubName) {
+  return withContract(
+    {
+      id: uid("player"),
+      name: normalizeImportedName(player.name),
+      age: Number(player.age || 20),
+      position: player.position || "MC",
+      overall: clamp(Number(player.overall || 65)),
+      potential: clamp(Number(player.potential || 70)),
+      value: Number(player.value || player.wage || 0),
+      morale: clamp(56 + randomBetween(-10, 18)),
+      form: clamp(54 + randomBetween(-12, 12)),
+      fatigue: clamp(randomBetween(6, 24)),
+      goals: Number(player.goals || 0),
+      appearances: Number(player.appearances || 0),
+      club: clubName,
+      signedWeek: 1,
+      injury: null,
+      injuryHistory: [],
+      transferListed: false,
+      contract: {
+        wage: Number(player.wage || 0.4),
+        yearsRemaining: Number(player.contractYears || 3),
+        renewedAtWeek: 1,
+      },
+    },
+    0,
+  );
+}
+
+function createImportedFixtures(fixtures = [], clubName) {
+  return fixtures
+    .filter((fix) => fix && fix.home && fix.away)
+    .map((fix) => ({
+      id: uid("fixture"),
+      week: Number(fix.week || 1),
+      home: fix.home,
+      away: fix.away,
+      score: fix.score || "0-0",
+      result: fix.score
+        ? parseScore(fix.score)?.home > parseScore(fix.score)?.away
+          ? "home"
+          : parseScore(fix.score)?.home < parseScore(fix.score)?.away
+          ? "away"
+          : "draw"
+        : "pending",
+      cup: fix.cup || false,
+      venue: fix.home === clubName ? "home" : "away",
+    }))
+    .sort((a, b) => a.week - b.week);
+}
+
+function createImportedLeagueTable(rows = [], clubName) {
+  return (rows || [])
+    .filter((row) => row && row.team)
+    .map((row, index) => ({
+      id: uid("table"),
+      position: Number(row.position || index + 1),
+      team: row.team,
+      played: Number(row.played || 0),
+      won: Number(row.won || 0),
+      drawn: Number(row.drawn || 0),
+      lost: Number(row.lost || 0),
+      goalsFor: Number(row.goalsFor || row.gf || 0),
+      goalsAgainst: Number(row.goalsAgainst || row.ga || 0),
+      goalDifference: Number(row.goalDifference || row.gd || 0),
+      points: Number(row.points || 0),
+    }))
+    .sort((a, b) => a.position - b.position);
+}
+
 function convertMarketPlayerToSquadPlayer(marketPlayer, clubName) {
   const player = {
     id: uid("player"),
@@ -1070,7 +1854,8 @@ function getCareerStrength(career) {
     averageOverall * 0.55 +
       career.reputation * 0.25 +
       career.morale * 0.15 +
-      career.cohesion * 0.12 -
+      career.cohesion * 0.12 +
+      getTacticalBonus(career) -
       averageFatigue * 0.12 -
       injuryPenalty,
     35,
@@ -1544,7 +2329,15 @@ function createCareer(type = "manager", club = CLUBS[0], options = {}) {
     transferHistory: [],
     recruitmentMarket: createRecruitmentMarket({ budget: club.budget }),
     shortlist: [],
+    academy: createInitialAcademy({ club, budget: club.budget }),
+    academyLog: [],
     contractsLog: [],
+    socialFeed: [],
+    pressConferences: [],
+    mediaReputation: 50,
+    mediaLog: [],
+    tactics: createDefaultTactics(squad),
+    seasonHistory: [],
     fixtures: createRealFixtures(club.name, club.league),
     leagueTable,
     boardObjectives: evaluateBoardObjectives({
@@ -1771,15 +2564,32 @@ function createSvgImage(category, title, playerName, clubName) {
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#bef264"/>
-      <stop offset="50%" stop-color="#22d3ee"/>
-      <stop offset="100%" stop-color="#07111f"/>
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="30%" stop-color="#0f172a"/>
+      <stop offset="75%" stop-color="#0f172a" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#0f172a"/>
     </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="${meta.color}"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.18"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
-  <rect width="1200" height="720" fill="url(#bg)"/>
-  <text x="80" y="140" font-family="Arial" font-size="40" font-weight="900" fill="white">${meta.icon} ${safeClub}</text>
-  <text x="80" y="220" font-family="Arial" font-size="46" font-weight="900" fill="white">${safeTitle}</text>
-  <text x="80" y="620" font-family="Arial" font-size="32" fill="white">Joueur : ${safePlayer}</text>
+  <rect width="1200" height="720" fill="url(#bg)" />
+  <rect x="60" y="60" width="1080" height="600" rx="40" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)" stroke-width="2" />
+  <rect x="80" y="520" width="1040" height="120" rx="30" fill="url(#accent)" opacity="0.85" filter="url(#glow)" />
+  <text x="90" y="155" font-family="Inter, Arial, sans-serif" font-size="48" font-weight="900" fill="white">${safeClub}</text>
+  <text x="90" y="235" font-family="Inter, Arial, sans-serif" font-size="54" font-weight="900" fill="white">${safeTitle}</text>
+  <text x="90" y="320" font-family="Inter, Arial, sans-serif" font-size="32" fill="#d1d5db">Joueur concerné :</text>
+  <text x="90" y="370" font-family="Inter, Arial, sans-serif" font-size="40" font-weight="700" fill="white">${safePlayer}</text>
+  <text x="90" y="450" font-family="Inter, Arial, sans-serif" font-size="24" fill="#9ca3af">Événement premium généré par le Career Hub</text>
+  <text x="90" y="640" font-family="Inter, Arial, sans-serif" font-size="26" fill="white">${meta.icon} ${category}</text>
 </svg>`;
 
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
@@ -2141,22 +2951,167 @@ function ClubPicker({ type, onBack, onConfirm }) {
   );
 }
 
-function Dashboard({ career }) {
+function MediaView({ career, onPressAnswer }) {
+  const socialFeed = career.socialFeed || [];
+  const conferences = career.pressConferences || [];
+  const activeConference = conferences.find((conference) => conference.status === "pending");
+  const buzz = getMediaBuzz(career);
+
+  return (
+    <div>
+      <div className="club-row" style={{ justifyContent: "space-between", marginBottom: 16 }}>
+        <div>
+          <Kicker tone="amber">Médias</Kicker>
+          <h2>Réseaux sociaux & presse</h2>
+          <p className="muted">
+            Gère l’image publique du club, les réactions supporters et les conférences.
+          </p>
+        </div>
+
+        <div className="stat-grid">
+          <Stat label="Buzz" value={buzz} tone="amber" />
+          <Stat label="Popularité" value={career.popularity} tone="lime" />
+          <Stat label="Pression" value={career.pressure} tone="red" />
+        </div>
+      </div>
+
+      {activeConference ? (
+        <div className="card" style={{ marginBottom: 22 }}>
+          <Kicker tone={getSentimentTone(activeConference.sentiment)}>
+            Conférence active
+          </Kicker>
+          <h2>{activeConference.title}</h2>
+          <p className="muted">{activeConference.fixture}</p>
+
+          <div className="grid-2" style={{ marginTop: 16 }}>
+            {activeConference.questions.map((question) => {
+              const alreadyAnswered = (activeConference.answers || []).some(
+                (answer) => answer.questionId === question.id,
+              );
+
+              return (
+                <div key={question.id} className="card" style={{ opacity: alreadyAnswered ? 0.55 : 1 }}>
+                  <h3>{question.question}</h3>
+
+                  {alreadyAnswered ? (
+                    <p className="muted">Question déjà traitée.</p>
+                  ) : (
+                    <div className="choice-grid">
+                      {question.choices.map((choice) => (
+                        <button
+                          key={choice.label}
+                          type="button"
+                          className="choice-btn"
+                          onClick={() => onPressAnswer(activeConference.id, question.id, choice)}
+                        >
+                          {choice.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="card" style={{ marginBottom: 22 }}>
+          <h3>Aucune conférence en attente</h3>
+          <p className="muted">
+            Les conférences apparaissent automatiquement après certaines semaines.
+          </p>
+        </div>
+      )}
+
+      <div className="grid-2">
+        <div className="card">
+          <h3>Fil social</h3>
+
+          {socialFeed.length ? (
+            socialFeed.slice(0, 18).map((post) => (
+              <div key={post.id} className="card" style={{ marginTop: 12 }}>
+                <div className="club-row" style={{ justifyContent: "space-between" }}>
+                  <Kicker tone={getSentimentTone(post.sentiment)}>
+                    {getSentimentLabel(post.sentiment)}
+                  </Kicker>
+                  <span className="muted">S{post.week}</span>
+                </div>
+                <h3>{post.author}</h3>
+                <p>{post.text}</p>
+                <p className="muted">
+                  {post.likes} likes · {post.replies} réponses
+                </p>
+              </div>
+            ))
+          ) : (
+            <p className="muted">Aucun post pour l’instant.</p>
+          )}
+        </div>
+
+        <div className="card">
+          <h3>Historique presse</h3>
+
+          {conferences.length ? (
+            conferences.map((conference) => (
+              <div key={conference.id} className="fixture">
+                <span>{conference.title}</span>
+                <strong>
+                  {conference.status === "resolved" ? "Terminée" : "En attente"}
+                </strong>
+              </div>
+            ))
+          ) : (
+            <p className="muted">Aucune conférence enregistrée.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SettingsView() {
+  return (
+    <div className="card">
+      <h2>Paramètres</h2>
+      <p className="muted">Ajustez les paramètres du mode carrière et les options de personnalisation.</p>
+    </div>
+  );
+}
+
+function Dashboard({ career, onSeasonAdvance }) {
+  const nextFixture =
+    (career.fixtures || []).find((fixture) => fixture.result === "pending") ||
+    (career.fixtures || [])[0] ||
+    null;
+
   return (
     <div className="grid-2">
-      <div className="card pitch">
+      <div className="card pitch" style={{ background: UI_GRADIENTS.panel }}>
         <div className="club-row" style={{ justifyContent: "space-between" }}>
-          <h2>Central Hub</h2>
+          <div>
+            <Kicker tone="lime">Central Hub</Kicker>
+            <h2>Situaton actuelle</h2>
+          </div>
           <Kicker tone="lime">Semaine {career.week}</Kicker>
         </div>
         <div className="stat-grid">
           <Stat label="Moral" value={career.morale} tone="lime" />
           <Stat label="Réputation" value={career.reputation} tone="cyan" />
+          <Stat label="Buzz" value={getMediaBuzz(career)} tone="amber" />
           <Stat label="Pression" value={career.pressure} tone="amber" />
           <Stat label="Cohésion" value={career.cohesion} tone="violet" />
         </div>
+        {nextFixture ? (
+          <div className="card media" style={{ marginTop: 18, background: "rgba(255,255,255,0.04)" }}>
+            <h3>Prochain match</h3>
+            <p className="muted">Journée {nextFixture.week}</p>
+            <p>
+              <strong>{nextFixture.home}</strong> vs <strong>{nextFixture.away}</strong>
+            </p>
+          </div>
+        ) : null}
       </div>
-      <div className="card">
+      <div className="card" style={{ background: UI_GRADIENTS.panel }}>
         <div className="club-row">
           <ClubBadge club={career.club} />
           <div>
@@ -2171,6 +3126,16 @@ function Dashboard({ career }) {
         <p className="muted" style={{ marginTop: 18 }}>
           Objectif : <b className="soft">{career.customObjective}</b>
         </p>
+        {isSeasonOver(career) ? (
+          <button
+            type="button"
+            className="primary-btn"
+            style={{ marginTop: 16 }}
+            onClick={onSeasonAdvance}
+          >
+            Lancer la saison suivante
+          </button>
+        ) : null}
       </div>
     </div>
   );
@@ -2280,15 +3245,44 @@ function EventModal({ event, onClose, onDecision }) {
 
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">
-      <div className="modal">
+      <div className="modal" style={{ background: UI_GRADIENTS.panel }}>
         <div className="event-strip" style={{ background: meta.color }} />
         <div className="modal-grid">
           <aside className="modal-left">
-            <img
-              className="event-image"
-              src={event.imageUrl}
-              alt={event.title}
-            />
+            <div
+              style={{
+                position: "relative",
+                border: `2px solid ${meta.color}`,
+                borderRadius: 24,
+                overflow: "hidden",
+                background: "rgba(15,23,42,0.95)",
+              }}
+            >
+              <img
+                className="event-image"
+                src={event.imageUrl}
+                alt={event.title}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  left: 12,
+                  top: 12,
+                  padding: "8px 14px",
+                  borderRadius: 999,
+                  background: "rgba(15,23,42,0.88)",
+                  color: "white",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: 14,
+                  fontWeight: 700,
+                }}
+              >
+                <span>{meta.icon}</span>
+                <strong>{event.category}</strong>
+              </div>
+            </div>
             <div className="stat-grid" style={{ marginTop: 18 }}>
               <Stat label="Rareté" value={event.rarity} tone="amber" />
               <Stat label="Semaine" value={event.week} tone="cyan" />
@@ -2434,6 +3428,10 @@ function SquadView({ career }) {
               <p className="red">
                 🏥 {player.injury.label} — retour dans {player.injury.weeksRemaining} semaine(s)
               </p>
+            ) : player.loanedOut ? (
+              <p className="amber">
+                Prêté à {player.loan?.club} — retour dans {player.loan?.weeksRemaining} semaine(s)
+              </p>
             ) : (
               <p className="muted">Disponible</p>
             )}
@@ -2446,6 +3444,249 @@ function SquadView({ career }) {
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function TacticsView({ career, onChange }) {
+  const tactics = career.tactics || createDefaultTactics(career.squad);
+  const sortedSquad = [...(career.squad || [])].sort((a, b) => b.overall - a.overall);
+  const starters = sortedSquad.filter((player) =>
+    (tactics.starters || []).includes(player.id),
+  );
+
+  function toggleStarter(player) {
+    const current = tactics.starters || [];
+    const exists = current.includes(player.id);
+
+    const nextStarters = exists
+      ? current.filter((id) => id !== player.id)
+      : current.length < 11
+      ? [...current, player.id]
+      : current;
+
+    onChange({ starters: nextStarters });
+  }
+
+  return (
+    <div>
+      <div className="club-row" style={{ justifyContent: "space-between", marginBottom: 16 }}>
+        <div>
+          <Kicker tone="lime">Tactique</Kicker>
+          <h2>XI titulaire & style de jeu</h2>
+        </div>
+        <Stat label="Bonus tactique" value={getTacticalBonus(career)} tone="cyan" />
+      </div>
+
+      <div className="grid-2">
+        <div className="card">
+          <h3>Plan de jeu</h3>
+          <label>
+            <div className="stat-label">Formation</div>
+            <select
+              className="select"
+              value={tactics.formation}
+              onChange={(event) => onChange({ formation: event.target.value })}
+            >
+              <option value="4-3-3">4-3-3</option>
+              <option value="4-2-3-1">4-2-3-1</option>
+              <option value="3-5-2">3-5-2</option>
+              <option value="4-4-2">4-4-2</option>
+            </select>
+          </label>
+
+          <label>
+            <div className="stat-label">Mentalité</div>
+            <select
+              className="select"
+              value={tactics.mentality}
+              onChange={(event) => onChange({ mentality: event.target.value })}
+            >
+              <option value="défensif">Défensif</option>
+              <option value="équilibré">Équilibré</option>
+              <option value="offensif">Offensif</option>
+            </select>
+          </label>
+
+          <p className="muted" style={{ marginTop: 12 }}>
+            Titulaires sélectionnés : <b>{(tactics.starters || []).length}/11</b>
+          </p>
+        </div>
+
+        <div className="card">
+          <h3>XI actuel</h3>
+          {starters.length ? (
+            starters.map((player) => (
+              <div key={player.id} className="fixture">
+                <span>{player.name} · {player.position}</span>
+                <strong>OVR {player.overall}</strong>
+              </div>
+            ))
+          ) : (
+            <p className="muted">Aucun titulaire défini.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: 22 }}>
+        <h3>Effectif disponible</h3>
+        <div className="grid-3" style={{ marginTop: 16 }}>
+          {sortedSquad.map((player) => {
+            const selected = (tactics.starters || []).includes(player.id);
+
+            return (
+              <button
+                key={player.id}
+                type="button"
+                className={`club-card ${selected ? "selected" : ""}`}
+                onClick={() => toggleStarter(player)}
+              >
+                <h3>{player.name}</h3>
+                <p className="muted">{player.position} · OVR {player.overall}</p>
+                <p className="muted">Forme {player.form} · Fatigue {player.fatigue}</p>
+                <Kicker tone={selected ? "lime" : "cyan"}>
+                  {selected ? "Titulaire" : "Disponible"}
+                </Kicker>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AcademyView({ career, onAcademyAction }) {
+  const prospects = career.academy || [];
+
+  return (
+    <div>
+      <div className="club-row" style={{ justifyContent: "space-between", marginBottom: 16 }}>
+        <div>
+          <Kicker tone="lime">Académie</Kicker>
+          <h2>Centre de formation</h2>
+          <p className="muted">
+            Détecte, observe et promeut les meilleurs jeunes talents.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          className="secondary-btn"
+          onClick={() => onAcademyAction(null, "refresh-academy")}
+        >
+          Nouvelle détection
+        </button>
+      </div>
+
+      <div className="grid-3">
+        {prospects.length ? (
+          prospects.map((prospect) => (
+            <div key={prospect.id} className="card" style={{ opacity: prospect.promoted ? 0.55 : 1 }}>
+              <div className="club-row" style={{ justifyContent: "space-between" }}>
+                <h3>{prospect.name}</h3>
+                <Kicker tone={prospect.revealedPotential ? "lime" : "amber"}>
+                  {prospect.revealedPotential ? `POT ${prospect.potential}` : "Potentiel caché"}
+                </Kicker>
+              </div>
+
+              <p className="muted">
+                {prospect.country} · {prospect.position} · {prospect.age} ans
+              </p>
+
+              <p>OVR estimé : <b>{prospect.overall}</b></p>
+              <p className="soft">Profil : {prospect.archetype}</p>
+              <p className="muted">Scouting : {prospect.scoutProgress}%</p>
+
+              {prospect.promoted ? (
+                <p className="lime">Promu en équipe première</p>
+              ) : (
+                <button
+                  type="button"
+                  className="primary-btn"
+                  onClick={() => onAcademyAction(prospect, "promote")}
+                >
+                  Promouvoir
+                </button>
+              )}
+            </div>
+          ))
+        ) : (
+          <div className="card">Aucun prospect observé.</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function FC26ImportView({ career, onImportJson, onImportResults }) {
+  const [rawJson, setRawJson] = useState("");
+  const [quickResults, setQuickResults] = useState("");
+
+  return (
+    <div>
+      <div className="club-row" style={{ justifyContent: "space-between", marginBottom: 16 }}>
+        <div>
+          <Kicker tone="cyan">Import FC26</Kicker>
+          <h2>Importer des données réelles</h2>
+          <p className="muted">
+            Charge un fichier JSON/CSV ou colle des résultats rapides depuis FC26.
+          </p>
+        </div>
+      </div>
+
+      <div className="grid-2" style={{ gap: 22 }}>
+        <div className="card">
+          <h3>Importer JSON/CSV</h3>
+          <p className="muted">Colle les données FC26 exportées depuis le jeu.</p>
+          <textarea
+            rows={10}
+            value={rawJson}
+            onChange={(event) => setRawJson(event.target.value)}
+            placeholder="Colle ici le JSON ou le CSV de FC26..."
+            style={{ width: "100%", fontFamily: "monospace" }}
+          />
+          <button
+            type="button"
+            className="primary-btn"
+            onClick={() => onImportJson(rawJson)}
+            style={{ marginTop: 14 }}
+          >
+            Importer les données
+          </button>
+        </div>
+
+        <div className="card">
+          <h3>Importer résultats rapides</h3>
+          <p className="muted">Colle des lignes de scores FC26 pour mettre à jour le calendrier.</p>
+          <textarea
+            rows={10}
+            value={quickResults}
+            onChange={(event) => setQuickResults(event.target.value)}
+            placeholder="Ex: PSG 2-1 OM"
+            style={{ width: "100%", fontFamily: "monospace" }}
+          />
+          <button
+            type="button"
+            className="secondary-btn"
+            onClick={() => onImportResults(quickResults)}
+            style={{ marginTop: 14 }}
+          >
+            Appliquer les scores
+          </button>
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: 20, background: UI_GRADIENTS.panel }}>
+        <h3>Résumé</h3>
+        <p className="muted">
+          Votre club: <b>{career.club.name}</b> · Budget: <b>{money(career.budget)}</b>
+        </p>
+        <p className="muted">
+          Joueurs FC26 importés: <b>{career.squad.length}</b> · Journée: <b>{career.week}</b>
+        </p>
+        <p className="muted">Les importations réelles sont prioritaires sur le calendrier et le classement.</p>
       </div>
     </div>
   );
@@ -2714,6 +3955,66 @@ function HistoryView({ career }) {
           ))
         ) : (
           <p className="muted">Aucune storyline active.</p>
+        )}
+      </div>
+      <div className="card">
+        <h2>Académie</h2>
+        {career.academyLog && career.academyLog.length ? (
+          career.academyLog.slice(0, 8).map((entry) => (
+            <p key={entry.id}>
+              S{entry.week} · {entry.label || entry.playerName || entry.action}
+            </p>
+          ))
+        ) : (
+          <p className="muted">Aucun journal d’académie.</p>
+        )}
+      </div>
+      <div className="card">
+        <h2>Médias</h2>
+        {(career.mediaLog || []).length ? (
+          career.mediaLog.map((item) => (
+            <p key={item.id}>
+              S{item.week} · {item.action} → <b>{item.label}</b>
+            </p>
+          ))
+        ) : (
+          <p className="muted">Aucune action média.</p>
+        )}
+      </div>
+      <div className="card">
+        <h2>Saisons</h2>
+        {career.seasonHistory && career.seasonHistory.length ? (
+          career.seasonHistory.slice(0, 8).map((entry) => (
+            <p key={entry.id}>
+              Saison {entry.season} · Position {entry.position} · Top scorer {entry.topScorer || "-"}
+            </p>
+          ))
+        ) : (
+          <p className="muted">Aucun résumé de saison.</p>
+        )}
+      </div>
+      <div className="card">
+        <h2>Mercato</h2>
+        {career.transferHistory && career.transferHistory.length ? (
+          career.transferHistory.slice(0, 8).map((entry) => (
+            <p key={entry.id}>
+              S{entry.week} · {entry.playerName} · {entry.action.replace("_", " ")}
+            </p>
+          ))
+        ) : (
+          <p className="muted">Aucun historique de mercato.</p>
+        )}
+      </div>
+      <div className="card">
+        <h2>Contrats</h2>
+        {career.contractsLog && career.contractsLog.length ? (
+          career.contractsLog.slice(0, 8).map((entry) => (
+            <p key={entry.id}>
+              S{entry.week} · {entry.playerName} · {entry.action.replace("_", " ")}
+            </p>
+          ))
+        ) : (
+          <p className="muted">Aucun historique de contrats.</p>
         )}
       </div>
     </div>
@@ -2996,6 +4297,15 @@ function WeekSummaryModal({ summary, onClose, onOpenEvent }) {
             <h3>Article de presse</h3>
             <p className="muted">{summary.article}</p>
           </div>
+          {summary.mediaBuzz !== undefined ? (
+            <div className="card" style={{ marginTop: 16 }}>
+              <Kicker tone="amber">Impact médias</Kicker>
+              <h3>Buzz médiatique : {summary.mediaBuzz}</h3>
+              <p className="muted">
+                Les réseaux sociaux et la presse réagissent à la semaine du club.
+              </p>
+            </div>
+          ) : null}
           <div
             className="club-row"
             style={{ marginTop: 18, justifyContent: "flex-end" }}
@@ -3038,13 +4348,18 @@ export default function CareerApp() {
     () => [
       ["dashboard", "Hub"],
       ["events", "Événements"],
+      ["media", "Médias"],
       ["squad", "Effectif"],
+      ["tactics", "Tactique"],
       ["calendar", "Calendrier"],
       ["table", "Classement"],
       ["mercato", "Mercato"],
+      ["academy", "Académie"],
       ["board", "Direction"],
       ["news", "News"],
       ["history", "Historique"],
+      ["settings", "Paramètres"],
+      ["fc26", "Import FC26"],
     ],
     [],
   );
@@ -3101,10 +4416,29 @@ export default function CareerApp() {
       fixtures: career.fixtures.map((fixture) => ({ ...fixture })),
     };
 
+    const loanTick = tickLoans(nextCareer);
+    nextCareer.squad = loanTick.squad;
+    if (loanTick.returningPlayers.length) {
+      nextCareer.news = [
+        {
+          id: uid("news"),
+          week: nextCareer.week,
+          type: "Mercato",
+          title: "Retour de prêt",
+          body: `${loanTick.returningPlayers.join(", ")} revient/reviennent de prêt.`,
+        },
+        ...(nextCareer.news || []),
+      ];
+    }
+
     const result = simulateResult(nextCareer);
 
     nextCareer.fixtures = result.fixtures;
     nextCareer.squad = result.squad;
+    nextCareer.squad = progressSquadWeekly(nextCareer);
+    if (nextCareer.week % 4 === 0) {
+      nextCareer.squad = nextCareer.squad.map(progressPlayer);
+    }
     const baseTable =
       nextCareer.leagueTable && nextCareer.leagueTable.length
         ? nextCareer.leagueTable
@@ -3161,6 +4495,32 @@ export default function CareerApp() {
     ].slice(0, EVENT_MEMORY_LIMIT);
     nextCareer.news = [article, ...nextCareer.news];
 
+    const mediaContext = {
+      fixture: getLastPlayedFixture(nextCareer),
+      type: event.category,
+      sentiment: getResultSentimentFromFixture(nextCareer, getLastPlayedFixture(nextCareer)),
+    };
+
+    const socialPosts = createWeeklySocialFeed(nextCareer, mediaContext);
+    const pressConference =
+      Math.random() < 0.65
+        ? createPressConference(nextCareer, result, event, transferOffer)
+        : null;
+
+    nextCareer.socialFeed = [
+      ...socialPosts,
+      ...(nextCareer.socialFeed || []),
+    ].slice(0, 80);
+
+    if (pressConference) {
+      nextCareer.pressConferences = [
+        pressConference,
+        ...(nextCareer.pressConferences || []),
+      ].slice(0, 20);
+    }
+
+    nextCareer.mediaReputation = getMediaBuzz(nextCareer);
+
     nextCareer.boardObjectives = evaluateBoardObjectives(nextCareer);
     const contractAlerts = getContractAlerts(nextCareer);
 
@@ -3205,6 +4565,8 @@ export default function CareerApp() {
       eventCategory: event.category,
       eventDescription: event.description,
       article: article.body,
+      mediaBuzz: nextCareer.mediaReputation,
+      pressConferenceId: pressConference?.id || null,
     });
   }, [career, replaceCareer]);
 
@@ -3280,6 +4642,7 @@ export default function CareerApp() {
 
           if (action === "accept") {
             const isLoan = existingOffer.type === "loan";
+            const loanDuration = randomInt(6, 16);
             return {
               ...item,
               budget: Number((item.budget + existingOffer.amount).toFixed(1)),
@@ -3292,6 +4655,12 @@ export default function CareerApp() {
                       ? {
                           ...candidate,
                           loanedOut: true,
+                          loan: {
+                            club: existingOffer.buyerClub,
+                            startedWeek: item.week,
+                            weeksRemaining: loanDuration,
+                            originalWeeks: loanDuration,
+                          },
                           morale: clamp(candidate.morale - 3),
                         }
                       : candidate,
@@ -3549,6 +4918,302 @@ export default function CareerApp() {
     );
   }, [activeId]);
 
+  const handlePressAnswer = useCallback((conferenceId, questionId, choice) => {
+    setCareers((list) =>
+      list.map((item) => {
+        if (item.id !== activeId) return item;
+
+        const conference = (item.pressConferences || []).find(
+          (candidate) => candidate.id === conferenceId,
+        );
+
+        if (!conference || conference.status === "resolved") return item;
+
+        const question = conference.questions.find(
+          (candidate) => candidate.id === questionId,
+        );
+
+        if (!question) return item;
+
+        const nextCareer = applyMediaEffects(item, choice.effects || {});
+
+        const updatedConferences = (nextCareer.pressConferences || []).map(
+          (candidate) => {
+            if (candidate.id !== conferenceId) return candidate;
+
+            const answers = [
+              ...(candidate.answers || []),
+              {
+                questionId,
+                question: question.question,
+                answer: choice.label,
+                effects: choice.effects,
+              },
+            ];
+
+            const resolved = answers.length >= candidate.questions.length;
+
+            return {
+              ...candidate,
+              answers,
+              status: resolved ? "resolved" : "pending",
+            };
+          },
+        );
+
+        return {
+          ...nextCareer,
+          pressConferences: updatedConferences,
+          socialFeed: [
+            {
+              id: uid("social"),
+              week: item.week,
+              author: "Conférence de presse",
+              sentiment: MEDIA_SENTIMENTS.VIRAL,
+              text: `Réponse presse : ${choice.label}`,
+              likes: randomInt(250, 3200),
+              replies: randomInt(20, 400),
+              topic: "press",
+            },
+            ...(nextCareer.socialFeed || []),
+          ],
+          mediaLog: [
+            {
+              id: uid("medialog"),
+              week: item.week,
+              action: "press_answer",
+              label: choice.label,
+              question: question.question,
+            },
+            ...(nextCareer.mediaLog || []),
+          ],
+        };
+      }),
+    );
+  }, [activeId]);
+
+  const handleAcademyAction = useCallback((prospect, action) => {
+    setCareers((list) =>
+      list.map((item) => {
+        if (item.id !== activeId) return item;
+
+        if (action === "refresh-academy") {
+          const cost = item.budget <= 10 ? 0.3 : 1.2;
+
+          if (item.budget < cost) {
+            return {
+              ...item,
+              news: [
+                {
+                  id: uid("news"),
+                  week: item.week,
+                  type: "Académie",
+                  title: "Budget insuffisant pour le scouting",
+                  body: `Le club ne peut pas financer une nouvelle tournée de détection à ${money(cost)}.`,
+                },
+                ...(item.news || []),
+              ],
+            };
+          }
+
+          return {
+            ...item,
+            budget: Number((item.budget - cost).toFixed(1)),
+            academy: createInitialAcademy(item),
+            academyLog: [
+              {
+                id: uid("academylog"),
+                week: item.week,
+                action: "refresh",
+                label: "Nouvelle génération de prospects",
+              },
+              ...(item.academyLog || []),
+            ],
+            news: [
+              {
+                id: uid("news"),
+                week: item.week,
+                type: "Académie",
+                title: "Nouvelle génération observée",
+                body: "Le centre de formation propose une nouvelle liste de jeunes prospects.",
+              },
+              ...(item.news || []),
+            ],
+          };
+        }
+
+        if (!prospect) return item;
+
+        if (action === "promote") {
+          const found = (item.academy || []).find(
+            (candidate) => candidate.id === prospect.id,
+          );
+          if (!found || found.promoted) return item;
+
+          if (found.age < 16) {
+            return {
+              ...item,
+              news: [
+                {
+                  id: uid("news"),
+                  week: item.week,
+                  type: "Académie",
+                  title: `${found.name} est encore trop jeune`,
+                  body: "Le staff recommande d’attendre avant une promotion en équipe première.",
+                },
+                ...(item.news || []),
+              ],
+            };
+          }
+
+          const newPlayer = convertAcademyToPlayer(found, item.club.name);
+
+          return {
+            ...item,
+            squad: [newPlayer, ...(item.squad || [])],
+            development: clamp(item.development + 2),
+            academy: (item.academy || []).map((candidate) =>
+              candidate.id === found.id
+                ? { ...candidate, promoted: true, signedWeek: item.week }
+                : candidate,
+            ),
+            academyLog: [
+              {
+                id: uid("academylog"),
+                week: item.week,
+                action: "promoted",
+                playerName: found.name,
+                position: found.position,
+                potential: found.potential,
+              },
+              ...(item.academyLog || []),
+            ],
+            news: [
+              {
+                id: uid("news"),
+                week: item.week,
+                type: "Académie",
+                title: `${found.name} promu en équipe première`,
+                body: `${found.name}, ${found.position}, rejoint l’effectif professionnel.`,
+              },
+              ...(item.news || []),
+            ],
+          };
+        }
+
+        return item;
+      }),
+    );
+  }, [activeId]);
+
+  const handleFC26Import = useCallback((rawData) => {
+    setCareers((list) =>
+      list.map((item) => {
+        if (item.id !== activeId) return item;
+
+        const imported = safeJsonParse(rawData);
+        if (!imported) return item;
+
+        const importedPlayers = (imported.squad || []).map((player) =>
+          createImportedPlayer(player, item.club.name),
+        );
+        const importedFixtures = createImportedFixtures((imported.fixtures || []), item.club.name);
+        const importedLeague = createImportedLeagueTable(imported.leagueTable || [], item.club.name);
+
+        return {
+          ...item,
+          squad: [...importedPlayers, ...item.squad],
+          fixtures: importedFixtures.length ? importedFixtures : item.fixtures,
+          leagueTable: importedLeague.length ? importedLeague : item.leagueTable,
+          news: [
+            {
+              id: uid("news"),
+              week: item.week,
+              type: "Import",
+              title: "Import FC26 effectué",
+              body: "Les données FC26 ont été intégrées au club, avec renforts et calendrier actualisés.",
+            },
+            ...(item.news || []),
+          ],
+        };
+      }),
+    );
+  }, [activeId]);
+
+  const handleQuickResultsImport = useCallback((text) => {
+    setCareers((list) =>
+      list.map((item) => {
+        if (item.id !== activeId) return item;
+
+        const results = parseQuickResultsText(text);
+        if (!results.length) return item;
+
+        const fixtures = item.fixtures.map((fixture) => {
+          const match = results.find(
+            (result) =>
+              result.home === fixture.home && result.away === fixture.away,
+          );
+          if (!match) return fixture;
+          return {
+            ...fixture,
+            score: match.score,
+            result: match.result,
+          };
+        });
+
+        return {
+          ...item,
+          fixtures,
+          news: [
+            {
+              id: uid("news"),
+              week: item.week,
+              type: "Import",
+              title: "Résultats rapides importés",
+              body: "Les scores FC26 ont été appliqués aux rencontres du calendrier.",
+            },
+            ...(item.news || []),
+          ],
+        };
+      }),
+    );
+  }, [activeId]);
+
+  const handleTacticsChange = useCallback((nextTactics) => {
+    setCareers((list) =>
+      list.map((item) =>
+        item.id === activeId
+          ? {
+              ...item,
+              tactics: {
+                ...(item.tactics || createDefaultTactics(item.squad)),
+                ...nextTactics,
+              },
+            }
+          : item,
+      ),
+    );
+  }, [activeId]);
+
+  const handleSeasonAdvance = useCallback(() => {
+    setCareers((list) =>
+      list.map((item) => {
+        if (item.id !== activeId) return item;
+        if (!isSeasonOver(item)) return item;
+
+        const summary = createSeasonSummary(item);
+        const next = startNewSeason(item);
+
+        return {
+          ...next,
+          seasonHistory: [summary, ...(item.seasonHistory || [])],
+        };
+      }),
+    );
+
+    setTab("dashboard");
+  }, [activeId]);
+
   const handleContractAction = useCallback((player, action) => {
     setCareers((list) =>
       list.map((item) => {
@@ -3693,8 +5358,12 @@ export default function CareerApp() {
     switch (tab) {
       case "events":
         return <EventsView career={career} onOpen={setActiveEvent} />;
+      case "media":
+        return <MediaView career={career} onPressAnswer={handlePressAnswer} />;
       case "squad":
         return <SquadView career={career} />;
+      case "tactics":
+        return <TacticsView career={career} onChange={handleTacticsChange} />;
       case "calendar":
         return <CalendarView career={career} />;
       case "table":
@@ -3707,14 +5376,26 @@ export default function CareerApp() {
             onRecruitmentAction={handleRecruitmentAction}
           />
         );
+      case "academy":
+        return <AcademyView career={career} onAcademyAction={handleAcademyAction} />;
+      case "fc26":
+        return (
+          <FC26ImportView
+            career={career}
+            onImportJson={handleFC26Import}
+            onImportResults={handleQuickResultsImport}
+          />
+        );
       case "board":
         return <BoardView career={career} onContractAction={handleContractAction} />;
       case "news":
         return <NewsView career={career} />;
       case "history":
         return <HistoryView career={career} />;
+      case "settings":
+        return <SettingsView />;
       default:
-        return <Dashboard career={career} />;
+        return <Dashboard career={career} onSeasonAdvance={handleSeasonAdvance} />;
     }
   }
 
@@ -3722,9 +5403,9 @@ export default function CareerApp() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        const parsed = JSON.parse(raw);
+        const parsed = safeJsonParse(raw) || JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length) {
-          setCareers(parsed);
+          setCareers(parsed.map(normalizeCareer));
           setActiveId(parsed[0].id);
         }
       } else {

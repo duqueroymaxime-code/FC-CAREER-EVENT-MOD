@@ -2,7 +2,9 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-const STORAGE_KEY = "fifa-career-overhaul-player-injuries-squads-v8";
+const STORAGE_KEY = "fifa-career-overhaul-board-contracts-v12";
+const BUILD_LABEL = "BOARD_CONTRACTS_V12_ACTIVE";
+const FORCE_TRANSFER_OFFERS = true;
 const DEFAULT_THEME = "dark";
 const DEFAULT_SCREEN = "home";
 const DEFAULT_TAB = "dashboard";
@@ -263,7 +265,9 @@ function createSquadForClub(club) {
     (_, index) => createPlayer(index, club.name),
   );
 
-  return [...presetPlayers, ...generatedPlayers];
+  return [...presetPlayers, ...generatedPlayers].map((player) =>
+    withContract(player, club.budget),
+  );
 }
 
 const INJURY_TYPES = [
@@ -303,6 +307,75 @@ const INJURY_TYPES = [
     formPenalty: 18,
   },
 ];
+
+const TRANSFER_WINDOWS = [
+  { startWeek: 1, endWeek: 4, label: "Mercato estival" },
+  { startWeek: 6, endWeek: 8, label: "Mercato hivernal" },
+];
+
+const BUYER_CLUBS = [
+  { name: "AS Monaco", strength: 80 },
+  { name: "RC Lens", strength: 76 },
+  { name: "Stade Rennais", strength: 75 },
+  { name: "OGC Nice", strength: 75 },
+  { name: "Manchester United", strength: 82 },
+  { name: "Newcastle United", strength: 80 },
+  { name: "Aston Villa", strength: 79 },
+  { name: "Borussia Dortmund", strength: 82 },
+  { name: "AC Milan", strength: 83 },
+  { name: "Atlético de Madrid", strength: 86 },
+];
+
+const MARKET_PLAYER_POOL = [
+  ["Lucas Chevalier", "GB", 24, 82, 38],
+  ["Guillaume Restes", "GB", 21, 78, 22],
+  ["Castello Lukeba", "DC", 23, 82, 42],
+  ["Jean-Clair Todibo", "DC", 26, 81, 34],
+  ["Maxence Lacroix", "DC", 26, 79, 24],
+  ["Quentin Merlin", "DG", 24, 77, 16],
+  ["Rayan Aït-Nouri", "DG", 25, 80, 32],
+  ["Malo Gusto", "DD", 23, 80, 30],
+  ["Khephren Thuram", "MC", 25, 80, 31],
+  ["Manu Koné", "MC", 25, 79, 27],
+  ["Enzo Le Fée", "MC", 26, 78, 22],
+  ["Désiré Doué", "MOC", 21, 81, 46],
+  ["Rayan Cherki", "MOC", 23, 80, 34],
+  ["Maghnes Akliouche", "MOC", 24, 79, 29],
+  ["Johan Bakayoko", "AD", 23, 81, 40],
+  ["Edon Zhegrova", "AD", 27, 80, 28],
+  ["Karim Adeyemi", "AG", 24, 82, 45],
+  ["Georges Mikautadze", "BU", 25, 79, 26],
+  ["Elye Wahi", "BU", 23, 78, 24],
+  ["Jonathan David", "BU", 26, 83, 48],
+];
+
+const LOW_BUDGET_MARKET_POOL = [
+  ["Mathis Picouleau", "MC", 25, 66, 1.2],
+  ["Amadou Konaté", "BU", 23, 68, 1.8],
+  ["Noah Raveyre", "GB", 21, 65, 0.9],
+  ["Ilyes Hamache", "AG", 23, 67, 1.4],
+  ["Tidiane Keita", "MDC", 27, 67, 1.1],
+  ["Mamadou Camara", "DC", 24, 66, 1.3],
+  ["Yanis Begraoui", "BU", 24, 69, 2.2],
+  ["Tom Ducrocq", "MC", 26, 68, 1.7],
+  ["Lenny Nangis", "AD", 31, 66, 0.8],
+  ["Alexandre Mendy", "BU", 32, 70, 1.6],
+];
+
+const CONTRACT_STATUS = {
+  SECURE: "stable",
+  EXPIRING: "expiring",
+  CRITICAL: "critical",
+};
+
+const BOARD_OBJECTIVE_TYPES = {
+  LEAGUE_POSITION: "league_position",
+  MORALE: "morale",
+  FINANCES: "finances",
+  DEVELOPMENT: "development",
+  CLEAN_SHEET: "clean_sheet",
+  UNBEATEN_RUN: "unbeaten_run",
+};
 
 const CATEGORY_META = {
   Match: { icon: "⚽", color: "linear-gradient(90deg,#bef264,#22d3ee)" },
@@ -811,6 +884,159 @@ function randomBetween(min, max) {
   return min + Math.random() * (max - min);
 }
 
+function isTransferWindow(week) {
+  return TRANSFER_WINDOWS.some(
+    (window) => week >= window.startWeek && week <= window.endWeek,
+  );
+}
+
+function getTransferWindowLabel(week) {
+  const found = TRANSFER_WINDOWS.find(
+    (window) => week >= window.startWeek && week <= window.endWeek,
+  );
+
+  return found ? found.label : "Hors mercato";
+}
+
+function getPlayerMarketValue(player) {
+  const baseValue = Number(player.value || 1);
+  const formMultiplier = 1 + (Number(player.form || 50) - 50) / 220;
+  const ageMultiplier =
+    player.age <= 21 ? 1.2 : player.age >= 32 ? 0.72 : 1;
+
+  return Number((baseValue * formMultiplier * ageMultiplier).toFixed(1));
+}
+
+function getRecruitmentPool(career) {
+  return career.budget <= 10 ? LOW_BUDGET_MARKET_POOL : MARKET_PLAYER_POOL;
+}
+
+function createMarketPlayer([name, position, age, overall, price], career) {
+  return {
+    id: uid("market"),
+    name,
+    position,
+    age,
+    overall,
+    potential: clamp(overall + randomBetween(1, 8), overall, 94),
+    price: Number(price),
+    club: "Marché",
+    scouted: false,
+    shortlisted: false,
+    wage: Number((price * randomBetween(0.035, 0.08)).toFixed(1)),
+    fit:
+      position === "BU" || position === "AD" || position === "AG"
+        ? "Offensif"
+        : position === "GB" || position === "DC"
+          ? "Défensif"
+          : "Équilibre",
+  };
+}
+
+function createRecruitmentMarket(career) {
+  const pool = getRecruitmentPool(career);
+
+  return pool
+    .map((player) => createMarketPlayer(player, career))
+    .sort((a, b) => b.overall - a.overall);
+}
+
+function convertMarketPlayerToSquadPlayer(marketPlayer, clubName) {
+  const player = {
+    id: uid("player"),
+    name: marketPlayer.name,
+    age: marketPlayer.age,
+    position: marketPlayer.position,
+    overall: marketPlayer.overall,
+    potential: marketPlayer.potential,
+    value: Number(marketPlayer.price),
+    morale: clamp(60 + randomBetween(-8, 14)),
+    form: clamp(58 + randomBetween(-10, 18)),
+    fatigue: clamp(randomBetween(5, 28)),
+    goals: 0,
+    appearances: 0,
+    club: clubName,
+    injury: null,
+    injuryHistory: [],
+  };
+
+  return withContract(player, 10);
+}
+
+function refreshRecruitmentMarket(career) {
+  return createRecruitmentMarket(career);
+}
+
+function createTransferOffer(career) {
+  console.log("TRY TRANSFER OFFER", {
+    week: career.week,
+    window: getTransferWindowLabel(career.week),
+    isWindow: isTransferWindow(career.week),
+    squad: career.squad?.length,
+  });
+
+  if (!isTransferWindow(career.week)) return null;
+
+  const squad = (career.squad || []).filter(
+    (player) => !isPlayerInjured(player) && !player.loanedOut,
+  );
+
+  if (!squad.length) return null;
+
+  const roll = Math.random();
+
+  if (!FORCE_TRANSFER_OFFERS && roll > 0.42) return null;
+
+  const candidates = [...squad]
+    .sort((a, b) => {
+      const scoreA = a.overall * 0.7 + a.form * 0.2 + (100 - a.age) * 0.1;
+      const scoreB = b.overall * 0.7 + b.form * 0.2 + (100 - b.age) * 0.1;
+      return scoreB - scoreA;
+    })
+    .slice(0, 10);
+
+  const player = pick(candidates);
+  const buyer = pick(BUYER_CLUBS);
+  const marketValue = getPlayerMarketValue(player);
+  const offerType = Math.random() < 0.82 ? "transfer" : "loan";
+
+  const multiplier =
+    offerType === "loan"
+      ? randomBetween(0.08, 0.18)
+      : randomBetween(0.85, 1.35);
+
+  const amount = Number((marketValue * multiplier).toFixed(1));
+
+  console.log("TRANSFER OFFER CREATED", {
+    player: player.name,
+    buyer: buyer.name,
+    amount,
+    type: offerType,
+  });
+
+  return {
+    id: uid("offer"),
+    week: career.week,
+    window: getTransferWindowLabel(career.week),
+    type: offerType,
+    buyerClub: buyer.name,
+    playerId: player.id,
+    playerName: player.name,
+    playerPosition: player.position,
+    playerOverall: player.overall,
+    playerAge: player.age,
+    marketValue,
+    amount,
+    status: "pending",
+    counterAmount: null,
+    createdWeek: career.week,
+  };
+}
+
+function formatOfferType(type) {
+  return type === "loan" ? "Prêt" : "Transfert";
+}
+
 function poisson(lambda) {
   const safeLambda = Math.max(0.05, Math.min(3.2, lambda));
   const limit = Math.exp(-safeLambda);
@@ -906,14 +1132,17 @@ function createPlayer(index, clubName, overrides = {}) {
     club: clubName,
   };
 
-  return {
-    ...player,
-    ...overrides,
-  };
+  return withContract(
+    {
+      ...player,
+      ...overrides,
+    },
+    10,
+  );
 }
 
 function createPresetPlayer([name, position, age, overall], clubName) {
-  return {
+  const player = {
     id: uid("player"),
     name,
     age,
@@ -929,7 +1158,215 @@ function createPresetPlayer([name, position, age, overall], clubName) {
     club: clubName,
     injury: null,
     injuryHistory: [],
+    transferListed: false,
   };
+
+  return withContract(player, 10);
+}
+
+function createContractForPlayer(player, clubBudget = 10) {
+  const baseWage = Math.max(
+    0.1,
+    Number(((player.overall * player.overall) / 9500).toFixed(1)),
+  );
+
+  const wage = Number(
+    (baseWage * randomBetween(0.8, clubBudget > 50 ? 1.6 : 1.1)).toFixed(1),
+  );
+
+  const yearsRemaining = randomInt(1, 5);
+
+  return {
+    wage,
+    yearsRemaining,
+    status:
+      yearsRemaining <= 1
+        ? CONTRACT_STATUS.CRITICAL
+        : yearsRemaining <= 2
+          ? CONTRACT_STATUS.EXPIRING
+          : CONTRACT_STATUS.SECURE,
+    renewedAtWeek: null,
+  };
+}
+
+function withContract(player, clubBudget = 10) {
+  return {
+    ...player,
+    contract: player.contract || createContractForPlayer(player, clubBudget),
+    transferListed: Boolean(player.transferListed),
+  };
+}
+
+function updateContractStatus(player) {
+  if (!player.contract) return player;
+
+  const yearsRemaining = Number(player.contract.yearsRemaining || 0);
+
+  return {
+    ...player,
+    contract: {
+      ...player.contract,
+      status:
+        yearsRemaining <= 1
+          ? CONTRACT_STATUS.CRITICAL
+          : yearsRemaining <= 2
+            ? CONTRACT_STATUS.EXPIRING
+            : CONTRACT_STATUS.SECURE,
+    },
+  };
+}
+
+function tickContractsAtSeasonTurn(player) {
+  if (!player.contract) return player;
+
+  const yearsRemaining = Math.max(0, Number(player.contract.yearsRemaining || 0) - 1);
+
+  return updateContractStatus({
+    ...player,
+    contract: {
+      ...player.contract,
+      yearsRemaining,
+    },
+  });
+}
+
+function getContractAlerts(career) {
+  return (career.squad || []).filter(
+    (player) =>
+      player.contract &&
+      player.contract.yearsRemaining <= 1 &&
+      !player.loanedOut,
+  );
+}
+
+function getTotalWageBill(career) {
+  return Number(
+    (career.squad || [])
+      .reduce((sum, player) => sum + Number(player.contract?.wage || 0), 0)
+      .toFixed(1),
+  );
+}
+
+function createBoardObjectives(club) {
+  const lowBudget = club.budget <= 10;
+  const highReputation = club.reputation >= 85;
+
+  return [
+    {
+      id: uid("objective"),
+      type: BOARD_OBJECTIVE_TYPES.LEAGUE_POSITION,
+      title: lowBudget ? "Se rapprocher du haut de tableau" : "Finir dans le Top 4",
+      description: lowBudget
+        ? "La direction veut une progression sportive visible cette saison."
+        : "La direction attend une saison compétitive au classement.",
+      target: lowBudget ? 8 : 4,
+      progress: 0,
+      status: "active",
+      rewardTrust: 6,
+      penaltyTrust: -6,
+    },
+    {
+      id: uid("objective"),
+      type: BOARD_OBJECTIVE_TYPES.MORALE,
+      title: "Maintenir un vestiaire positif",
+      description: "Garder le moral global au-dessus de 55.",
+      target: 55,
+      progress: 0,
+      status: "active",
+      rewardTrust: 4,
+      penaltyTrust: -5,
+    },
+    {
+      id: uid("objective"),
+      type: BOARD_OBJECTIVE_TYPES.FINANCES,
+      title: "Contrôler les finances",
+      description: "Éviter de descendre sous un budget critique.",
+      target: lowBudget ? 1 : Math.max(10, Math.round(club.budget * 0.12)),
+      progress: 0,
+      status: "active",
+      rewardTrust: 4,
+      penaltyTrust: -6,
+    },
+    {
+      id: uid("objective"),
+      type: BOARD_OBJECTIVE_TYPES.DEVELOPMENT,
+      title: "Développer le projet sportif",
+      description: "Augmenter le développement du club au fil de la saison.",
+      target: highReputation ? 65 : 55,
+      progress: 0,
+      status: "active",
+      rewardTrust: 5,
+      penaltyTrust: -4,
+    },
+  ];
+}
+
+function getUserLeaguePosition(career) {
+  const table = sortLeagueTable(
+    career.leagueTable && career.leagueTable.length
+      ? career.leagueTable
+      : createLeagueTable(career.club),
+  );
+
+  const index = table.findIndex((team) => team.name === career.club.name);
+  return index >= 0 ? index + 1 : null;
+}
+
+function evaluateBoardObjectives(career) {
+  const position = getUserLeaguePosition(career);
+  const totalWageBill = getTotalWageBill(career);
+
+  return (career.boardObjectives || []).map((objective) => {
+    let progress = objective.progress || 0;
+    let status = objective.status || "active";
+
+    if (objective.type === BOARD_OBJECTIVE_TYPES.LEAGUE_POSITION) {
+      progress = position ? Math.max(0, objective.target - position + 1) : 0;
+      status = position && position <= objective.target ? "on_track" : "at_risk";
+    }
+
+    if (objective.type === BOARD_OBJECTIVE_TYPES.MORALE) {
+      progress = career.morale;
+      status = career.morale >= objective.target ? "on_track" : "at_risk";
+    }
+
+    if (objective.type === BOARD_OBJECTIVE_TYPES.FINANCES) {
+      progress = career.budget;
+      status = career.budget >= objective.target ? "on_track" : "at_risk";
+    }
+
+    if (objective.type === BOARD_OBJECTIVE_TYPES.DEVELOPMENT) {
+      progress = career.development;
+      status = career.development >= objective.target ? "on_track" : "at_risk";
+    }
+
+    return {
+      ...objective,
+      progress,
+      status,
+      lastEvaluatedWeek: career.week,
+      meta: {
+        leaguePosition: position,
+        wageBill: totalWageBill,
+      },
+    };
+  });
+}
+
+function getObjectiveTone(status) {
+  if (status === "on_track") return "lime";
+  if (status === "at_risk") return "amber";
+  if (status === "failed") return "red";
+  if (status === "completed") return "green";
+  return "cyan";
+}
+
+function getObjectiveLabel(status) {
+  if (status === "on_track") return "Dans les temps";
+  if (status === "at_risk") return "À risque";
+  if (status === "failed") return "Échec";
+  if (status === "completed") return "Réussi";
+  return "Actif";
 }
 
 function createRealFixtures(clubName, league = "Ligue 1") {
@@ -1081,6 +1518,8 @@ function simulateLeagueWeek(table, userMatch) {
 }
 function createCareer(type = "manager", club = CLUBS[0], options = {}) {
   const squad = createSquadForClub(club);
+  const leagueTable = createLeagueTable(club);
+
   return {
     id: uid("career"),
     type,
@@ -1101,8 +1540,22 @@ function createCareer(type = "manager", club = CLUBS[0], options = {}) {
     pressure: 35,
     development: 50,
     transferTension: 20,
+    transferOffers: [],
+    transferHistory: [],
+    recruitmentMarket: createRecruitmentMarket({ budget: club.budget }),
+    shortlist: [],
+    contractsLog: [],
     fixtures: createRealFixtures(club.name, club.league),
-    leagueTable: createLeagueTable(club),
+    leagueTable,
+    boardObjectives: evaluateBoardObjectives({
+      club,
+      boardObjectives: createBoardObjectives(club),
+      leagueTable,
+      morale: 58,
+      budget: club.budget,
+      development: 50,
+      week: 1,
+    }),
     events: [],
     news: [],
     decisions: [],
@@ -1998,6 +2451,206 @@ function SquadView({ career }) {
   );
 }
 
+function MercatoView({ career, onDecision, onRecruitmentAction }) {
+  console.log("MERCATO VIEW ACTIVE", career.transferOffers);
+  const offers = career.transferOffers || [];
+  const pendingOffers = offers.filter((offer) => offer.status === "pending");
+  const resolvedOffers = offers.filter((offer) => offer.status !== "pending");
+  const market = career.recruitmentMarket || [];
+  const shortlist = career.shortlist || [];
+
+  return (
+    <div>
+      <div
+        className="club-row"
+        style={{ justifyContent: "space-between", marginBottom: 16 }}
+      >
+        <div>
+          <h2>Mercato</h2>
+          <p className="muted">
+            Fenêtre actuelle : <b>{getTransferWindowLabel(career.week)}</b>
+          </p>
+          <p className="muted">
+            Tension mercato : <b>{career.transferTension}</b>
+          </p>
+        </div>
+        <button
+          type="button"
+          className="secondary-btn"
+          onClick={() => onRecruitmentAction(null, "refresh-market")}
+        >
+          Actualiser le marché
+        </button>
+      </div>
+
+      <div className="grid-2" style={{ gap: 18 }}>
+        <div>
+          <h3>Offres entrantes</h3>
+          {pendingOffers.length ? (
+            <div className="grid-3">
+              {pendingOffers.map((offer) => (
+                <div key={offer.id} className="card">
+                  <div
+                    className="club-row"
+                    style={{ justifyContent: "space-between" }}
+                  >
+                    <div>
+                      <h3>{offer.playerName}</h3>
+                      <p className="muted">
+                        {offer.type === "loan" ? "Prêt" : "Transfert"}
+                      </p>
+                    </div>
+                    <Kicker tone="amber">{offer.buyerClub}</Kicker>
+                  </div>
+                  <p className="muted">Demande {money(offer.amount)}</p>
+                  <div className="club-row" style={{ gap: 8, marginTop: 16 }}>
+                    <button
+                      type="button"
+                      className="primary-btn"
+                      onClick={() => onDecision(offer, "accept")}
+                    >
+                      Accepter
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary-btn"
+                      onClick={() => onDecision(offer, "reject")}
+                    >
+                      Refuser
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    className="secondary-btn"
+                    style={{ marginTop: 10, width: "100%" }}
+                    onClick={() => onDecision(offer, "counter")}
+                  >
+                    Contre-proposition
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="card">Aucune offre de transfert en attente.</div>
+          )}
+        </div>
+
+        <div>
+          <div className="club-row" style={{ justifyContent: "space-between", gap: 12 }}>
+            <div>
+              <h3>Recrutement</h3>
+              <p className="muted">Marché actuel et shortlist de cibles.</p>
+            </div>
+            <span className="muted">
+              Budget : <b>{money(career.budget)}</b>
+            </span>
+          </div>
+
+          <div className="card" style={{ marginBottom: 16 }}>
+            <h4>Shortlist</h4>
+            {shortlist.length ? (
+              shortlist.map((player) => (
+                <div key={player.id} className="transfer-line">
+                  <p>
+                    {player.name} · {player.position} · OVR {player.overall}
+                  </p>
+                  <div className="club-row" style={{ gap: 8, marginTop: 8 }}>
+                    <button
+                      type="button"
+                      className="secondary-btn"
+                      onClick={() => onRecruitmentAction(player, "remove-shortlist")}
+                    >
+                      Retirer
+                    </button>
+                    <button
+                      type="button"
+                      className="primary-btn"
+                      onClick={() => onRecruitmentAction(player, "buy")}
+                    >
+                      Acheter
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="muted">Aucune cible en shortlist.</p>
+            )}
+          </div>
+
+          <div className="grid-2" style={{ gap: 12 }}>
+            {market.slice(0, 6).map((player) => (
+              <div key={player.id} className="card">
+                <div className="club-row" style={{ justifyContent: "space-between" }}>
+                  <div>
+                    <h3>{player.name}</h3>
+                    <p className="muted">
+                      {player.position} · {player.age} ans
+                    </p>
+                  </div>
+                  <Kicker tone={player.shortlisted ? "lime" : "cyan"}>
+                    {player.fit}
+                  </Kicker>
+                </div>
+                <p className="muted">
+                  OVR {player.overall} · POT {player.potential}
+                </p>
+                <p className="muted">
+                  Salaire estimé {money(player.wage)} · Prix {money(player.price)}
+                </p>
+                <div className="club-row" style={{ gap: 8, marginTop: 12 }}>
+                  <button
+                    type="button"
+                    className="secondary-btn"
+                    onClick={() =>
+                      onRecruitmentAction(
+                        player,
+                        player.shortlisted ? "remove-shortlist" : "shortlist",
+                      )
+                    }
+                  >
+                    {player.shortlisted ? "Retirer" : "Shortlister"}
+                  </button>
+                  <button
+                    type="button"
+                    className="primary-btn"
+                    onClick={() => onRecruitmentAction(player, "buy")}
+                  >
+                    Acheter
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: 22 }}>
+        <h3>Historique des transferts</h3>
+        {resolvedOffers.length ? (
+          resolvedOffers.map((offer) => (
+            <div key={offer.id} className="transfer-line">
+              <p>
+                S{offer.resolvedWeek || career.week} · {offer.playerName} → {offer.buyerClub}
+              </p>
+              <p className="muted">
+                {offer.status === "accepted"
+                  ? `${offer.type === "loan" ? "Prêt" : "Vente"} pour ${money(offer.amount)}`
+                  : offer.status === "rejected"
+                  ? `Offre refusée à ${money(offer.amount)}`
+                  : offer.status === "countered"
+                  ? `Contre-proposition demandée à ${money(offer.counterAmount)}`
+                  : `Statut : ${offer.status}`}
+              </p>
+            </div>
+          ))
+        ) : (
+          <p className="muted">Aucun mouvement de mercato enregistré.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function CalendarView({ career }) {
   return (
     <div className="grid-2">
@@ -2066,6 +2719,111 @@ function HistoryView({ career }) {
     </div>
   );
 }
+
+function BoardView({ career, onContractAction }) {
+  const contractAlerts = getContractAlerts(career);
+  const wageBill = getTotalWageBill(career);
+
+  return (
+    <div className="grid-2" style={{ gap: 18 }}>
+      <div className="card">
+        <div className="club-row" style={{ justifyContent: "space-between", marginBottom: 16 }}>
+          <div>
+            <h2>Direction</h2>
+            <p className="muted">Suivez les objectifs de la direction et gérez les contrats clés.</p>
+          </div>
+          <Kicker tone="cyan">Confiance {career.boardTrust}%</Kicker>
+        </div>
+
+        <div className="stat-grid">
+          <Stat label="Budget" value={money(career.budget)} tone="lime" />
+          <Stat label="Moral" value={career.morale} tone={career.morale >= 55 ? "lime" : "amber"} />
+          <Stat label="Masse salariale" value={money(wageBill)} tone="amber" />
+          <Stat label="Contrats urgents" value={contractAlerts.length} tone={contractAlerts.length ? "red" : "green"} />
+        </div>
+
+        <div style={{ marginTop: 20 }}>
+          <h3>Objectifs de la direction</h3>
+          {(career.boardObjectives || []).map((objective) => (
+            <div key={objective.id} className="objective-row">
+              <div>
+                <h4>{objective.title}</h4>
+                <p className="muted">{objective.description}</p>
+              </div>
+              <Kicker tone={getObjectiveTone(objective.status)}>
+                {getObjectiveLabel(objective.status)}
+              </Kicker>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <div className="card" style={{ marginBottom: 18 }}>
+          <h3>Alertes contrats</h3>
+          {contractAlerts.length ? (
+            contractAlerts.map((player) => (
+              <div key={player.id} className="transfer-line">
+                <p>
+                  {player.name} · {player.position} · {player.contract.yearsRemaining} an(s) restants
+                </p>
+                <div className="club-row" style={{ gap: 8, marginTop: 8 }}>
+                  {player.contract.yearsRemaining <= 1 ? (
+                    <>
+                      <button
+                        type="button"
+                        className="primary-btn"
+                        onClick={() => onContractAction(player, "renew")}
+                      >
+                        Renouveler
+                      </button>
+                      <button
+                        type="button"
+                        className="secondary-btn"
+                        onClick={() => onContractAction(player, "release")}
+                      >
+                        Libérer
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      className="secondary-btn"
+                      onClick={() => onContractAction(player, "transfer-list")}
+                    >
+                      Mettre sur liste
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="muted">Aucun contrat en situation d'alerte.</p>
+          )}
+        </div>
+
+        <div className="card">
+          <h3>Journal des contrats</h3>
+          {career.contractsLog && career.contractsLog.length ? (
+            career.contractsLog.slice(0, 8).map((entry) => (
+              <div key={entry.id} className="transfer-line">
+                <p>
+                  S{entry.week} · {entry.playerName} · {entry.action.replace("_", " ")}
+                </p>
+                {entry.wage ? (
+                  <p className="muted">Salaire {money(entry.wage)} · Prime {money(entry.signingFee)}</p>
+                ) : null}
+              </div>
+            ))
+          ) : (
+            <p className="muted">Aucun historique de contrat disponible.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function LeagueTableView({ career }) {
   const table = sortLeagueTable(
     career.leagueTable && career.leagueTable.length
@@ -2283,6 +3041,8 @@ export default function CareerApp() {
       ["squad", "Effectif"],
       ["calendar", "Calendrier"],
       ["table", "Classement"],
+      ["mercato", "Mercato"],
+      ["board", "Direction"],
       ["news", "News"],
       ["history", "Historique"],
     ],
@@ -2291,6 +3051,16 @@ export default function CareerApp() {
   const pendingEvents = useMemo(
     () => career.events.filter((event) => event.status === "unread").length,
     [career.events],
+  );
+  const pendingTransferOffers = useMemo(
+    () =>
+      (career.transferOffers || []).filter((offer) => offer.status === "pending")
+        .length,
+    [career.transferOffers],
+  );
+  const contractAlertCount = useMemo(
+    () => getContractAlerts(career).length,
+    [career],
   );
   const themeClass = useMemo(() => getThemeClass(theme), [theme]);
 
@@ -2352,6 +3122,28 @@ export default function CareerApp() {
       nextCareer.popularity + result.resultDelta * 3,
     );
 
+    const transferOffer = createTransferOffer(nextCareer);
+    if (transferOffer) {
+      nextCareer.transferOffers = [
+        transferOffer,
+        ...(nextCareer.transferOffers || []),
+      ];
+
+      nextCareer.news = [
+        {
+          id: uid("news"),
+          week: nextCareer.week,
+          type: "Mercato",
+          title: `${transferOffer.buyerClub} approche ${transferOffer.playerName}`,
+          body:
+            transferOffer.type === "loan"
+              ? `${transferOffer.buyerClub} propose un prêt pour ${transferOffer.playerName}.`
+              : `${transferOffer.buyerClub} propose ${money(transferOffer.amount)} pour ${transferOffer.playerName}.`,
+        },
+        ...(nextCareer.news || []),
+      ];
+    }
+
     const event = buildContextualEvent(nextCareer, result);
     nextCareer = applyConsequences(nextCareer, event);
     const article = generateArticle(nextCareer, event);
@@ -2369,8 +3161,30 @@ export default function CareerApp() {
     ].slice(0, EVENT_MEMORY_LIMIT);
     nextCareer.news = [article, ...nextCareer.news];
 
+    nextCareer.boardObjectives = evaluateBoardObjectives(nextCareer);
+    const contractAlerts = getContractAlerts(nextCareer);
+
+    if (contractAlerts.length) {
+      nextCareer.news = [
+        {
+          id: uid("news"),
+          week: nextCareer.week,
+          type: "Direction",
+          title: "Contrats à surveiller",
+          body: `${contractAlerts.length} joueur(s) arrivent dans une zone contractuelle sensible.`,
+        },
+        ...nextCareer.news,
+      ];
+      nextCareer.boardTrust = clamp(
+        nextCareer.boardTrust - Math.min(3, contractAlerts.length),
+      );
+      nextCareer.transferTension = clamp(
+        nextCareer.transferTension + Math.min(4, contractAlerts.length),
+      );
+    }
+
     replaceCareer(nextCareer);
-    setTab("events");
+    setTab(transferOffer ? "mercato" : "events");
     setActiveEvent(null);
 
     setWeekSummary({
@@ -2446,6 +3260,425 @@ export default function CareerApp() {
     [activeId],
   );
 
+  const handleTransferDecision = useCallback(
+    (offer, action) => {
+      setCareers((list) =>
+        list.map((item) => {
+          if (item.id !== activeId) return item;
+
+          const existingOffer = (item.transferOffers || []).find(
+            (candidate) => candidate.id === offer.id,
+          );
+
+          if (!existingOffer || existingOffer.status !== "pending") return item;
+
+          const player = item.squad.find(
+            (candidate) => candidate.id === existingOffer.playerId,
+          );
+
+          if (!player) return item;
+
+          if (action === "accept") {
+            const isLoan = existingOffer.type === "loan";
+            return {
+              ...item,
+              budget: Number((item.budget + existingOffer.amount).toFixed(1)),
+              morale: clamp(item.morale - (isLoan ? 1 : 4)),
+              cohesion: clamp(item.cohesion - (isLoan ? 1 : 3)),
+              transferTension: clamp(item.transferTension + 3),
+              squad: isLoan
+                ? item.squad.map((candidate) =>
+                    candidate.id === player.id
+                      ? {
+                          ...candidate,
+                          loanedOut: true,
+                          morale: clamp(candidate.morale - 3),
+                        }
+                      : candidate,
+                  )
+                : item.squad.filter((candidate) => candidate.id !== player.id),
+              transferOffers: (item.transferOffers || []).map((candidate) =>
+                candidate.id === offer.id
+                  ? { ...candidate, status: "accepted", resolvedWeek: item.week }
+                  : candidate,
+              ),
+              transferHistory: [
+                {
+                  id: uid("transfer"),
+                  week: item.week,
+                  action: "accepted",
+                  type: existingOffer.type,
+                  playerName: existingOffer.playerName,
+                  buyerClub: existingOffer.buyerClub,
+                  amount: existingOffer.amount,
+                },
+                ...(item.transferHistory || []),
+              ],
+              news: [
+                {
+                  id: uid("news"),
+                  week: item.week,
+                  type: "Mercato",
+                  title: `${existingOffer.playerName} rejoint ${existingOffer.buyerClub}`,
+                  body:
+                    existingOffer.type === "loan"
+                      ? `${existingOffer.playerName} part en prêt à ${existingOffer.buyerClub}.`
+                      : `${existingOffer.playerName} quitte le club pour ${money(existingOffer.amount)}.`,
+                },
+                ...(item.news || []),
+              ],
+            };
+          }
+
+          if (action === "reject") {
+            return {
+              ...item,
+              morale: clamp(item.morale - 1),
+              transferTension: clamp(item.transferTension + 4),
+              squad: item.squad.map((candidate) =>
+                candidate.id === player.id
+                  ? { ...candidate, morale: clamp(candidate.morale - 4) }
+                  : candidate,
+              ),
+              transferOffers: (item.transferOffers || []).map((candidate) =>
+                candidate.id === offer.id
+                  ? { ...candidate, status: "rejected", resolvedWeek: item.week }
+                  : candidate,
+              ),
+              transferHistory: [
+                {
+                  id: uid("transfer"),
+                  week: item.week,
+                  action: "rejected",
+                  type: existingOffer.type,
+                  playerName: existingOffer.playerName,
+                  buyerClub: existingOffer.buyerClub,
+                  amount: existingOffer.amount,
+                },
+                ...(item.transferHistory || []),
+              ],
+            };
+          }
+
+          if (action === "counter") {
+            const counterAmount = Number((existingOffer.amount * 1.22).toFixed(1));
+
+            return {
+              ...item,
+              transferTension: clamp(item.transferTension + 2),
+              transferOffers: (item.transferOffers || []).map((candidate) =>
+                candidate.id === offer.id
+                  ? {
+                      ...candidate,
+                      status: "countered",
+                      counterAmount,
+                      resolvedWeek: item.week,
+                    }
+                  : candidate,
+              ),
+              transferHistory: [
+                {
+                  id: uid("transfer"),
+                  week: item.week,
+                  action: "countered",
+                  type: existingOffer.type,
+                  playerName: existingOffer.playerName,
+                  buyerClub: existingOffer.buyerClub,
+                  amount: existingOffer.amount,
+                  counterAmount,
+                },
+                ...(item.transferHistory || []),
+              ],
+              news: [
+                {
+                  id: uid("news"),
+                  week: item.week,
+                  type: "Mercato",
+                  title: `Contre-proposition envoyée pour ${existingOffer.playerName}`,
+                  body: `Le club demande désormais ${money(counterAmount)} à ${existingOffer.buyerClub}.`,
+                },
+                ...(item.news || []),
+              ],
+            };
+          }
+
+          return item;
+        }),
+      );
+    },
+    [activeId],
+  );
+
+  const handleRecruitmentAction = useCallback((marketPlayer, action) => {
+    setCareers((list) =>
+      list.map((item) => {
+        if (item.id !== activeId) return item;
+
+        const recruitmentMarket = item.recruitmentMarket || [];
+        const shortlist = item.shortlist || [];
+
+        if (action === "shortlist") {
+          const alreadyShortlisted = shortlist.some(
+            (candidate) => candidate.id === marketPlayer.id,
+          );
+
+          return {
+            ...item,
+            shortlist: alreadyShortlisted
+              ? shortlist
+              : [{ ...marketPlayer, shortlisted: true }, ...shortlist],
+            recruitmentMarket: recruitmentMarket.map((candidate) =>
+              candidate.id === marketPlayer.id
+                ? { ...candidate, shortlisted: true }
+                : candidate,
+            ),
+          };
+        }
+
+        if (action === "remove-shortlist") {
+          return {
+            ...item,
+            shortlist: shortlist.filter(
+              (candidate) => candidate.id !== marketPlayer.id,
+            ),
+            recruitmentMarket: recruitmentMarket.map((candidate) =>
+              candidate.id === marketPlayer.id
+                ? { ...candidate, shortlisted: false }
+                : candidate,
+            ),
+          };
+        }
+
+        if (action === "buy") {
+          const price = Number(marketPlayer.price || 0);
+
+          if (item.type === "player") {
+            return {
+              ...item,
+              news: [
+                {
+                  id: uid("news"),
+                  week: item.week,
+                  type: "Mercato",
+                  title: `${marketPlayer.name} intéresse ton entourage`,
+                  body: `Ce profil représente une piste de carrière ou un futur coéquipier potentiel.`,
+                },
+                ...(item.news || []),
+              ],
+            };
+          }
+
+          if (item.budget < price) {
+            return {
+              ...item,
+              news: [
+                {
+                  id: uid("news"),
+                  week: item.week,
+                  type: "Mercato",
+                  title: `Budget insuffisant pour ${marketPlayer.name}`,
+                  body: `Le club ne peut pas financer une offre de ${money(price)} avec un budget disponible de ${money(item.budget)}.`,
+                },
+                ...(item.news || []),
+              ],
+            };
+          }
+
+          const newPlayer = convertMarketPlayerToSquadPlayer(
+            marketPlayer,
+            item.club.name,
+          );
+
+          return {
+            ...item,
+            budget: Number((item.budget - price).toFixed(1)),
+            reputation: clamp(item.reputation + (marketPlayer.overall >= 82 ? 2 : 1)),
+            popularity: clamp(item.popularity + (marketPlayer.overall >= 82 ? 2 : 0)),
+            transferTension: clamp(item.transferTension + 2),
+            squad: [newPlayer, ...(item.squad || [])],
+            recruitmentMarket: recruitmentMarket.filter(
+              (candidate) => candidate.id !== marketPlayer.id,
+            ),
+            shortlist: shortlist.filter(
+              (candidate) => candidate.id !== marketPlayer.id,
+            ),
+            transferHistory: [
+              {
+                id: uid("transfer"),
+                week: item.week,
+                action: "signed",
+                type: "incoming",
+                playerName: marketPlayer.name,
+                buyerClub: item.club.name,
+                amount: price,
+              },
+              ...(item.transferHistory || []),
+            ],
+            news: [
+              {
+                id: uid("news"),
+                week: item.week,
+                type: "Mercato",
+                title: `${marketPlayer.name} signe à ${item.club.name}`,
+                body: `${item.club.name} officialise l’arrivée de ${marketPlayer.name} pour ${money(price)}.`,
+              },
+              ...(item.news || []),
+            ],
+          };
+        }
+
+        if (action === "refresh-market") {
+          return {
+            ...item,
+            recruitmentMarket: refreshRecruitmentMarket(item),
+            news: [
+              {
+                id: uid("news"),
+                week: item.week,
+                type: "Mercato",
+                title: "Nouvelle liste de recrutement disponible",
+                body: "Le staff a actualisé les profils observés sur le marché.",
+              },
+              ...(item.news || []),
+            ],
+          };
+        }
+
+        return item;
+      }),
+    );
+  }, [activeId]);
+
+  const handleContractAction = useCallback((player, action) => {
+    setCareers((list) =>
+      list.map((item) => {
+        if (item.id !== activeId) return item;
+
+        const target = item.squad.find((candidate) => candidate.id === player.id);
+        if (!target) return item;
+
+        if (action === "renew") {
+          const currentWage = Number(target.contract?.wage || 0.3);
+          const newWage = Number((currentWage * randomBetween(1.08, 1.35)).toFixed(1));
+          const signingFee = Number((newWage * randomBetween(0.8, 1.8)).toFixed(1));
+
+          if (item.budget < signingFee) {
+            return {
+              ...item,
+              news: [
+                {
+                  id: uid("news"),
+                  week: item.week,
+                  type: "Direction",
+                  title: `Renouvellement bloqué pour ${target.name}`,
+                  body: `Le club ne peut pas couvrir la prime estimée à ${money(signingFee)}.`,
+                },
+                ...(item.news || []),
+              ],
+            };
+          }
+
+          return {
+            ...item,
+            budget: Number((item.budget - signingFee).toFixed(1)),
+            morale: clamp(item.morale + 1),
+            boardTrust: clamp(item.boardTrust + 1),
+            squad: item.squad.map((candidate) =>
+              candidate.id === target.id
+                ? updateContractStatus({
+                    ...candidate,
+                    morale: clamp(candidate.morale + 5),
+                    contract: {
+                      ...candidate.contract,
+                      wage: newWage,
+                      yearsRemaining: randomInt(3, 5),
+                      renewedAtWeek: item.week,
+                    },
+                  })
+                : candidate,
+            ),
+            contractsLog: [
+              {
+                id: uid("contract"),
+                week: item.week,
+                action: "renewed",
+                playerName: target.name,
+                wage: newWage,
+                signingFee,
+              },
+              ...(item.contractsLog || []),
+            ],
+            news: [
+              {
+                id: uid("news"),
+                week: item.week,
+                type: "Direction",
+                title: `${target.name} prolonge son contrat`,
+                body: `${target.name} signe une prolongation avec un salaire estimé à ${money(newWage)}.`,
+              },
+              ...(item.news || []),
+            ],
+          };
+        }
+
+        if (action === "transfer-list") {
+          return {
+            ...item,
+            transferTension: clamp(item.transferTension + 2),
+            squad: item.squad.map((candidate) =>
+              candidate.id === target.id
+                ? {
+                    ...candidate,
+                    transferListed: true,
+                    morale: clamp(candidate.morale - 5),
+                  }
+                : candidate,
+            ),
+            contractsLog: [
+              {
+                id: uid("contract"),
+                week: item.week,
+                action: "transfer_listed",
+                playerName: target.name,
+              },
+              ...(item.contractsLog || []),
+            ],
+          };
+        }
+
+        if (action === "release" && Number(target.contract?.yearsRemaining || 0) <= 1) {
+          return {
+            ...item,
+            morale: clamp(item.morale - 2),
+            boardTrust: clamp(item.boardTrust - 1),
+            squad: item.squad.filter((candidate) => candidate.id !== target.id),
+            contractsLog: [
+              {
+                id: uid("contract"),
+                week: item.week,
+                action: "released",
+                playerName: target.name,
+              },
+              ...(item.contractsLog || []),
+            ],
+            news: [
+              {
+                id: uid("news"),
+                week: item.week,
+                type: "Direction",
+                title: `${target.name} quitte le club`,
+                body: `${target.name} est libéré à l’approche de la fin de son contrat.`,
+              },
+              ...(item.news || []),
+            ],
+          };
+        }
+
+        return item;
+      }),
+    );
+  }, [activeId]);
+
   const openWeekEvent = useCallback(() => {
     const found = career.events.find(
       (event) => event.id === weekSummary?.eventId,
@@ -2466,6 +3699,16 @@ export default function CareerApp() {
         return <CalendarView career={career} />;
       case "table":
         return <LeagueTableView career={career} />;
+      case "mercato":
+        return (
+          <MercatoView
+            career={career}
+            onDecision={handleTransferDecision}
+            onRecruitmentAction={handleRecruitmentAction}
+          />
+        );
+      case "board":
+        return <BoardView career={career} onContractAction={handleContractAction} />;
       case "news":
         return <NewsView career={career} />;
       case "history":
@@ -2574,6 +3817,13 @@ export default function CareerApp() {
             >
               Mode {theme === "dark" ? "clair" : "sombre"}
             </button>
+            <button
+              type="button"
+              className="secondary-btn"
+              onClick={() => setTab("mercato")}
+            >
+              Mercato {pendingTransferOffers > 0 ? `(${pendingTransferOffers})` : ""}
+            </button>
             <nav className="nav">
               {tabs.map(([id, label]) => (
                 <button
@@ -2606,6 +3856,38 @@ export default function CareerApp() {
                       >
                         {pendingEvents}
                       </span>
+                    ) : id === "mercato" && pendingTransferOffers > 0 ? (
+                      <span
+                        style={{
+                          minWidth: 22,
+                          height: 22,
+                          borderRadius: 999,
+                          display: "grid",
+                          placeItems: "center",
+                          background: "var(--amber)",
+                          color: "white",
+                          fontSize: 12,
+                          fontWeight: 1000,
+                        }}
+                      >
+                        {pendingTransferOffers}
+                      </span>
+                    ) : id === "board" && contractAlertCount > 0 ? (
+                      <span
+                        style={{
+                          minWidth: 22,
+                          height: 22,
+                          borderRadius: 999,
+                          display: "grid",
+                          placeItems: "center",
+                          background: "var(--red)",
+                          color: "white",
+                          fontSize: 12,
+                          fontWeight: 1000,
+                        }}
+                      >
+                        {contractAlertCount}
+                      </span>
                     ) : null}
                   </span>
                 </button>
@@ -2627,6 +3909,7 @@ export default function CareerApp() {
                 <Kicker tone="lime">
                   {career.type === "player" ? "Mode Joueur" : "Mode Manager"}
                 </Kicker>
+                <Kicker tone="red">{BUILD_LABEL}</Kicker>
                 <h1 className="title-xl">{career.club.name}</h1>
                 <p className="muted">{career.customObjective}</p>
               </div>

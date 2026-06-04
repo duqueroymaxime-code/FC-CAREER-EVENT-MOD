@@ -102,11 +102,91 @@ const LEAGUE_PRESETS = {
     { name: "Fréjus Saint-Raphaël", strength: 57 },
   ],
 };
-``
-const MONTHS = ["Août", "Septembre", "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai"];
-const POSITIONS = ["GB", "DD", "DC", "DG", "MDC", "MC", "MOC", "AD", "AG", "BU"];
-const FIRST_NAMES = ["Nino", "Enzo", "Noah", "Ilyes", "Lucas", "Hugo", "Adam", "Yanis", "Rayan", "Nathan"];
-const LAST_NAMES = ["Bernard", "Garcia", "Durand", "Morel", "Martin", "Dubois", "Lefèvre", "Silva", "Diallo", "Traoré"];
+
+const MONTHS = [
+  "Août",
+  "Septembre",
+  "Octobre",
+  "Novembre",
+  "Décembre",
+  "Janvier",
+  "Février",
+  "Mars",
+  "Avril",
+  "Mai",
+];
+const POSITIONS = [
+  "GB",
+  "DD",
+  "DC",
+  "DG",
+  "MDC",
+  "MC",
+  "MOC",
+  "AD",
+  "AG",
+  "BU",
+];
+const FIRST_NAMES = [
+  "Nino",
+  "Enzo",
+  "Noah",
+  "Ilyes",
+  "Lucas",
+  "Hugo",
+  "Adam",
+  "Yanis",
+  "Rayan",
+  "Nathan",
+];
+const LAST_NAMES = [
+  "Bernard",
+  "Garcia",
+  "Durand",
+  "Morel",
+  "Martin",
+  "Dubois",
+  "Lefèvre",
+  "Silva",
+  "Diallo",
+  "Traoré",
+];
+const INJURY_TYPES = [
+  {
+    label: "Entorse légère",
+    minWeeks: 2,
+    maxWeeks: 3,
+    formPenalty: 6,
+  },
+  {
+    label: "Douleur musculaire",
+    severity: "légère",
+    minWeeks: 1,
+    maxWeeks: 2,
+    formPenalty: 4,
+  },
+  {
+    label: "Élongation",
+    severity: "sérieuse",
+    minWeeks: 3,
+    maxWeeks: 5,
+    formPenalty: 9,
+  },
+  {
+    label: "Blessure aux ischios",
+    severity: "sérieuse",
+    minWeeks: 4,
+    maxWeeks: 7,
+    formPenalty: 12,
+  },
+  {
+    label: "Lésion ligamentaire",
+    severity: "grave",
+    minWeeks: 8,
+    maxWeeks: 12,
+    formPenalty: 18,
+  },
+];
 
 const CATEGORY_META = {
   Match: { icon: "⚽", color: "linear-gradient(90deg,#bef264,#22d3ee)" },
@@ -127,7 +207,8 @@ const EVENT_TEMPLATES = {
       title: "est dans une situation délicate",
       trigger: "situation critique",
       hook: "Un joueur se retrouve au cœur d’une situation sensible et demande ton intervention.",
-      story: "Après le match, tout le vestiaire attend ta décision sur sa place dans le projet.",
+      story:
+        "Après le match, tout le vestiaire attend ta décision sur sa place dans le projet.",
       choices: ["Le soutenir", "Le recadrer", "L’isoler", "Parler à la presse"],
     },
     {
@@ -135,16 +216,28 @@ const EVENT_TEMPLATES = {
       title: "est annoncé mécontent par les journalistes",
       trigger: "rumeur de vestiaire",
       hook: "La presse affirme que le joueur ne comprend plus ton projet sportif.",
-      story: "Les commentaires s’emballent, et il faut gérer l’image du club tout en calmant le groupe.",
-      choices: ["Répondre calmement", "Attaquer les médias", "Parler au joueur", "Laisser passer"],
+      story:
+        "Les commentaires s’emballent, et il faut gérer l’image du club tout en calmant le groupe.",
+      choices: [
+        "Répondre calmement",
+        "Attaquer les médias",
+        "Parler au joueur",
+        "Laisser passer",
+      ],
     },
     {
       type: "performance",
       title: "a livré une prestation controversée",
       trigger: "analyse du match",
       hook: "Ses performances oscillent trop, et le staff se pose des questions.",
-      story: "Entre les supporters et le rapport du coach, ta crédibilité est en jeu.",
-      choices: ["Changer sa position", "Lui donner du temps", "Le blâmer publiquement", "Expliquer ton plan"],
+      story:
+        "Entre les supporters et le rapport du coach, ta crédibilité est en jeu.",
+      choices: [
+        "Changer sa position",
+        "Lui donner du temps",
+        "Le blâmer publiquement",
+        "Expliquer ton plan",
+      ],
     },
   ],
   Mercato: [
@@ -153,16 +246,28 @@ const EVENT_TEMPLATES = {
       title: "demande officiellement à partir",
       trigger: "envie de transfert",
       hook: "Le joueur vient directement t’annoncer qu’il veut quitter le club.",
-      story: "C’est un dossier délicat qui peut affecter le groupe et le budget du club.",
-      choices: ["Refuser net", "Fixer un prix", "Le convaincre de rester", "Le placer sur la liste"],
+      story:
+        "C’est un dossier délicat qui peut affecter le groupe et le budget du club.",
+      choices: [
+        "Refuser net",
+        "Fixer un prix",
+        "Le convaincre de rester",
+        "Le placer sur la liste",
+      ],
     },
     {
       type: "offer",
       title: "reçoit une proposition inattendue",
       trigger: "intérêt étranger",
       hook: "Un club puissant a placé une offre sur sa table.",
-      story: "Tu dois choisir entre ambition personnelle du joueur et stabilité de l’équipe.",
-      choices: ["Laisser partir", "Négocier plus haut", "Le rassurer", "Garder le dossier secret"],
+      story:
+        "Tu dois choisir entre ambition personnelle du joueur et stabilité de l’équipe.",
+      choices: [
+        "Laisser partir",
+        "Négocier plus haut",
+        "Le rassurer",
+        "Garder le dossier secret",
+      ],
     },
   ],
   Blessures: [
@@ -171,16 +276,28 @@ const EVENT_TEMPLATES = {
       title: "cache une gêne physique",
       trigger: "fatigue élevée",
       hook: "Le staff découvre qu’il joue avec une douleur depuis plusieurs jours.",
-      story: "Chaque minute sur le terrain pourrait aggraver sa condition et coûter un résultat.",
-      choices: ["Le mettre au repos", "Réduire sa charge", "Le laisser décider", "Forcer les examens"],
+      story:
+        "Chaque minute sur le terrain pourrait aggraver sa condition et coûter un résultat.",
+      choices: [
+        "Le mettre au repos",
+        "Réduire sa charge",
+        "Le laisser décider",
+        "Forcer les examens",
+      ],
     },
     {
       type: "rehab",
       title: "relance un protocole de récupération",
       trigger: "douleur persistante",
       hook: "Il refuse de ralentir alors que le kiné reste inquiet.",
-      story: "Il faut trouver le bon équilibre entre récupération et continuité du groupe.",
-      choices: ["Insister sur le repos", "Lui donner une séance adaptée", "Changer le planning", "Prendre le risque"],
+      story:
+        "Il faut trouver le bon équilibre entre récupération et continuité du groupe.",
+      choices: [
+        "Insister sur le repos",
+        "Lui donner une séance adaptée",
+        "Changer le planning",
+        "Prendre le risque",
+      ],
     },
   ],
   Moral: [
@@ -189,16 +306,28 @@ const EVENT_TEMPLATES = {
       title: "vient demander une discussion privée",
       trigger: "moral instable",
       hook: "Le joueur te demande cinq minutes loin du groupe.",
-      story: "Sa confiance vacille et il veut savoir si tu comptes encore sur lui.",
-      choices: ["L’écouter calmement", "Lui promettre plus de temps de jeu", "Lui rappeler la concurrence", "Reporter la discussion"],
+      story:
+        "Sa confiance vacille et il veut savoir si tu comptes encore sur lui.",
+      choices: [
+        "L’écouter calmement",
+        "Lui promettre plus de temps de jeu",
+        "Lui rappeler la concurrence",
+        "Reporter la discussion",
+      ],
     },
     {
       type: "ambition",
       title: "se sent désengagé du projet",
       trigger: "niveaux de motivation",
       hook: "Il doute du sens de sa place dans l’équipe.",
-      story: "Si tu ne regagnes pas sa confiance, la dynamique du vestiaire peut se briser.",
-      choices: ["Réaffirmer le plan", "Changer son rôle", "Le vendre", "L’encourager"],
+      story:
+        "Si tu ne regagnes pas sa confiance, la dynamique du vestiaire peut se briser.",
+      choices: [
+        "Réaffirmer le plan",
+        "Changer son rôle",
+        "Le vendre",
+        "L’encourager",
+      ],
     },
   ],
   Vestiaire: [
@@ -207,16 +336,28 @@ const EVENT_TEMPLATES = {
       title: "divise le vestiaire",
       trigger: "tension collective",
       hook: "Deux groupes commencent à se former autour de sa situation.",
-      story: "La cohésion du groupe est menacée et tu dois trancher avant que cela explose.",
-      choices: ["Organiser une réunion fermée", "Choisir un leader fort", "Écarter le problème", "Changer la hiérarchie"],
+      story:
+        "La cohésion du groupe est menacée et tu dois trancher avant que cela explose.",
+      choices: [
+        "Organiser une réunion fermée",
+        "Choisir un leader fort",
+        "Écarter le problème",
+        "Changer la hiérarchie",
+      ],
     },
     {
       type: "leadership",
       title: "conteste le capitaine",
       trigger: "autorité remise en cause",
       hook: "Il ne supporte plus certaines décisions de son capitaine.",
-      story: "Ce conflit intérieur peut coûter cher si tu ne le règle pas rapidement.",
-      choices: ["Médiatiser la confiance", "Protéger le capitaine", "Rééquilibrer le groupe", "Punis les deux"],
+      story:
+        "Ce conflit intérieur peut coûter cher si tu ne le règle pas rapidement.",
+      choices: [
+        "Médiatiser la confiance",
+        "Protéger le capitaine",
+        "Rééquilibrer le groupe",
+        "Punis les deux",
+      ],
     },
   ],
   Médias: [
@@ -226,7 +367,12 @@ const EVENT_TEMPLATES = {
       trigger: "info sortie du vestiaire",
       hook: "Une information interne arrive dans les médias.",
       story: "Le climat médiatique devient toxique et le club doit réagir.",
-      choices: ["Démentir publiquement", "Protéger le joueur", "Chercher la fuite", "Assumer la situation"],
+      choices: [
+        "Démentir publiquement",
+        "Protéger le joueur",
+        "Chercher la fuite",
+        "Assumer la situation",
+      ],
     },
     {
       type: "reputation",
@@ -234,7 +380,12 @@ const EVENT_TEMPLATES = {
       trigger: "sortie médiatique",
       hook: "Il lâche des phrases qui enflamment les réseaux.",
       story: "Ta réponse doit contenir la crise sans l’aggraver.",
-      choices: ["Le recadrer", "L’interviewer en interne", "Le soutenir", "Ignorer"],
+      choices: [
+        "Le recadrer",
+        "L’interviewer en interne",
+        "Le soutenir",
+        "Ignorer",
+      ],
     },
   ],
   Supporters: [
@@ -244,7 +395,12 @@ const EVENT_TEMPLATES = {
       trigger: "popularité tribunes",
       hook: "Les supporters réclament son nom et critiquent tes choix.",
       story: "La pression des tribunes peut devenir un levier ou un piège.",
-      choices: ["Le titulariser", "Expliquer ton choix", "Utiliser l’engouement", "Ne pas céder"],
+      choices: [
+        "Le titulariser",
+        "Expliquer ton choix",
+        "Utiliser l’engouement",
+        "Ne pas céder",
+      ],
     },
     {
       type: "protest",
@@ -252,7 +408,12 @@ const EVENT_TEMPLATES = {
       trigger: "flamme populaire",
       hook: "Les supporters brandissent son nom dans le stade.",
       story: "L’ambiance devient un enjeu politique et sportif.",
-      choices: ["Jouer le jeu", "Calmer les supporters", "Changer de discours", "Le préserver"],
+      choices: [
+        "Jouer le jeu",
+        "Calmer les supporters",
+        "Changer de discours",
+        "Le préserver",
+      ],
     },
   ],
   Direction: [
@@ -262,15 +423,26 @@ const EVENT_TEMPLATES = {
       trigger: "enjeu financier",
       hook: "Le board veut savoir s'il fait encore partie du projet.",
       story: "Ta relation avec la direction est testée sur ce joueur.",
-      choices: ["Le défendre", "Préparer une vente", "Demander du temps", "Le valoriser sportivement"],
+      choices: [
+        "Le défendre",
+        "Préparer une vente",
+        "Demander du temps",
+        "Le valoriser sportivement",
+      ],
     },
     {
       type: "contract",
       title: "voit son contrat devenir un sujet de débat",
       trigger: "renouvellement proche",
       hook: "La direction surveille son rendement avant de trancher.",
-      story: "Il représente un enjeu financier et un message pour le reste de l’effectif.",
-      choices: ["Lui proposer une extension", "Le vendre", "Le faire patienter", "Relâcher la pression"],
+      story:
+        "Il représente un enjeu financier et un message pour le reste de l’effectif.",
+      choices: [
+        "Lui proposer une extension",
+        "Le vendre",
+        "Le faire patienter",
+        "Relâcher la pression",
+      ],
     },
   ],
   Staff: [
@@ -280,15 +452,26 @@ const EVENT_TEMPLATES = {
       trigger: "analyse tactique",
       hook: "Le staff n'est pas d'accord sur son utilisation.",
       story: "Les choix tactiques autour de lui créent une fracture interne.",
-      choices: ["Suivre la data", "Suivre ton instinct", "Tester en match", "Reporter la décision"],
+      choices: [
+        "Suivre la data",
+        "Suivre ton instinct",
+        "Tester en match",
+        "Reporter la décision",
+      ],
     },
     {
       type: "training",
       title: "remet en question son plan d’entraînement",
       trigger: "capacité d’adaptation",
       hook: "Certains membres du staff veulent changer son programme.",
-      story: "Il devient le symbole d’une préparation qui doit rester cohérente.",
-      choices: ["Changer le plan", "Maintenir la feuille", "Individualiser le suivi", "Impliquer le joueur"],
+      story:
+        "Il devient le symbole d’une préparation qui doit rester cohérente.",
+      choices: [
+        "Changer le plan",
+        "Maintenir la feuille",
+        "Individualiser le suivi",
+        "Impliquer le joueur",
+      ],
     },
   ],
 };
@@ -307,6 +490,87 @@ function pick(list) {
 
 function money(n) {
   return `${Number(n || 0).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} M€`;
+}
+
+function randomInt(min, max) {
+  return Math.floor(min + Math.random() * (max - min + 1));
+}
+
+function maybeCreateInjuryReport(squad, week) {
+  const availablePlayers = squad.filter((player) => !isPlayerInjured(player));
+
+  if (!availablePlayers.length) return null;
+
+  const riskyPlayers = [...availablePlayers]
+    .sort((a, b) => b.fatigue - a.fatigue)
+    .slice(0, 8);
+
+  const target = pick(riskyPlayers);
+
+  const fatigueRisk =
+    target.fatigue > 75 ? 0.16 : target.fatigue > 60 ? 0.09 : 0.04;
+  const randomRisk = Math.random();
+
+  if (randomRisk > fatigueRisk) return null;
+
+  const injury = createPlayerInjury(target, week);
+
+  return {
+    playerId: target.id,
+    playerName: target.name,
+    position: target.position,
+    injury,
+  };
+}
+
+function isPlayerInjured(player) {
+  return Boolean(player.injury && player.injury.weeksRemaining > 0);
+}
+
+function isPlayerAvailable(player) {
+  return !isPlayerInjured(player);
+}
+
+function createPlayerInjury(player, week) {
+  const injuryType = pick(INJURY_TYPES);
+  const duration = randomInt(injuryType.minWeeks, injuryType.maxWeeks);
+
+  return {
+    id: uid("injury"),
+    label: injuryType.label,
+    severity: injuryType.severity,
+    weeksRemaining: duration,
+    totalWeeks: duration,
+    formPenalty: injuryType.formPenalty,
+    startedWeek: week,
+    playerId: player.id,
+    playerName: player.name,
+  };
+}
+
+function tickPlayerInjury(player) {
+  if (!isPlayerInjured(player)) return player;
+
+  const remaining = Math.max(0, player.injury.weeksRemaining - 1);
+
+  if (remaining <= 0) {
+    return {
+      ...player,
+      injury: null,
+      fatigue: clamp(player.fatigue - 12),
+      form: clamp(player.form - 2),
+    };
+  }
+
+  return {
+    ...player,
+    injury: {
+      ...player.injury,
+      weeksRemaining: remaining,
+    },
+    fatigue: clamp(player.fatigue + 1),
+    form: clamp(player.form - 1),
+  };
 }
 
 function getLeaguePreset(league) {
@@ -338,22 +602,29 @@ function poisson(lambda) {
 }
 
 function getCareerStrength(career) {
+  const availableSquad = career.squad.filter(isPlayerAvailable);
+  const squadForCalculation =
+    availableSquad.length >= 11 ? availableSquad : career.squad;
+
   const averageOverall =
-    career.squad.reduce((sum, player) => sum + player.overall, 0) /
-    Math.max(1, career.squad.length);
+    squadForCalculation.reduce((sum, player) => sum + player.overall, 0) /
+    Math.max(1, squadForCalculation.length);
 
   const averageFatigue =
-    career.squad.reduce((sum, player) => sum + player.fatigue, 0) /
-    Math.max(1, career.squad.length);
+    squadForCalculation.reduce((sum, player) => sum + player.fatigue, 0) /
+    Math.max(1, squadForCalculation.length);
+
+  const injuryPenalty = Math.max(0, 11 - availableSquad.length) * 1.5;
 
   return clamp(
     averageOverall * 0.55 +
       career.reputation * 0.25 +
       career.morale * 0.15 +
       career.cohesion * 0.12 -
-      averageFatigue * 0.12,
+      averageFatigue * 0.12 -
+      injuryPenalty,
     35,
-    92
+    92,
   );
 }
 
@@ -362,12 +633,12 @@ function simulateMatchScore(homeStrength, awayStrength) {
 
   const homeExpected = Math.max(
     0.15,
-    Math.min(2.9, 1.15 + diff / 55 + 0.18 + randomBetween(-0.25, 0.25))
+    Math.min(2.9, 1.15 + diff / 55 + 0.18 + randomBetween(-0.25, 0.25)),
   );
 
   const awayExpected = Math.max(
     0.12,
-    Math.min(2.7, 1.05 - diff / 65 + randomBetween(-0.25, 0.25))
+    Math.min(2.7, 1.05 - diff / 65 + randomBetween(-0.25, 0.25)),
   );
 
   let homeGoals = poisson(homeExpected);
@@ -403,6 +674,8 @@ function createPlayer(index, clubName) {
     morale: clamp(50 + Math.random() * 35),
     form: clamp(45 + Math.random() * 45),
     fatigue: clamp(Math.random() * 55),
+    injury: null,
+    injuryHistory: [],
     goals: 0,
     appearances: 0,
     club: clubName,
@@ -510,7 +783,8 @@ function applyTableResult(table, homeName, awayName, homeGoals, awayGoals) {
 }
 
 function simulateLeagueWeek(table, userMatch) {
-  let nextTable = table && table.length ? table.map((team) => ({ ...team })) : [];
+  let nextTable =
+    table && table.length ? table.map((team) => ({ ...team })) : [];
 
   if (!nextTable.length) return nextTable;
 
@@ -520,11 +794,13 @@ function simulateLeagueWeek(table, userMatch) {
       userMatch.home,
       userMatch.away,
       userMatch.homeGoals,
-      userMatch.awayGoals
+      userMatch.awayGoals,
     );
   }
 
-  const unavailable = new Set(userMatch ? [userMatch.home, userMatch.away] : []);
+  const unavailable = new Set(
+    userMatch ? [userMatch.home, userMatch.away] : [],
+  );
 
   const availableTeams = nextTable
     .filter((team) => !unavailable.has(team.name))
@@ -535,8 +811,10 @@ function simulateLeagueWeek(table, userMatch) {
     const home = availableTeams[index];
     const away = availableTeams[index + 1];
 
-    const homeStrength = nextTable.find((team) => team.name === home)?.strength || 58;
-    const awayStrength = nextTable.find((team) => team.name === away)?.strength || 58;
+    const homeStrength =
+      nextTable.find((team) => team.name === home)?.strength || 58;
+    const awayStrength =
+      nextTable.find((team) => team.name === away)?.strength || 58;
 
     const score = simulateMatchScore(homeStrength, awayStrength);
 
@@ -545,14 +823,16 @@ function simulateLeagueWeek(table, userMatch) {
       home,
       away,
       score.homeGoals,
-      score.awayGoals
+      score.awayGoals,
     );
   }
 
   return sortLeagueTable(nextTable);
 }
 function createCareer(type = "manager", club = CLUBS[0], options = {}) {
-  const squad = Array.from({ length: 22 }, (_, index) => createPlayer(index, club.name));
+  const squad = Array.from({ length: 22 }, (_, index) =>
+    createPlayer(index, club.name),
+  );
   return {
     id: uid("career"),
     type,
@@ -595,6 +875,7 @@ function simulateResult(career) {
       summary: "Aucun match cette semaine",
       scorerName: null,
       matchRecord: null,
+      injuryReport: null,
     };
   }
 
@@ -605,7 +886,7 @@ function simulateResult(career) {
   const opponentStrength = getTeamStrength(
     opponentName,
     career.club.league,
-    58
+    58,
   );
 
   const isHome = fixture.home === career.club.name;
@@ -620,26 +901,79 @@ function simulateResult(career) {
   fixture.played = true;
   fixture.score = `${score.homeGoals}-${score.awayGoals}`;
 
-  const squad = career.squad.map((player) => ({ ...player }));
+  let squad = career.squad.map((player) => ({ ...player }));
   let scorerName = null;
 
+  const availablePlayers = squad.filter(isPlayerAvailable);
+
   if (ownGoals > 0) {
-    const attackers = squad.filter((player) =>
-      ["BU", "AD", "AG", "MOC", "MC"].includes(player.position)
+    const attackers = availablePlayers.filter((player) =>
+      ["BU", "AD", "AG", "MOC", "MC"].includes(player.position),
     );
 
-    const scorer = pick(attackers.length ? attackers : squad);
-    scorer.goals += 1;
-    scorer.appearances += 1;
-    scorer.form = clamp(scorer.form + 3);
+    const scorer = pick(
+      attackers.length
+        ? attackers
+        : availablePlayers.length
+          ? availablePlayers
+          : squad,
+    );
+
+    squad = squad.map((player) => {
+      if (player.id !== scorer.id) return player;
+
+      return {
+        ...player,
+        goals: player.goals + 1,
+        appearances: player.appearances + 1,
+        form: clamp(player.form + 3),
+      };
+    });
+
     scorerName = scorer.name;
   }
 
-  squad.forEach((player) => {
-    if (Math.random() < 0.25) player.appearances += 1;
-    player.fatigue = clamp(player.fatigue + randomBetween(4, 13));
-    player.form = clamp(player.form + randomBetween(-3, 3));
+  squad = squad.map((player) => {
+    if (isPlayerInjured(player)) {
+      return {
+        ...player,
+        fatigue: clamp(player.fatigue - 6),
+      };
+    }
+
+    return {
+      ...player,
+      appearances:
+        Math.random() < 0.25 ? player.appearances + 1 : player.appearances,
+      fatigue: clamp(player.fatigue + randomBetween(4, 13)),
+      form: clamp(player.form + randomBetween(-3, 3)),
+    };
   });
+
+  const injuryReport = maybeCreateInjuryReport(squad, career.week);
+
+  if (injuryReport) {
+    squad = squad.map((player) => {
+      if (player.id !== injuryReport.playerId) return player;
+
+      return {
+        ...player,
+        injury: injuryReport.injury,
+        form: clamp(player.form - injuryReport.injury.formPenalty),
+        fatigue: clamp(player.fatigue - 15),
+        injuryHistory: [
+          {
+            id: injuryReport.injury.id,
+            label: injuryReport.injury.label,
+            severity: injuryReport.injury.severity,
+            totalWeeks: injuryReport.injury.totalWeeks,
+            startedWeek: career.week,
+          },
+          ...(player.injuryHistory || []),
+        ],
+      };
+    });
+  }
 
   const resultDelta = ownGoals > oppGoals ? 1 : ownGoals === oppGoals ? 0 : -1;
 
@@ -649,6 +983,7 @@ function simulateResult(career) {
     resultDelta,
     summary: `${fixture.home} ${fixture.score} ${fixture.away}`,
     scorerName,
+    injuryReport,
     matchRecord: {
       home: fixture.home,
       away: fixture.away,
@@ -659,13 +994,26 @@ function simulateResult(career) {
 }
 
 function chooseEventCategory(career, resultDelta) {
-  const categories = ["Match", "Moral", "Vestiaire", "Médias", "Mercato", "Staff", "Supporters", "Direction"];
-  if (career.squad.some((player) => player.fatigue > 72)) categories.push("Blessures");
+  const categories = [
+    "Match",
+    "Moral",
+    "Vestiaire",
+    "Médias",
+    "Mercato",
+    "Staff",
+    "Supporters",
+    "Direction",
+  ];
+  if (career.squad.some((player) => player.fatigue > 72))
+    categories.push("Blessures");
   if (resultDelta < 0) categories.push("Direction", "Médias", "Moral");
   if (resultDelta > 0) categories.push("Supporters", "Match");
 
   const recent = career.eventMemory || [];
-  const filtered = categories.filter((category) => !recent.slice(0, 4).some((item) => item.category === category));
+  const filtered = categories.filter(
+    (category) =>
+      !recent.slice(0, 4).some((item) => item.category === category),
+  );
   return pick(filtered.length ? filtered : categories);
 }
 
@@ -732,44 +1080,94 @@ function createLiveEditorEffects(category, consequences, playerName) {
   });
 
   const playerEffects = {
-    Match: [`Augmenter la forme de ${playerName}`, `Donner plus de temps de jeu à ${playerName}`],
-    Blessures: [`Mettre ${playerName} au repos 1 match`, `Réduire son intensité d'entraînement`],
-    Moral: [`Ajuster son rôle dans l'effectif`, `Changer son temps de jeu prévu`],
-    Vestiaire: [`Modifier l'importance de ${playerName} dans l'effectif`, `Surveiller sa relation avec les cadres`],
-    Médias: [`Augmenter la pression médiatique autour de ${playerName}`, `Modifier légèrement sa réputation`],
-    Mercato: [`Ajouter ${playerName} à une shortlist transfert`, `Modifier son statut`],
-    Supporters: [`Augmenter la popularité de ${playerName}`, `Créer une storyline supporters`],
-    Direction: [`Noter ${playerName} comme dossier board`, `Demander un objectif sportif sur 3 matchs`],
-    Staff: [`Changer le plan d'entraînement de ${playerName}`, `Tester ${playerName} à un nouveau poste`],
+    Match: [
+      `Augmenter la forme de ${playerName}`,
+      `Donner plus de temps de jeu à ${playerName}`,
+    ],
+    Blessures: [
+      `Mettre ${playerName} au repos 1 match`,
+      `Réduire son intensité d'entraînement`,
+    ],
+    Moral: [
+      `Ajuster son rôle dans l'effectif`,
+      `Changer son temps de jeu prévu`,
+    ],
+    Vestiaire: [
+      `Modifier l'importance de ${playerName} dans l'effectif`,
+      `Surveiller sa relation avec les cadres`,
+    ],
+    Médias: [
+      `Augmenter la pression médiatique autour de ${playerName}`,
+      `Modifier légèrement sa réputation`,
+    ],
+    Mercato: [
+      `Ajouter ${playerName} à une shortlist transfert`,
+      `Modifier son statut`,
+    ],
+    Supporters: [
+      `Augmenter la popularité de ${playerName}`,
+      `Créer une storyline supporters`,
+    ],
+    Direction: [
+      `Noter ${playerName} comme dossier board`,
+      `Demander un objectif sportif sur 3 matchs`,
+    ],
+    Staff: [
+      `Changer le plan d'entraînement de ${playerName}`,
+      `Tester ${playerName} à un nouveau poste`,
+    ],
   };
 
   return [...clubEffects, ...(playerEffects[category] || [])];
 }
 
 function buildContextualEvent(career, result) {
-  const category = chooseEventCategory(career, result.resultDelta);
+  const category = result.injuryReport
+    ? "Blessures"
+    : chooseEventCategory(career, result.resultDelta);
   const templates = EVENT_TEMPLATES[category] || EVENT_TEMPLATES.Match;
   const recent = career.eventMemory || [];
-  const available = templates.filter((template) => !recent.slice(0, 4).some((item) => item.category === category && item.templateTitle === template.title));
+  const available = templates.filter(
+    (template) =>
+      !recent
+        .slice(0, 4)
+        .some(
+          (item) =>
+            item.category === category && item.templateTitle === template.title,
+        ),
+  );
   const template = pick(available.length ? available : templates);
+
+  const injuredPlayer = result.injuryReport
+    ? career.squad.find((player) => player.id === result.injuryReport.playerId)
+    : null;
 
   const players = [...career.squad]
     .sort((a, b) => {
-      const scoreA = a.overall + a.form * 0.35 - a.fatigue * 0.2 + a.morale * 0.15;
-      const scoreB = b.overall + b.form * 0.35 - b.fatigue * 0.2 + b.morale * 0.15;
+      const scoreA =
+        a.overall + a.form * 0.35 - a.fatigue * 0.2 + a.morale * 0.15;
+      const scoreB =
+        b.overall + b.form * 0.35 - b.fatigue * 0.2 + b.morale * 0.15;
       return scoreB - scoreA;
     })
     .slice(0, 10);
 
-  const player = pick(players.length ? players : career.squad);
+  const player = injuredPlayer || pick(players.length ? players : career.squad);
   const fixtureText = result.summary || "semaine sans match officiel";
   const consequences = consequencesFor(category, result.resultDelta, career);
-  const impact = Object.entries(consequences).map(([key, value]) => `${key} ${value > 0 ? "+" : ""}${value}`).join(" · ");
+  const impact = Object.entries(consequences)
+    .map(([key, value]) => `${key} ${value > 0 ? "+" : ""}${value}`)
+    .join(" · ");
   const rarity = getEventRarity(result.resultDelta);
   const title = `${player.name} ${template.title} — ${career.club.name}`;
 
   let description = "";
   let detail = "";
+
+  if (result.injuryReport) {
+    description = `${result.injuryReport.playerName} est touché physiquement. Le staff médical confirme une blessure : ${result.injuryReport.injury.label}.`;
+    detail = `Durée estimée : ${result.injuryReport.injury.weeksRemaining} semaine(s). Gravité : ${result.injuryReport.injury.severity}. Le joueur va perdre en forme et devra revenir progressivement. Contexte : ${fixtureText}.`;
+  }
 
   if (template.type === "direct") {
     description = `${player.name} veut une réponse claire sur son rôle, son temps de jeu et sa place dans le projet.`;
@@ -789,7 +1187,11 @@ function buildContextualEvent(career, result) {
   } else if (template.type === "board" || template.type === "contract") {
     description = `${player.name} devient un dossier suivi par la direction. Le board veut une décision claire.`;
     detail = `${template.story || template.hook} Valeur : ${money(player.value)}. Contexte : ${fixtureText}.`;
-  } else if (template.type === "staff" || template.type === "training" || template.type === "performance") {
+  } else if (
+    template.type === "staff" ||
+    template.type === "training" ||
+    template.type === "performance"
+  ) {
     description = `${player.name} fait débat en interne. Le staff attend une décision sportive cohérente.`;
     detail = `${template.hook} ${template.story || ""} Profil : ${player.position}, OVR ${player.overall}, forme ${player.form}. Contexte : ${fixtureText}.`;
   } else {
@@ -821,7 +1223,11 @@ function buildContextualEvent(career, result) {
     detail,
     impact,
     consequences,
-    liveEditorEffects: createLiveEditorEffects(category, consequences, player.name),
+    liveEditorEffects: createLiveEditorEffects(
+      category,
+      consequences,
+      player.name,
+    ),
     status: "unread",
     choices: template.choices,
     templateTitle: template.title,
@@ -840,7 +1246,9 @@ function applyConsequences(career, event) {
   next.media = clamp(next.media + (cons.media || 0));
   next.pressure = clamp(next.pressure + (cons.pressure || 0));
   next.development = clamp(next.development + (cons.development || 0));
-  next.transferTension = clamp(next.transferTension + (cons.transferTension || 0));
+  next.transferTension = clamp(
+    next.transferTension + (cons.transferTension || 0),
+  );
   return next;
 }
 
@@ -855,9 +1263,18 @@ function generateArticle(career, event) {
 }
 
 function ClubBadge({ club, size = "" }) {
-  const initials = club.name.split(" ").map((word) => word[0]).slice(0, 3).join("");
+  const initials = club.name
+    .split(" ")
+    .map((word) => word[0])
+    .slice(0, 3)
+    .join("");
   return (
-    <div className={`badge ${size}`} style={{ background: `linear-gradient(135deg, ${club.colors[0]}, ${club.colors[1]})` }}>
+    <div
+      className={`badge ${size}`}
+      style={{
+        background: `linear-gradient(135deg, ${club.colors[0]}, ${club.colors[1]})`,
+      }}
+    >
       {initials}
     </div>
   );
@@ -887,18 +1304,32 @@ function HomeScreen({ onChoose }) {
           <span className="gradient-text">Overhaul Mod</span>
         </h1>
         <p className="hero-subtitle">
-          Un mode carrière premium pour FC26 : événements roleplay, vestiaire, médias, mercato, board, live editor et suivi de joueurs.
+          Un mode carrière premium pour FC26 : événements roleplay, vestiaire,
+          médias, mercato, board, live editor et suivi de joueurs.
         </p>
         <div className="hero-actions">
-          <button type="button" className="big-choice manager" onClick={() => onChoose("manager")}> 
+          <button
+            type="button"
+            className="big-choice manager"
+            onClick={() => onChoose("manager")}
+          >
             <div className="stat-label">Kick-off</div>
             <h2>Manager Career</h2>
-            <p>Contrôle le club, les décisions, la pression, les finances et les storylines.</p>
+            <p>
+              Contrôle le club, les décisions, la pression, les finances et les
+              storylines.
+            </p>
           </button>
-          <button type="button" className="big-choice player" onClick={() => onChoose("player")}> 
+          <button
+            type="button"
+            className="big-choice player"
+            onClick={() => onChoose("player")}
+          >
             <div className="stat-label">Player Path</div>
             <h2>Player Career</h2>
-            <p>Suis un joueur, sa forme, son coach, sa réputation et ses choix.</p>
+            <p>
+              Suis un joueur, sa forme, son coach, sa réputation et ses choix.
+            </p>
           </button>
         </div>
       </section>
@@ -908,7 +1339,9 @@ function HomeScreen({ onChoose }) {
 
 function ClubPicker({ type, onBack, onConfirm }) {
   const [selectedName, setSelectedName] = useState(CLUBS[0].name);
-  const [managerName, setManagerName] = useState(type === "player" ? "Mon Pro" : "Coach");
+  const [managerName, setManagerName] = useState(
+    type === "player" ? "Mon Pro" : "Coach",
+  );
   const [objective, setObjective] = useState(CLUBS[0].objectives);
 
   const selected = CLUBS.find((club) => club.name === selectedName) || CLUBS[0];
@@ -922,37 +1355,69 @@ function ClubPicker({ type, onBack, onConfirm }) {
     <main className="club-picker">
       <div className="bg-grid" />
       <div className="club-picker-inner">
-        <button type="button" className="secondary-btn" onClick={onBack}>← Retour</button>
-        <div className="club-row" style={{ marginTop: 30, justifyContent: "space-between" }}>
+        <button type="button" className="secondary-btn" onClick={onBack}>
+          ← Retour
+        </button>
+        <div
+          className="club-row"
+          style={{ marginTop: 30, justifyContent: "space-between" }}
+        >
           <div>
             <Kicker tone="lime">Club Select</Kicker>
-            <h1 className="title-xl">Créer une carrière {type === "player" ? "Joueur" : "Manager"}</h1>
+            <h1 className="title-xl">
+              Créer une carrière {type === "player" ? "Joueur" : "Manager"}
+            </h1>
             <p className="muted">Choisis un club, un nom et un objectif.</p>
           </div>
           <ClubBadge club={selected} size="large" />
         </div>
         <div className="grid-3" style={{ marginTop: 28 }}>
           {CLUBS.map((club) => (
-            <button key={club.name} type="button" className={`club-card ${selected.name === club.name ? "selected" : ""}`} onClick={() => selectClub(club)}>
+            <button
+              key={club.name}
+              type="button"
+              className={`club-card ${selected.name === club.name ? "selected" : ""}`}
+              onClick={() => selectClub(club)}
+            >
               <ClubBadge club={club} size="small" />
               <h2>{club.name}</h2>
               <p className="muted">{club.league}</p>
-              <p>Budget <b>{money(club.budget)}</b> · Rép. <b>{club.reputation}</b></p>
+              <p>
+                Budget <b>{money(club.budget)}</b> · Rép.{" "}
+                <b>{club.reputation}</b>
+              </p>
             </button>
           ))}
         </div>
         <div className="panel" style={{ marginTop: 22 }}>
           <div className="grid-2">
             <label>
-              <div className="stat-label">{type === "player" ? "Nom du joueur" : "Nom du coach"}</div>
-              <input className="input" value={managerName} onChange={(event) => setManagerName(event.target.value)} />
+              <div className="stat-label">
+                {type === "player" ? "Nom du joueur" : "Nom du coach"}
+              </div>
+              <input
+                className="input"
+                value={managerName}
+                onChange={(event) => setManagerName(event.target.value)}
+              />
             </label>
             <label>
               <div className="stat-label">Objectif personnalisé</div>
-              <input className="input" value={objective} onChange={(event) => setObjective(event.target.value)} />
+              <input
+                className="input"
+                value={objective}
+                onChange={(event) => setObjective(event.target.value)}
+              />
             </label>
           </div>
-          <button type="button" className="primary-btn" style={{ marginTop: 18 }} onClick={() => onConfirm(type, selected, { managerName, objective })}>
+          <button
+            type="button"
+            className="primary-btn"
+            style={{ marginTop: 18 }}
+            onClick={() =>
+              onConfirm(type, selected, { managerName, objective })
+            }
+          >
             Commencer avec {selected.name}
           </button>
         </div>
@@ -999,20 +1464,42 @@ function Dashboard({ career }) {
 function EventsView({ career, onOpen }) {
   const [filter, setFilter] = useState("all");
   const visibleEvents = useMemo(
-    () => career.events.filter((event) => (filter === "all" ? true : event.status === filter)),
-    [career.events, filter]
+    () =>
+      career.events.filter((event) =>
+        filter === "all" ? true : event.status === filter,
+      ),
+    [career.events, filter],
   );
 
   return (
     <div>
-      <div className="club-row" style={{ justifyContent: "space-between", marginBottom: 16 }}>
+      <div
+        className="club-row"
+        style={{ justifyContent: "space-between", marginBottom: 16 }}
+      >
         <h2>Inbox événements</h2>
         <div className="club-row">
-          <button type="button" className={`secondary-btn ${filter === "all" ? "active" : ""}`} onClick={() => setFilter("all")}>
+          <button
+            type="button"
+            className={`secondary-btn ${filter === "all" ? "active" : ""}`}
+            onClick={() => setFilter("all")}
+          >
             Tous
           </button>
-          <button type="button" className={`secondary-btn ${filter === "unread" ? "active" : ""}`} onClick={() => setFilter("unread")}>Nouveau</button>
-          <button type="button" className={`secondary-btn ${filter === "resolved" ? "active" : ""}`} onClick={() => setFilter("resolved")}>Résolu</button>
+          <button
+            type="button"
+            className={`secondary-btn ${filter === "unread" ? "active" : ""}`}
+            onClick={() => setFilter("unread")}
+          >
+            Nouveau
+          </button>
+          <button
+            type="button"
+            className={`secondary-btn ${filter === "resolved" ? "active" : ""}`}
+            onClick={() => setFilter("resolved")}
+          >
+            Résolu
+          </button>
         </div>
       </div>
       <div className="grid-3">
@@ -1021,17 +1508,37 @@ function EventsView({ career, onOpen }) {
             const meta = CATEGORY_META[event.category] || CATEGORY_META.Match;
             const resolved = event.status === "resolved";
             return (
-              <button key={event.id} type="button" className="event-card" style={{ opacity: resolved ? 0.62 : 1 }} onClick={() => onOpen(event)}>
-                <div className="event-strip" style={{ background: meta.color }} />
+              <button
+                key={event.id}
+                type="button"
+                className="event-card"
+                style={{ opacity: resolved ? 0.62 : 1 }}
+                onClick={() => onOpen(event)}
+              >
+                <div
+                  className="event-strip"
+                  style={{ background: meta.color }}
+                />
                 <div className="event-body">
-                  <div className="club-row" style={{ justifyContent: "space-between" }}>
-                    <Kicker>{meta.icon} {event.category}</Kicker>
-                    <Kicker tone={resolved ? "green" : "amber"}>{resolved ? "Résolu" : "Nouveau"}</Kicker>
+                  <div
+                    className="club-row"
+                    style={{ justifyContent: "space-between" }}
+                  >
+                    <Kicker>
+                      {meta.icon} {event.category}
+                    </Kicker>
+                    <Kicker tone={resolved ? "green" : "amber"}>
+                      {resolved ? "Résolu" : "Nouveau"}
+                    </Kicker>
                   </div>
                   <h3>{event.title}</h3>
                   <p className="muted">{event.description}</p>
                   <p className="soft">{event.impact}</p>
-                  {resolved && event.choice ? (<p className="muted">Choix effectué : <b>{event.choice}</b></p>) : null}
+                  {resolved && event.choice ? (
+                    <p className="muted">
+                      Choix effectué : <b>{event.choice}</b>
+                    </p>
+                  ) : null}
                 </div>
               </button>
             );
@@ -1048,7 +1555,8 @@ function EventModal({ event, onClose, onDecision }) {
   if (!event) return null;
 
   const meta = CATEGORY_META[event.category] || CATEGORY_META.Match;
-  const playerName = event.playerContext?.name || event.player || "Joueur concerné";
+  const playerName =
+    event.playerContext?.name || event.player || "Joueur concerné";
   const playerPosition = event.playerContext?.position || "Poste inconnu";
   const playerOverall = event.playerContext?.overall || "?";
   const playerForm = event.playerContext?.form || "?";
@@ -1061,7 +1569,11 @@ function EventModal({ event, onClose, onDecision }) {
         <div className="event-strip" style={{ background: meta.color }} />
         <div className="modal-grid">
           <aside className="modal-left">
-            <img className="event-image" src={event.imageUrl} alt={event.title} />
+            <img
+              className="event-image"
+              src={event.imageUrl}
+              alt={event.title}
+            />
             <div className="stat-grid" style={{ marginTop: 18 }}>
               <Stat label="Rareté" value={event.rarity} tone="amber" />
               <Stat label="Semaine" value={event.week} tone="cyan" />
@@ -1070,22 +1582,43 @@ function EventModal({ event, onClose, onDecision }) {
             </div>
             <div className="card" style={{ marginTop: 18 }}>
               <h3>Profil joueur</h3>
-              <p>Nom : <b>{playerName}</b></p>
-              <p>Poste : <b>{playerPosition}</b></p>
-              <p>OVR : <b>{playerOverall}</b></p>
-              <p>Forme : <b>{playerForm}</b></p>
-              <p>Moral : <b>{playerMorale}</b></p>
-              <p>Fatigue : <b>{playerFatigue}</b></p>
+              <p>
+                Nom : <b>{playerName}</b>
+              </p>
+              <p>
+                Poste : <b>{playerPosition}</b>
+              </p>
+              <p>
+                OVR : <b>{playerOverall}</b>
+              </p>
+              <p>
+                Forme : <b>{playerForm}</b>
+              </p>
+              <p>
+                Moral : <b>{playerMorale}</b>
+              </p>
+              <p>
+                Fatigue : <b>{playerFatigue}</b>
+              </p>
             </div>
           </aside>
           <section className="modal-right">
-            <div className="club-row" style={{ justifyContent: "space-between" }}>
+            <div
+              className="club-row"
+              style={{ justifyContent: "space-between" }}
+            >
               <div className="club-row">
-                <Kicker>{meta.icon} {event.category}</Kicker>
+                <Kicker>
+                  {meta.icon} {event.category}
+                </Kicker>
                 <Kicker tone="amber">{event.rarity}</Kicker>
-                <Kicker tone={event.status === "resolved" ? "green" : "red"}>{event.status === "resolved" ? "Résolu" : "Décision requise"}</Kicker>
+                <Kicker tone={event.status === "resolved" ? "green" : "red"}>
+                  {event.status === "resolved" ? "Résolu" : "Décision requise"}
+                </Kicker>
               </div>
-              <button type="button" className="close-btn" onClick={onClose}>×</button>
+              <button type="button" className="close-btn" onClick={onClose}>
+                ×
+              </button>
             </div>
             <h1>{event.title}</h1>
             <p className="soft">{event.description}</p>
@@ -1106,14 +1639,21 @@ function EventModal({ event, onClose, onDecision }) {
             {event.status === "resolved" ? (
               <div className="card" style={{ marginTop: 14 }}>
                 <h3>Décision déjà prise</h3>
-                <p className="muted">Choix effectué : <b>{event.choice || "non précisé"}</b></p>
+                <p className="muted">
+                  Choix effectué : <b>{event.choice || "non précisé"}</b>
+                </p>
               </div>
             ) : (
               <div className="card" style={{ marginTop: 14 }}>
                 <h3>Décision narrative</h3>
                 <div className="choice-grid">
                   {(event.choices || []).map((choice) => (
-                    <button key={choice} type="button" className="choice-btn" onClick={() => onDecision(event, choice)}>
+                    <button
+                      key={choice}
+                      type="button"
+                      className="choice-btn"
+                      onClick={() => onDecision(event, choice)}
+                    >
                       {choice}
                       <br />
                       <small>Appliquer cette décision à la storyline.</small>
@@ -1133,21 +1673,40 @@ function SquadView({ career }) {
   const [query, setQuery] = useState("");
   const squad = useMemo(() => {
     return career.squad
-      .filter((player) => player.name.toLowerCase().includes(query.toLowerCase()) || player.position.toLowerCase().includes(query.toLowerCase()))
+      .filter(
+        (player) =>
+          player.name.toLowerCase().includes(query.toLowerCase()) ||
+          player.position.toLowerCase().includes(query.toLowerCase()),
+      )
       .sort((a, b) => b.overall - a.overall);
   }, [career.squad, query]);
 
   return (
     <div>
-      <input className="input" placeholder="Filtrer par nom ou poste" value={query} onChange={(event) => setQuery(event.target.value)} />
+      <input
+        className="input"
+        placeholder="Filtrer par nom ou poste"
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+      />
       <div className="grid-3" style={{ marginTop: 18 }}>
         {squad.map((player) => (
           <div key={player.id} className="card">
-            <div className="club-row" style={{ justifyContent: "space-between" }}>
+            <div
+              className="club-row"
+              style={{ justifyContent: "space-between" }}
+            >
               <h3>{player.name}</h3>
               <Kicker>{player.position}</Kicker>
             </div>
             <p className="muted">{player.age} ans</p>
+            {player.injury ? (
+              <p className="red">
+                🏥 {player.injury.label} — retour dans{" "}
+                {player.injury.weeksRemaining} semaine(s)
+              </p>
+            ) : null}
+
             <div className="stat-grid">
               <Stat label="OVR" value={player.overall} tone="lime" />
               <Stat label="POT" value={player.potential} tone="cyan" />
@@ -1167,10 +1726,14 @@ function CalendarView({ career }) {
       {career.fixtures.map((fixture) => (
         <div key={fixture.id} className="card">
           <div className="fixture">
-            <Kicker tone={fixture.played ? "green" : "cyan"}>Semaine {fixture.week}</Kicker>
+            <Kicker tone={fixture.played ? "green" : "cyan"}>
+              Semaine {fixture.week}
+            </Kicker>
             <span className="muted">{fixture.competition}</span>
           </div>
-          <h3>{fixture.home} {fixture.score || "-"} {fixture.away}</h3>
+          <h3>
+            {fixture.home} {fixture.score || "-"} {fixture.away}
+          </h3>
         </div>
       ))}
     </div>
@@ -1202,7 +1765,9 @@ function HistoryView({ career }) {
         <h2>Décisions</h2>
         {career.decisions.length ? (
           career.decisions.map((decision) => (
-            <p key={decision.id}>S{decision.week} · {decision.event} → <b>{decision.choice}</b></p>
+            <p key={decision.id}>
+              S{decision.week} · {decision.event} → <b>{decision.choice}</b>
+            </p>
           ))
         ) : (
           <p className="muted">Aucune décision.</p>
@@ -1212,7 +1777,9 @@ function HistoryView({ career }) {
         <h2>Storylines</h2>
         {career.activeStorylines.length ? (
           career.activeStorylines.map((story) => (
-            <p key={story.id}>{story.title} · Dernier choix : <b>{story.lastChoice}</b></p>
+            <p key={story.id}>
+              {story.title} · Dernier choix : <b>{story.lastChoice}</b>
+            </p>
           ))
         ) : (
           <p className="muted">Aucune storyline active.</p>
@@ -1225,12 +1792,15 @@ function LeagueTableView({ career }) {
   const table = sortLeagueTable(
     career.leagueTable && career.leagueTable.length
       ? career.leagueTable
-      : createLeagueTable(career.club)
+      : createLeagueTable(career.club),
   );
 
   return (
     <div className="card">
-      <div className="club-row" style={{ justifyContent: "space-between", marginBottom: 18 }}>
+      <div
+        className="club-row"
+        style={{ justifyContent: "space-between", marginBottom: 18 }}
+      >
         <div>
           <Kicker tone="cyan">Championnat</Kicker>
           <h2>Classement simulé</h2>
@@ -1264,13 +1834,19 @@ function LeagueTableView({ career }) {
                 <tr
                   key={team.name}
                   style={{
-                    background: isUser ? "rgba(190,242,100,.14)" : "transparent",
+                    background: isUser
+                      ? "rgba(190,242,100,.14)"
+                      : "transparent",
                     borderTop: "1px solid var(--border)",
                   }}
                 >
                   <td style={{ padding: 10, fontWeight: 900 }}>{index + 1}</td>
-                  <td style={{ padding: 10, fontWeight: isUser ? 1000 : 700 }}>{team.name}</td>
-                  <td style={{ padding: 10, fontWeight: 1000 }}>{team.points}</td>
+                  <td style={{ padding: 10, fontWeight: isUser ? 1000 : 700 }}>
+                    {team.name}
+                  </td>
+                  <td style={{ padding: 10, fontWeight: 1000 }}>
+                    {team.points}
+                  </td>
                   <td style={{ padding: 10 }}>{team.played}</td>
                   <td style={{ padding: 10 }}>{team.wins}</td>
                   <td style={{ padding: 10 }}>{team.draws}</td>
@@ -1299,7 +1875,8 @@ function DeltaLine({ label, before, after }) {
     <div className="fixture">
       <span>{label}</span>
       <strong className={positive ? "lime" : negative ? "red" : "muted"}>
-        {before} → {after} {delta !== 0 ? `(${delta > 0 ? "+" : ""}${delta})` : "(=)"}
+        {before} → {after}{" "}
+        {delta !== 0 ? `(${delta > 0 ? "+" : ""}${delta})` : "(=)"}
       </strong>
     </div>
   );
@@ -1310,23 +1887,68 @@ function WeekSummaryModal({ summary, onClose, onOpenEvent }) {
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">
       <div className="modal" style={{ maxWidth: 860 }}>
-        <div className="event-strip" style={{ background: "linear-gradient(90deg, var(--lime), var(--cyan))" }} />
+        <div
+          className="event-strip"
+          style={{
+            background: "linear-gradient(90deg, var(--lime), var(--cyan))",
+          }}
+        />
         <div style={{ padding: 28 }}>
           <Kicker tone="lime">Résumé de semaine</Kicker>
           <h1 style={{ marginTop: 14 }}>Semaine {summary.week}</h1>
           <div className="card pitch" style={{ marginTop: 16 }}>
+            {summary.injuryReport ? (
+              <div className="card" style={{ marginTop: 16 }}>
+                <Kicker tone="red">Alerte médicale</Kicker>
+                <h3>{summary.injuryReport.playerName} est blessé</h3>
+                <p className="muted">
+                  Blessure : <b>{summary.injuryReport.injury.label}</b>
+                </p>
+                <p className="muted">
+                  Durée estimée :{" "}
+                  <b>{summary.injuryReport.injury.weeksRemaining} semaine(s)</b>
+                </p>
+                <p className="muted">
+                  Gravité : <b>{summary.injuryReport.injury.severity}</b>
+                </p>
+              </div>
+            ) : null}
             <h2>Résultat</h2>
-            <p className="soft" style={{ fontSize: 22, fontWeight: 900 }}>{summary.result}</p>
-            <p className="muted">Buteur notable : <b>{summary.scorerName || "aucun"}</b></p>
+            <p className="soft" style={{ fontSize: 22, fontWeight: 900 }}>
+              {summary.result}
+            </p>
+            <p className="muted">
+              Buteur notable : <b>{summary.scorerName || "aucun"}</b>
+            </p>
           </div>
           <div className="grid-2" style={{ marginTop: 16 }}>
             <div className="card">
               <h3>Variations du club</h3>
-              <DeltaLine label="Moral" before={summary.before.morale} after={summary.after.morale} />
-              <DeltaLine label="Réputation" before={summary.before.reputation} after={summary.after.reputation} />
-              <DeltaLine label="Popularité" before={summary.before.popularity} after={summary.after.popularity} />
-              <DeltaLine label="Pression" before={summary.before.pressure} after={summary.after.pressure} />
-              <DeltaLine label="Board" before={summary.before.boardTrust} after={summary.after.boardTrust} />
+              <DeltaLine
+                label="Moral"
+                before={summary.before.morale}
+                after={summary.after.morale}
+              />
+              <DeltaLine
+                label="Réputation"
+                before={summary.before.reputation}
+                after={summary.after.reputation}
+              />
+              <DeltaLine
+                label="Popularité"
+                before={summary.before.popularity}
+                after={summary.after.popularity}
+              />
+              <DeltaLine
+                label="Pression"
+                before={summary.before.pressure}
+                after={summary.after.pressure}
+              />
+              <DeltaLine
+                label="Board"
+                before={summary.before.boardTrust}
+                after={summary.after.boardTrust}
+              />
             </div>
             <div className="card media">
               <h3>Événement tiré</h3>
@@ -1339,9 +1961,20 @@ function WeekSummaryModal({ summary, onClose, onOpenEvent }) {
             <h3>Article de presse</h3>
             <p className="muted">{summary.article}</p>
           </div>
-          <div className="club-row" style={{ marginTop: 18, justifyContent: "flex-end" }}>
-            <button type="button" className="secondary-btn" onClick={onOpenEvent}>Voir l’événement</button>
-            <button type="button" className="primary-btn" onClick={onClose}>Continuer</button>
+          <div
+            className="club-row"
+            style={{ marginTop: 18, justifyContent: "flex-end" }}
+          >
+            <button
+              type="button"
+              className="secondary-btn"
+              onClick={onOpenEvent}
+            >
+              Voir l’événement
+            </button>
+            <button type="button" className="primary-btn" onClick={onClose}>
+              Continuer
+            </button>
           </div>
         </div>
       </div>
@@ -1353,29 +1986,34 @@ export default function CareerApp() {
   const [theme, setTheme] = useState(DEFAULT_THEME);
   const [screen, setScreen] = useState(DEFAULT_SCREEN);
   const [pendingType, setPendingType] = useState(DEFAULT_TYPE);
-  const [careers, setCareers] = useState(() => [createCareer(DEFAULT_TYPE, CLUBS[0])]);
+  const [careers, setCareers] = useState(() => [
+    createCareer(DEFAULT_TYPE, CLUBS[0]),
+  ]);
   const [activeId, setActiveId] = useState("");
   const [tab, setTab] = useState(DEFAULT_TAB);
   const [activeEvent, setActiveEvent] = useState(null);
   const [weekSummary, setWeekSummary] = useState(null);
   const [loaded, setLoaded] = useState(false);
 
-  const career = useMemo(() => careers.find((item) => item.id === activeId) || careers[0], [careers, activeId]);
+  const career = useMemo(
+    () => careers.find((item) => item.id === activeId) || careers[0],
+    [careers, activeId],
+  );
   const tabs = useMemo(
-  () => [
-    ["dashboard", "Hub"],
-    ["events", "Événements"],
-    ["squad", "Effectif"],
-    ["calendar", "Calendrier"],
-    ["table", "Classement"],
-    ["news", "News"],
-    ["history", "Historique"],
-  ],
-  []
-);
+    () => [
+      ["dashboard", "Hub"],
+      ["events", "Événements"],
+      ["squad", "Effectif"],
+      ["calendar", "Calendrier"],
+      ["table", "Classement"],
+      ["news", "News"],
+      ["history", "Historique"],
+    ],
+    [],
+  );
   const pendingEvents = useMemo(
     () => career.events.filter((event) => event.status === "unread").length,
-    [career.events]
+    [career.events],
   );
   const themeClass = useMemo(() => getThemeClass(theme), [theme]);
 
@@ -1388,7 +2026,9 @@ export default function CareerApp() {
   }, []);
 
   const replaceCareer = useCallback((nextCareer) => {
-    setCareers((list) => list.map((item) => (item.id === nextCareer.id ? nextCareer : item)));
+    setCareers((list) =>
+      list.map((item) => (item.id === nextCareer.id ? nextCareer : item)),
+    );
   }, []);
 
   const createNewCareer = useCallback((type, club, options) => {
@@ -1419,17 +2059,21 @@ export default function CareerApp() {
     nextCareer.fixtures = result.fixtures;
     nextCareer.squad = result.squad;
     const baseTable =
-  nextCareer.leagueTable && nextCareer.leagueTable.length
-    ? nextCareer.leagueTable
-    : createLeagueTable(nextCareer.club);
+      nextCareer.leagueTable && nextCareer.leagueTable.length
+        ? nextCareer.leagueTable
+        : createLeagueTable(nextCareer.club);
 
-nextCareer.leagueTable = simulateLeagueWeek(baseTable, result.matchRecord);
+    nextCareer.leagueTable = simulateLeagueWeek(baseTable, result.matchRecord);
     nextCareer.week += 1;
     nextCareer.month = getMonthName(nextCareer.week);
 
     nextCareer.morale = clamp(nextCareer.morale + result.resultDelta * 5);
-    nextCareer.reputation = clamp(nextCareer.reputation + result.resultDelta * 2);
-    nextCareer.popularity = clamp(nextCareer.popularity + result.resultDelta * 3);
+    nextCareer.reputation = clamp(
+      nextCareer.reputation + result.resultDelta * 2,
+    );
+    nextCareer.popularity = clamp(
+      nextCareer.popularity + result.resultDelta * 3,
+    );
 
     const event = buildContextualEvent(nextCareer, result);
     nextCareer = applyConsequences(nextCareer, event);
@@ -1459,6 +2103,7 @@ nextCareer.leagueTable = simulateLeagueWeek(baseTable, result.matchRecord);
       before,
       after: {
         morale: nextCareer.morale,
+        injuryReport: result.injuryReport,
         reputation: nextCareer.reputation,
         popularity: nextCareer.popularity,
         pressure: nextCareer.pressure,
@@ -1472,57 +2117,62 @@ nextCareer.leagueTable = simulateLeagueWeek(baseTable, result.matchRecord);
     });
   }, [career, replaceCareer]);
 
-  const handleDecision = useCallback((event, choice) => {
-    if (!event || event.status === "resolved") {
-      setActiveEvent(null);
-      return;
-    }
+  const handleDecision = useCallback(
+    (event, choice) => {
+      if (!event || event.status === "resolved") {
+        setActiveEvent(null);
+        return;
+      }
 
-    setCareers((list) =>
-      list.map((item) => {
-        if (item.id !== activeId) return item;
+      setCareers((list) =>
+        list.map((item) => {
+          if (item.id !== activeId) return item;
 
-        const updatedEvents = item.events.map((existingEvent) => {
-          if (existingEvent.id !== event.id) return existingEvent;
+          const updatedEvents = item.events.map((existingEvent) => {
+            if (existingEvent.id !== event.id) return existingEvent;
+
+            return {
+              ...existingEvent,
+              status: "resolved",
+              choice,
+              resolvedWeek: item.week,
+            };
+          });
 
           return {
-            ...existingEvent,
-            status: "resolved",
-            choice,
-            resolvedWeek: item.week,
+            ...item,
+            events: updatedEvents,
+            decisions: [
+              {
+                id: uid("decision"),
+                week: item.week,
+                event: event.title,
+                choice,
+              },
+              ...(item.decisions || []),
+            ],
+            activeStorylines: [
+              {
+                id: uid("story"),
+                title: event.title,
+                category: event.category,
+                lastChoice: choice,
+              },
+              ...(item.activeStorylines || []),
+            ].slice(0, 8),
           };
-        });
+        }),
+      );
 
-        return {
-          ...item,
-          events: updatedEvents,
-          decisions: [
-            {
-              id: uid("decision"),
-              week: item.week,
-              event: event.title,
-              choice,
-            },
-            ...(item.decisions || []),
-          ],
-          activeStorylines: [
-            {
-              id: uid("story"),
-              title: event.title,
-              category: event.category,
-              lastChoice: choice,
-            },
-            ...(item.activeStorylines || []),
-          ].slice(0, 8),
-        };
-      })
-    );
-
-    setActiveEvent(null);
-  }, [activeId]);
+      setActiveEvent(null);
+    },
+    [activeId],
+  );
 
   const openWeekEvent = useCallback(() => {
-    const found = career.events.find((event) => event.id === weekSummary?.eventId);
+    const found = career.events.find(
+      (event) => event.id === weekSummary?.eventId,
+    );
     if (found) {
       setActiveEvent(found);
     }
@@ -1588,7 +2238,12 @@ nextCareer.leagueTable = simulateLeagueWeek(baseTable, result.matchRecord);
     return (
       <div className={`app ${themeClass}`}>
         <div className="bg-grid" />
-        <HomeScreen onChoose={(type) => { setPendingType(type); setScreen("create"); }} />
+        <HomeScreen
+          onChoose={(type) => {
+            setPendingType(type);
+            setScreen("create");
+          }}
+        />
       </div>
     );
   }
@@ -1596,7 +2251,11 @@ nextCareer.leagueTable = simulateLeagueWeek(baseTable, result.matchRecord);
   if (screen === "create") {
     return (
       <div className={`app ${themeClass}`}>
-        <ClubPicker type={pendingType} onBack={() => setScreen("home")} onConfirm={createNewCareer} />
+        <ClubPicker
+          type={pendingType}
+          onBack={() => setScreen("home")}
+          onConfirm={createNewCareer}
+        />
       </div>
     );
   }
@@ -1614,50 +2273,115 @@ nextCareer.leagueTable = simulateLeagueWeek(baseTable, result.matchRecord);
                 <h2>{career.club.name}</h2>
               </div>
             </div>
-            <p className="muted">Saison {career.season} · Semaine {career.week} · {career.month}</p>
+            <p className="muted">
+              Saison {career.season} · Semaine {career.week} · {career.month}
+            </p>
             <select className="select" value={activeId} onChange={selectCareer}>
               {careers.map((item) => (
-                <option key={item.id} value={item.id}>{item.club.name} — {item.type}</option>
+                <option key={item.id} value={item.id}>
+                  {item.club.name} — {item.type}
+                </option>
               ))}
             </select>
-            <button type="button" className="secondary-btn" onClick={() => setScreen("home")}>Accueil</button>
-            <button type="button" className="secondary-btn" onClick={toggleTheme}>Mode {theme === "dark" ? "clair" : "sombre"}</button>
+            <button
+              type="button"
+              className="secondary-btn"
+              onClick={() => setScreen("home")}
+            >
+              Accueil
+            </button>
+            <button
+              type="button"
+              className="secondary-btn"
+              onClick={toggleTheme}
+            >
+              Mode {theme === "dark" ? "clair" : "sombre"}
+            </button>
             <nav className="nav">
               {tabs.map(([id, label]) => (
-                <button key={id} type="button" className={tab === id ? "active" : ""} onClick={() => setTab(id)}>
-                  <span style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <button
+                  key={id}
+                  type="button"
+                  className={tab === id ? "active" : ""}
+                  onClick={() => setTab(id)}
+                >
+                  <span
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
                     <span>{label}</span>
                     {id === "events" && pendingEvents > 0 ? (
-                      <span style={{ minWidth: 22, height: 22, borderRadius: 999, display: "grid", placeItems: "center", background: "var(--red)", color: "white", fontSize: 12, fontWeight: 1000 }}>{pendingEvents}</span>
+                      <span
+                        style={{
+                          minWidth: 22,
+                          height: 22,
+                          borderRadius: 999,
+                          display: "grid",
+                          placeItems: "center",
+                          background: "var(--red)",
+                          color: "white",
+                          fontSize: 12,
+                          fontWeight: 1000,
+                        }}
+                      >
+                        {pendingEvents}
+                      </span>
                     ) : null}
                   </span>
                 </button>
               ))}
             </nav>
             <div style={{ marginTop: "auto", display: "grid", gap: 10 }}>
-              <button type="button" className="primary-btn" onClick={advanceWeek}>▶ Avancer d’une semaine</button>
+              <button
+                type="button"
+                className="primary-btn"
+                onClick={advanceWeek}
+              >
+                ▶ Avancer d’une semaine
+              </button>
             </div>
           </aside>
           <main className="main">
             <header className="panel header-grid">
               <div>
-                <Kicker tone="lime">{career.type === "player" ? "Mode Joueur" : "Mode Manager"}</Kicker>
+                <Kicker tone="lime">
+                  {career.type === "player" ? "Mode Joueur" : "Mode Manager"}
+                </Kicker>
                 <h1 className="title-xl">{career.club.name}</h1>
                 <p className="muted">{career.customObjective}</p>
               </div>
               <div className="stat-grid">
                 <Stat label="Budget" value={money(career.budget)} tone="cyan" />
                 <Stat label="Moral" value={career.morale} tone="lime" />
-                <Stat label="Réputation" value={career.reputation} tone="cyan" />
-                <Stat label="Direction" value={career.boardTrust} tone="violet" />
+                <Stat
+                  label="Réputation"
+                  value={career.reputation}
+                  tone="cyan"
+                />
+                <Stat
+                  label="Direction"
+                  value={career.boardTrust}
+                  tone="violet"
+                />
               </div>
             </header>
             {renderTabContent()}
           </main>
         </div>
       </div>
-      <EventModal event={activeEvent} onClose={() => setActiveEvent(null)} onDecision={handleDecision} />
-      <WeekSummaryModal summary={weekSummary} onClose={() => setWeekSummary(null)} onOpenEvent={openWeekEvent} />
+      <EventModal
+        event={activeEvent}
+        onClose={() => setActiveEvent(null)}
+        onDecision={handleDecision}
+      />
+      <WeekSummaryModal
+        summary={weekSummary}
+        onClose={() => setWeekSummary(null)}
+        onOpenEvent={openWeekEvent}
+      />
     </div>
   );
 }

@@ -1,8 +1,9 @@
-﻿"use client";
+"use client";
+
+import PlayerMercato from "./components/player-career/PlayerMercato";
 
 import PlayerCareerProView from "./components/PlayerCareerProView";
 import PlayerCreator from "./components/player-career/PlayerCreator";
-import PlayerMercato from "./components/player-career/PlayerMercato";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 const STORAGE_KEY = "fifa-career-overhaul-v19-player-mode-pro";
@@ -5003,7 +5004,7 @@ export default function CareerApp() {
     ["events", "Événements"],
     ["training", "Entraînement"],
     ["tactics", "Tactique"],
-    ["transfers", "Mercato"],
+    
     ["recruitment", "Recrutement"],
     ["academy", "Académie"],
     ["board", "Direction"],
@@ -6319,37 +6320,26 @@ const result = simulateResult(nextCareer);
         return <CalendarView career={career} />;
       case "table":
         return <LeagueTableView career={career} />;
-      case "mercato":
-        return (
-          <MercatoView
-            career={career}
-            onDecision={handleTransferDecision}
-            onRecruitmentAction={handleRecruitmentAction}
-          />
-        );
       case "academy":
         return <AcademyView career={career} onAcademyAction={handleAcademyAction} />;
-     
-case "player-mercato":
-  return (
-    <PlayerMercato
-      playerCareer={career.playerCareer || {}}
-      onUpdate={(nextPlayerCareer) =>
-        setCareers((list) =>
-          list.map((item) =>
-            item.id === career.id
-              ? normalizeCareer({
-                  ...item,
-                  playerCareer: nextPlayerCareer,
-                })
-              : item
-          )
-        )
-      }
-    />
-  );
-
- case "player-pro":
+           case "player-mercato":
+        return (
+          <PlayerMercato
+            playerCareer={career.playerCareer || {}}
+            onUpdate={(nextPlayerCareer) =>
+              setCareers((list) =>
+                list.map((item) =>
+                  item.id === career.id
+                    ? normalizeCareer({
+                        ...item,
+                        playerCareer: nextPlayerCareer,
+                      })
+                    : item
+                )
+              )
+            }
+          />
+        );case "player-pro":
         return (
           <PlayerCareerProView
             career={career}
@@ -6497,7 +6487,7 @@ case "player-mercato":
             <button
               type="button"
               className="secondary-btn"
-              onClick={() => setTab("player-mercato")}
+              onClick={() => setTab("mercato")}
             >
               Mercato {pendingTransferOffers > 0 ? `(${pendingTransferOffers})` : ""}
             </button>

@@ -6329,11 +6329,10 @@ const result = simulateResult(nextCareer);
         );
       case "academy":
         return <AcademyView career={career} onAcademyAction={handleAcademyAction} />;
-     
-case "player-mercato":
+     case "player-mercato":
   return (
     <PlayerMercato
-      playerCareer={career.playerCareer || {}}
+      playerCareer={career.playerCareer}
       onUpdate={(nextPlayerCareer) =>
         setCareers((list) =>
           list.map((item) =>
@@ -6342,13 +6341,12 @@ case "player-mercato":
                   ...item,
                   playerCareer: nextPlayerCareer,
                 })
-              : item
-          )
+              : item,
+          ),
         )
       }
     />
   );
-
  case "player-pro":
         return (
           <PlayerCareerProView
@@ -6497,7 +6495,7 @@ case "player-mercato":
             <button
               type="button"
               className="secondary-btn"
-              onClick={() => setTab("player-mercato")}
+              onClick={() => setTab("mercato")}
             >
               Mercato {pendingTransferOffers > 0 ? `(${pendingTransferOffers})` : ""}
             </button>

@@ -1,0 +1,412 @@
+﻿"use client";
+
+import { useState } from "react";
+
+function safeNumber(value, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function clampScore(value) {
+  const n = Number(value);
+  const safe = Number.isFinite(n) ? n : 0;
+  return Math.max(0, Math.min(100, Math.round(safe)));
+}
+
+function getMarketLevel(score) {
+  if (score >= 80) {
+    return {
+      label: "Très recherché",
+      color: "#22d3ee",
+      detail:
+        "Ton profil commence à ressembler à un vrai dossier mercato si ton club ouvre la porte.",
+    };
+  }
+
+  if (score >= 65) {
+    return {
+      label: "Courtisé",
+      color: "#bef264",
+      detail:
+        "Des clubs peuvent commencer à te suivre sérieusement si tu confirmes.",
+    };
+  }
+
+  if (score >= 50) {
+    return {
+      label: "Surveillance",
+      color: "#fbbf24",
+      detail:
+        "Ton nom peut circuler chez certains recruteurs, mais rien n’est encore officiel.",
+    };
+  }
+const transferOffer =
+  marketScore > 80
+    ? {
+        club: "Arsenal",
+        price: "€75M",
+      }
+    : null;
+
+  return {
+    label: "Peu suivi",
+    color: "#94a3b8",
+    detail: "Le marché ne bouge pas encore vraiment autour de toi.",
+  };
+}
+
+function makeId(prefix) {
+  return (
+    prefix +
+    "-" +
+    Date.now() +
+    "-" +
+    Math.random().toString(36).slice(2, 8)
+  );
+}
+
+function StatCard({ label, value, color = "white" }) {
+  return (
+    <div
+      className="card"
+      style={{
+        background: "rgba(2,6,23,.45)",
+        border: "1px solid rgba(255,255,255,.10)",
+      }}
+    >
+      <p
+        className="muted"
+        style={{
+          margin: 0,
+          fontSize: 12,
+          fontWeight: 900,
+          textTransform: "uppercase",
+          letterSpacing: 1,
+        }}
+      >
+        {label}
+      </p>
+      <h3 style={{ margin: "8px 0 0", color }}>{value}</h3>
+    </div>
+  );
+}
+
+export default function PlayerMercato({
+  playerCareer = {},
+  onUpdate = () => {},
+}) {
+  const [localCareer, setLocalCareer] = useState(playerCareer || {});
+  const [popup, setPopup] = useState(null);
+
+  const career = localCareer || {};
+  const state = career.state || {};
+  const stats = career.stats || {};
+  const world = career.world || {};
+
+  const reputation = safeNumber(state.reputation, 40);
+  const popularity = safeNumber(state.popularity, 35);
+  const agentTrust = safeNumber(state.agentTrust, 50);
+  const transferDesire = safeNumber(state.transferDesire, 0);
+  const morale = safeNumber(state.morale, 70);
+  const coachTrust = safeNumber(state.coachTrust, 50);
+  const mediaPressure = safeNumber(state.mediaPressure, 20);
+
+  const goals = safeNumber(stats.goals, 0);
+  const assists = safeNumber(stats.assists, 0);
+  const matches = safeNumber(stats.matches, 0);
+  const averageRating = safeNumber(stats.averageRating, 6.8);
+
+  const marketScore = clampScore(
+    reputation * 0.3 +
+      popularity * 0.2 +
+      agentTrust * 0.2 +
+      goals * 1.5 +
+      assists -
+      mediaPressure * 0.05
+  );
+
+  const level = getMarketLevel(marketScore);
+
+  function commit(nextCareer, title, body, type, author, socialText) {
+    const event = {
+      id: makeId("mercato-event"),
+      date: new Date().toISOString(),
+      label: title,
+      detail: body,
+    };
+
+    const news = {
+      id: makeId("mercato-news"),
+      type,
+      title,
+      body,
+    };
+
+    const social = {
+      id: makeId("mercato-social"),
+      author,
+      text: socialText,
+    };
+
+    const finalCareer = {
+      ...nextCareer,
+      world: {
+        ...world,
+        timeline: [event, ...(world.timeline || [])].slice(0, 24),
+        news: [news, ...(world.news || [])].slice(0, 20),
+        socialFeed: [social, ...(world.socialFeed || [])].slice(0, 20),
+      },
+    };
+
+    setLocalCareer(finalCareer);
+    onUpdate(finalCareer);
+    setPopup({ title, body });
+  }
+
+  function callAgent() {
+    const title = "Appel avec l’agent";
+    const body =
+      "Ton agent commence à activer discrètement son réseau sans provoquer ton club.";
+
+    const nextCareer = {
+      ...career,
+      state: {
+        ...state,
+        agentTrust: clampScore(agentTrust + 4),
+        transferDesire: clampScore(transferDesire + 2),
+        morale: clampScore(morale + 1),
+        mediaPressure: clampScore(mediaPressure + 1),
+      },
+    };
+
+    commit(
+      nextCareer,
+      title,
+      body,
+      "Agent",
+      "@AgentRoom",
+      "L’entourage du joueur reste attentif au marché, sans mouvement officiel."
+    );
+  }
+
+  function askClub() {
+    const title = "Position du club demandée";
+    const body =
+      "Tu demandes au club comment il voit ton avenir et ton temps de jeu.";
+
+    const nextCareer = {
+      ...career,
+      state: {
+        ...state,
+        morale: clampScore(morale + 1),
+        mediaPressure: clampScore(mediaPressure + 1),
+        coachTrust: clampScore(coachTrust + 1),
+      },
+    };
+
+    commit(
+      nextCareer,
+      title,
+      body,
+      "Club",
+      "@InsideClub",
+      "Le club discute du rôle du joueur dans le projet sportif."
+    );
+  }
+
+  function stayFocused() {
+    const title = "Message de concentration";
+    const body =
+      "Tu refuses de parler transfert et tu veux répondre sur le terrain.";
+
+    const nextCareer = {
+      ...career,
+      state: {
+        ...state,
+        morale: clampScore(morale + 2),
+        transferDesire: clampScore(transferDesire - 2),
+        mediaPressure: clampScore(mediaPressure - 1),
+      },
+    };
+{transferOffer && (
+  <div className="panel">
+    <h2>Offre reçue</h2>
+    <p>{transferOffer.club} propose {transferOffer.price}</p>
+
+    <button className="choice-btn">Accepter</button>
+    <button className="choice-btn">Refuser</button>
+  </div>
+)}
+
+    commit(
+      nextCareer,
+      title,
+      body,
+      "Mentalité",
+      "@PlayerBuzz",
+      "Le joueur veut rester concentré sur le terrain."
+    );
+  }
+
+  function showAmbition() {
+    const title = "Ambition affichée";
+    const body =
+      "Tu laisses entendre que tu veux viser plus haut dans ta carrière.";
+
+    const nextCareer = {
+      ...career,
+      state: {
+        ...state,
+        popularity: clampScore(popularity + 3),
+        transferDesire: clampScore(transferDesire + 4),
+        mediaPressure: clampScore(mediaPressure + 4),
+      },
+    };
+
+    commit(
+      nextCareer,
+      title,
+      body,
+      "Médias",
+      "@MercatoLive",
+      "Une déclaration ambitieuse relance les discussions autour du joueur."
+    );
+  }
+const interestedClubs =
+  marketScore > 75
+    ? ["PSG", "Arsenal", "Real Madrid"]
+    : marketScore > 60
+    ? ["Lyon", "Marseille", "Napoli"]
+    : marketScore > 45
+    ? ["Nice", "Bétis", "Francfort"]
+    : [];
+``
+
+  return (
+    <div style={{ display: "grid", gap: 20 }}>
+{popup && (
+  <div className="panel" style={{ border: "2px solid #22d3ee" }}>
+    <h3>{popup.title}</h3>
+    <p>{popup.body}</p>
+    <button onClick={() => setPopup(null)}>Fermer</button>
+  </div>
+)}
+      {popup ? (
+        <div
+          className="panel"
+          style={{
+            border: "1px solid #22d3ee",
+            background: "rgba(15,23,42,.88)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 12,
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <p style={{ color: "#22d3ee", fontWeight: 900, margin: 0 }}>
+                Action joueur
+              </p>
+              <h3 style={{ margin: "6px 0" }}>{popup.title}</h3>
+              <p className="muted" style={{ margin: 0 }}>
+                {popup.body}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className="choice-btn"
+              onClick={() => setPopup(null)}
+            >
+              <b>Fermer</b>
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      <section className="panel">
+        <p style={{ color: "#a78bfa", fontWeight: 900 }}>
+          Mercato joueur avancé
+        </p>
+
+        <h2>Radar des clubs</h2>
+{interestedClubs.length > 0 && (
+  <div style={{ marginTop: 12 }}>
+    <p className="muted">Clubs intéressés :</p>
+    {interestedClubs.map((club) => (
+      <div key={club} className="card">
+        {club}
+      </div>
+    ))}
+  </div>
+)}
+        <div
+          className="card"
+          style={{
+            border: "2px solid " + level.color,
+            marginTop: 12,
+          }}
+        >
+          <h3>
+            {level.label} ({marketScore}/100)
+          </h3>
+          <p className="muted" style={{ margin: "8px 0 0" }}>
+            {level.detail}
+          </p>
+        </div>
+
+        <div className="grid-4" style={{ marginTop: 12 }}>
+          <StatCard label="Réputation" value={reputation} color="#22d3ee" />
+          <StatCard label="Popularité" value={popularity} color="#bef264" />
+          <StatCard label="Agent" value={agentTrust} color="#a78bfa" />
+          <StatCard
+            label="Envie de départ"
+            value={transferDesire}
+            color="#fbbf24"
+          />
+        </div>
+      </section>
+
+      <section className="panel">
+        <h2>Actions joueur</h2>
+
+        <div className="grid-4">
+          <button className="choice-btn" onClick={callAgent}>
+            <b>Appeler l’agent</b>
+            <span>Activer le réseau de ton agent.</span>
+          </button>
+
+          <button className="choice-btn" onClick={askClub}>
+            <b>Demander la position du club</b>
+            <span>Clarifier ton rôle et ton avenir.</span>
+          </button>
+
+          <button className="choice-btn" onClick={stayFocused}>
+            <b>Rester concentré</b>
+            <span>Baisser la pression et répondre sur le terrain.</span>
+          </button>
+
+          <button className="choice-btn" onClick={showAmbition}>
+            <b>Afficher ton ambition</b>
+            <span>Faire monter ta cote, mais aussi la pression.</span>
+          </button>
+        </div>
+      </section>
+
+      <section className="panel">
+        <h2>Données utilisées</h2>
+
+        <div className="grid-4">
+          <StatCard label="Buts" value={goals} />
+          <StatCard label="Passes" value={assists} />
+          <StatCard label="Matchs" value={matches} />
+          <StatCard label="Note moyenne" value={averageRating} />
+        </div>
+      </section>
+    </div>
+  );
+}

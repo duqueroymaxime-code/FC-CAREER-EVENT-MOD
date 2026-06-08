@@ -1,0 +1,451 @@
+"use client";"use client(n) ? n : 0;
+  return Math.max(0, Math.min(100, Math.round(safe)));
+}
+
+function num(value, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function makeId(prefix) {
+  return (
+    prefix +
+    "-" +
+    Date.now() +
+    "-" +
+    Math.random().toString(36).slice(2, 8)
+  );
+}
+
+function createTimelineEvent(label, detail) {
+  return {
+    id: makeId("mercato-event"),
+    date: new Date().toISOString(),
+    label,
+    detail,
+  };
+}
+
+function getMarketLevel(score) {
+  if (score >= 82) {
+    return {
+      label: "Approche possible",
+      color: "#bef264",
+      detail:
+        "Ton profil commence à ressembler à un dossier concret. Si ton club ouvre la porte, un contact peut devenir sérieux.",
+    };
+  }
+
+  if (score >= 68) {
+    return {
+      label: "Intérêt concret",
+      color: "#22d3ee",
+      detail:
+        "Des clubs peuvent commencer à te suivre sérieusement. Une bonne série de matchs peut déclencher un contact agent.",
+    };
+  }
+
+  if (score >= 52) {
+    return {
+      label: "Surveillance active",
+      color: "#a78bfa",
+      detail:
+        "Ton nom peut circuler chez certains recruteurs, mais rien n’est encore officiel.",
+    };
+  }
+
+  if (score >= 35) {
+    return {
+      label: "Intérêt faible",
+      color: "#fbbf24",
+      detail:
+        "Tu dois encore enchaîner les performances pour attirer un vrai mouvement.",
+    };
+  }
+
+  return {
+    label: "Peu suivi",
+    color: "#94a3b8",
+    detail:
+      "Le marché ne bouge pas vraiment autour de toi pour l’instant.",
+  };
+}
+
+function StatCard({ label, value, color = "white" }) {
+  return (
+    <div
+      className="card"
+      style={{
+        background: "rgba(2,6,23,.45)",
+        border: "1px solid rgba(255,255,255,.10)",
+      }}
+    >
+      <p
+        className="muted"
+        style={{
+          margin: 0,
+          fontSize: 12,
+          fontWeight: 900,
+          textTransform: "uppercase",
+          letterSpacing: 1,
+        }}
+      >
+        {label}
+      </p>
+      <h3 style={{ margin: "8px 0 0", color }}>{value}</h3>
+    </div>
+  );
+}
+
+export default function PlayerMercato({
+  playerCareer = {},
+  onUpdate = () => {},
+}) {
+  const state = playerCareer.state || {};
+  const stats = playerCareer.stats || {};
+  const world = playerCareer.world || {};
+
+  const form = num(state.form, 60);
+  const morale = num(state.morale, 70);
+  const coachTrust = num(state.coachTrust, 50);
+  const agentTrust = num(state.agentTrust, 50);
+  const reputation = num(state.reputation, 40);
+  const popularity = num(state.popularity, 35);
+  const mediaPressure = num(state.mediaPressure, 20);
+  const transferDesire = num(state.transferDesire, 0);
+
+  const averageRating = num(stats.averageRating, 6.8);
+  const goals = num(stats.goals, 0);
+  const assists = num(stats.assists, 0);
+  const matches = num(stats.matches, 0);
+
+  const marketScore = clamp(
+    reputation * 0.28 +
+      popularity * 0.18 +
+      form * 0.18 +
+      agentTrust * 0.12 +
+      averageRating * 6 +
+      goals * 1.2 +
+      assists * 0.8 -
+      mediaPressure * 0.08
+  );
+
+  const level = getMarketLevel(marketScore);
+
+  const clubPosition =
+    coachTrust >= 72
+      ? "Le club te considère important dans le projet."
+      : coachTrust >= 50
+      ? "Le club reste ouvert, mais veut te voir confirmer."
+      : "Le club pourrait écouter certaines options si la pression monte.";
+
+  const agentPosition =
+    agentTrust >= 75
+      ? "Ton agent est très impliqué et peut filtrer les bons projets."
+      : agentTrust >= 50
+      ? "Ton agent surveille le marché sans forcer."
+      : "Ton agent manque encore d’influence autour de ton dossier.";
+
+  function applyMercatoAction(action) {
+    const configs = {
+      callAgent: {
+        title: "Appel avec l’agent",
+        body:
+          "Tu demandes à ton agent de surveiller les opportunités sans provoquer ton club actuel.",
+        type: "Agent",
+        author: "@AgentRoom",
+        social:
+          "L’entourage du joueur reste attentif au marché, sans mouvement officiel.",
+        effects: {
+          agentTrust: 4,
+          transferDesire: 2,
+          mediaPressure: 1,
+          morale: 1,
+        },
+      },
+
+      askClub: {
+        title: "Position du club demandée",
+        body:
+          "Tu demandes au club comment il voit ton avenir, ton rôle et ton temps de jeu.",
+        type: "Club",
+        author: "@InsideClub",
+        social:
+          "Discussion interne autour du rôle du joueur dans le projet sportif.",
+        effects: {
+          coachTrust: 1,
+          morale: 1,
+          mediaPressure: 1,
+        },
+      },
+
+      stayFocused: {
+        title: "Message de concentration",
+        body:
+          "Tu refuses de parler transfert et tu affirmes vouloir répondre sur le terrain.",
+        type: "Mentalité",
+        author: "@PlayerBuzz",
+        social:
+          "Le joueur garde la tête froide et veut se concentrer sur le terrain.",
+        effects: {
+          coachTrust: 2,
+          morale: 2,
+          form: 2,
+          transferDesire: -3,
+          mediaPressure: -2,
+        },
+      },
+
+      showAmbition: {
+        title: "Ambition affichée",
+        body:
+          "Tu laisses entendre que tu veux jouer les grands matchs et viser plus haut dans ta carrière.",
+        type: "Médias",
+        author: "@MercatoLive",
+        social:
+          "Une déclaration ambitieuse relance les discussions autour de l’avenir du joueur.",
+        effects: {
+          popularity: 3,
+          reputation: 1,
+          mediaPressure: 5,
+          coachTrust: -2,
+          transferDesire: 4,
+        },
+      },
+    };
+
+    const config = configs[action];
+    if (!config) return;
+
+    const effects = config.effects || {};
+
+    const nextState = {
+      ...state,
+      form: clamp(form + (effects.form || 0)),
+      morale: clamp(morale + (effects.morale || 0)),
+      coachTrust: clamp(coachTrust + (effects.coachTrust || 0)),
+      agentTrust: clamp(agentTrust + (effects.agentTrust || 0)),
+      reputation: clamp(reputation + (effects.reputation || 0)),
+      popularity: clamp(popularity + (effects.popularity || 0)),
+      mediaPressure: clamp(mediaPressure + (effects.mediaPressure || 0)),
+      transferDesire: clamp(transferDesire + (effects.transferDesire || 0)),
+    };
+
+    const event = createTimelineEvent(config.title, config.body);
+
+    const news = {
+      id: makeId("mercato-news"),
+      type: config.type,
+      title: config.title,
+      body: config.body,
+    };
+
+    const social = {
+      id: makeId("mercato-social"),
+      author: config.author,
+      text: config.social,
+    };
+
+    onUpdate({
+      ...playerCareer,
+      state: nextState,
+      world: {
+        ...world,
+        timeline: [event, ...(world.timeline || [])].slice(0, 24),
+        news: [news, ...(world.news || [])].slice(0, 20),
+        socialFeed: [social, ...(world.socialFeed || [])].slice(0, 20),
+      },
+    });
+  }
+
+  return (
+    <div style={{ display: "grid", gap: 18 }}>
+      <section className="panel">
+        <p
+          style={{
+            color: "#a78bfa",
+            fontWeight: 1000,
+            textTransform: "uppercase",
+            letterSpacing: 1,
+          }}
+        >
+          Mercato joueur avancé V1
+        </p>
+
+        <h2 style={{ fontSize: 32, margin: "6px 0" }}>
+          Radar des clubs
+        </h2>
+
+        <p className="muted" style={{ maxWidth: 900 }}>
+          Tu ne contrôles pas les transferts comme un manager. Tu gères ton
+          agent, ton image, ton ambition et ta relation avec ton club actuel.
+        </p>
+
+        <div
+          className="card"
+          style={{
+            marginTop: 16,
+            border: "1px solid " + level.color,
+            background:
+              "linear-gradient(135deg, rgba(167,139,250,.14), rgba(15,23,42,.82))",
+          }}
+        >
+          <p
+            style={{
+              color: level.color,
+              fontWeight: 1000,
+              textTransform: "uppercase",
+              letterSpacing: 1,
+              margin: 0,
+            }}
+          >
+            Niveau marché
+          </p>
+
+          <h3 style={{ fontSize: 28, margin: "8px 0" }}>
+            {level.label} · {marketScore}/100
+          </h3>
+
+          <p className="muted" style={{ maxWidth: 900 }}>
+            {level.detail}
+          </p>
+        </div>
+
+        <div className="grid-4" style={{ marginTop: 16 }}>
+          <StatCard
+            label="Réputation"
+            value={`${reputation}/100`}
+            color="#22d3ee"
+          />
+          <StatCard
+            label="Popularité"
+            value={`${popularity}/100`}
+            color="#bef264"
+          />
+          <StatCard
+            label="Agent"
+            value={`${agentTrust}/100`}
+            color="#a78bfa"
+          />
+          <StatCard
+            label="Envie de départ"
+            value={`${transferDesire}/100`}
+            color="#fbbf24"
+          />
+        </div>
+      </section>
+
+      <section className="panel">
+        <p
+          style={{
+            color: "#22d3ee",
+            fontWeight: 1000,
+            textTransform: "uppercase",
+            letterSpacing: 1,
+          }}
+        >
+          Lecture du marché
+        </p>
+
+        <h2 style={{ fontSize: 30, margin: "6px 0" }}>
+          Ce que ton entourage perçoit
+        </h2>
+
+        <div className="grid-2" style={{ marginTop: 16 }}>
+          <div className="card">
+            <h3>Position du club</h3>
+            <p className="muted">{clubPosition}</p>
+          </div>
+
+          <div className="card">
+            <h3>Position de l’agent</h3>
+            <p className="muted">{agentPosition}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="panel">
+        <p
+          style={{
+            color: "#bef264",
+            fontWeight: 1000,
+            textTransform: "uppercase",
+            letterSpacing: 1,
+          }}
+        >
+          Actions joueur
+        </p>
+
+        <h2 style={{ fontSize: 30, margin: "6px 0" }}>
+          Influencer ton avenir
+        </h2>
+
+        <p className="muted" style={{ maxWidth: 900 }}>
+          Chaque choix peut changer ton image, ton rapport au club, la confiance
+          de ton agent ou la pression médiatique.
+        </p>
+
+        <div className="grid-4" style={{ marginTop: 16 }}>
+          <button
+            type="button"
+            className="choice-btn"
+            onClick={() => applyMercatoAction("callAgent")}
+          >
+            <b>Appeler l’agent</b>
+            <span>Demander à ton agent de surveiller le marché.</span>
+          </button>
+
+          <button
+            type="button"
+            className="choice-btn"
+            onClick={() => applyMercatoAction("askClub")}
+          >
+            <b>Demander la position du club</b>
+            <span>Comprendre ton rôle et ton avenir.</span>
+          </button>
+
+          <button
+            type="button"
+            className="choice-btn"
+            onClick={() => applyMercatoAction("stayFocused")}
+          >
+            <b>Rester concentré</b>
+            <span>Baisser la pression et prouver sur le terrain.</span>
+          </button>
+
+          <button
+            type="button"
+            className="choice-btn"
+            onClick={() => applyMercatoAction("showAmbition")}
+          >
+            <b>Afficher ton ambition</b>
+            <span>Faire monter ta cote, mais aussi la pression.</span>
+          </button>
+        </div>
+      </section>
+
+      <section className="panel">
+        <p
+          style={{
+            color: "#fbbf24",
+            fontWeight: 1000,
+            textTransform: "uppercase",
+            letterSpacing: 1,
+          }}
+        >
+          Données utilisées
+        </p>
+
+        <div className="grid-4" style={{ marginTop: 16 }}>
+          <StatCard label="Matchs" value={matches} />
+          <StatCard label="Note moyenne" value={averageRating} />
+          <StatCard label="Buts" value={goals} />
+          <StatCard label="Passes" value={assists} />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function clamp(value) {
+  const n = Number(value);

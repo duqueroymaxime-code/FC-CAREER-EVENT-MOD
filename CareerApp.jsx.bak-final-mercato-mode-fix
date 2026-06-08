@@ -1,8 +1,9 @@
 ﻿"use client";
 
+import PlayerMercato from "./components/player-career/PlayerMercato";
+
 import PlayerCareerProView from "./components/PlayerCareerProView";
 import PlayerCreator from "./components/player-career/PlayerCreator";
-import PlayerMercato from "./components/player-career/PlayerMercato";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 const STORAGE_KEY = "fifa-career-overhaul-v19-player-mode-pro";
@@ -1702,9 +1703,9 @@ function parseCsv(raw) {
 
   if (rows.length < 2) return null;
 
-  const headers = rows[0].split(/[,;\t]+/).map((header) => header.trim().toLowerCase());
+  const headers = rows[0].split(/[;\t]+/).map((header) => header.trim().toLowerCase());
   const data = rows.slice(1).map((row) => {
-    const values = row.split(/[,;\t]+/).map((cell) => cell.trim());
+    const values = row.split(/[;\t]+/).map((cell) => cell.trim());
     return headers.reduce((acc, key, index) => {
       acc[key] = values[index] || "";
       return acc;
@@ -1794,7 +1795,7 @@ function parseQuickResultsText(text) {
     .map((line) => {
       const match = line.match(/^(.+)\s+(\d+)[:\-](\d+)\s+(.+)$/);
       if (!match) return null;
-      const [, home, homeScore, awayScore, away] = match;
+      const [ home, homeScore, awayScore, away] = match;
       const scoreData = parseScore(`${homeScore}-${awayScore}`);
       if (!scoreData) return null;
       return {
@@ -4987,7 +4988,7 @@ export default function CareerApp() {
   if (career?.type === "player") {
     return [
   ["player-pro", "Player HQ"],
-  ["player-mercato", "Mercato"],
+  
   ["news", "News"],
   ["history", "Historique"],
   ["settings", "Paramètres"],
@@ -5003,7 +5004,7 @@ export default function CareerApp() {
     ["events", "Événements"],
     ["training", "Entraînement"],
     ["tactics", "Tactique"],
-    ["transfers", "Mercato"],
+    
     ["recruitment", "Recrutement"],
     ["academy", "Académie"],
     ["board", "Direction"],
@@ -5020,7 +5021,7 @@ useEffect(() => {
   if (career.type === "player") {
     const allowedPlayerTabs = [
       "player-pro",
-      "player-mercato",
+      "mercato",
       "news",
       "history",
       "settings",
@@ -5039,7 +5040,7 @@ useEffect(() => {
   if (career.type === "player") {
     const allowedPlayerTabs = [
       "player-pro",
-      "player-mercato",
+      "mercato",
       "news",
       "history",
       "settings",
@@ -6329,11 +6330,10 @@ const result = simulateResult(nextCareer);
         );
       case "academy":
         return <AcademyView career={career} onAcademyAction={handleAcademyAction} />;
-     
-case "player-mercato":
+     case "mercato":
   return (
     <PlayerMercato
-      playerCareer={career.playerCareer || {}}
+      playerCareer={career.playerCareer}
       onUpdate={(nextPlayerCareer) =>
         setCareers((list) =>
           list.map((item) =>
@@ -6342,13 +6342,12 @@ case "player-mercato":
                   ...item,
                   playerCareer: nextPlayerCareer,
                 })
-              : item
-          )
+              : item,
+          ),
         )
       }
     />
   );
-
  case "player-pro":
         return (
           <PlayerCareerProView
@@ -6497,7 +6496,7 @@ case "player-mercato":
             <button
               type="button"
               className="secondary-btn"
-              onClick={() => setTab("player-mercato")}
+              onClick={() => setTab("mercato")}
             >
               Mercato {pendingTransferOffers > 0 ? `(${pendingTransferOffers})` : ""}
             </button>
@@ -6624,6 +6623,10 @@ case "player-mercato":
     </div>
   );
 }
+
+
+
+
 
 
 

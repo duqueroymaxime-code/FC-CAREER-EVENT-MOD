@@ -787,37 +787,55 @@ export default function PlayerMercato({
   return (
     <div style={{ display: "grid", gap: 20 }}>
       {popup && (
-        <div
-          className="panel"
-          style={{
-            border: "2px solid #22d3ee",
-            marginBottom: 16,
-            background: "rgba(15,23,42,.88)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: 12,
-            }}
-          >
-            <div>
-              <h3 style={{ margin: 0 }}>{popup.title}</h3>
-              <p style={{ margin: "8px 0 0" }}>{popup.body}</p>
-            </div>
+  <div
+    className="panel"
+    style={{
+      border: "2px solid #22d3ee",
+      background: "rgba(15,23,42,.95)",
+      textAlign: "center",
+    }}
+  >
+    {popup.logo && (
+      <img
+        src={popup.logo}
+        alt="club"
+        style={{
+          width: 80,
+          height: 80,
+          marginBottom: 10,
+        }}
+      />
+    )}
 
-            <button
-              type="button"
-              className="choice-btn"
-              onClick={() => setPopup(null)}
-            >
-              <b>Fermer</b>
-            </button>
-          </div>
-        </div>
-      )}
+    <h2>{popup.title}</h2>
+
+    <p style={{ whiteSpace: "pre-line" }}>{popup.body}</p>
+
+    {popup.type === "offer" && (
+      <div className="grid-3" style={{ marginTop: 16 }}>
+        <button className="choice-btn" onClick={acceptOffer}>
+          ✅ Accepter
+        </button>
+
+        <button className="choice-btn" onClick={negotiateOffer}>
+          💬 Négocier
+        </button>
+
+        <button className="choice-btn" onClick={refuseOffer}>
+          ❌ Refuser
+        </button>
+      </div>
+    )}
+
+    <button
+      className="choice-btn"
+      style={{ marginTop: 12 }}
+      onClick={() => setPopup(null)}
+    >
+      Fermer
+    </button>
+  </div>
+)}
 
       <section className="panel">
         <p style={{ color: "#a78bfa", fontWeight: 900 }}>

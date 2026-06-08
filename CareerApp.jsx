@@ -254,6 +254,15 @@ const PLAYER_PRESETS = {
     { name: "Thomas Touré", position: "AG", overall: 73 },
   ],
 };
+if (transfer?.accepted) {
+  updatedCareer = {
+    ...updatedCareer,
+    club: {
+      ...updatedCareer.club,
+      name: transfer.newClub,
+    },
+  };
+}
 
 function createSquadForClub(club) {
   const preset = SQUAD_PRESETS[club.name];
@@ -6424,6 +6433,40 @@ case "player-mercato":
   }
 
   useEffect(() => {
+  if (!generatedOffer) return;
+
+  // ✅ afficher popup offre une seule fois
+  if (world.lastOfferId === generatedOffer.id) return;
+
+  const logoUrl = `https://logo.clearbit.com/${generatedOffer.club
+    .toLowerCase()
+    .replace(" ", "")}.com`;
+
+  const nextCareer = {
+    ...career,
+    world: {
+      ...world,
+      lastOfferId: generatedOffer.id,
+    },
+  };
+
+  setLocalCareer(nextCareer);
+  onUpdate(nextCareer);
+
+  setPopup({
+    title: "Offre de transfert",
+    body: `
+${generatedOffer.club}
+
+💰 ${generatedOffer.display}
+🎯 ${generatedOffer.role}
+📄 ${generatedOffer.contractYears} ans
+    `,
+    logo: logoUrl,
+    type: "offer",
+  });
+}, [generatedOffer]);
+
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
@@ -6442,6 +6485,12 @@ case "player-mercato":
       setLoaded(true);
     }
   }, []);
+
+useEffect(() => {useEffect  if (!loaded) {
+    setLoaded(true);
+  }
+}, []);
+
 
   useEffect(() => {
     if (loaded) {

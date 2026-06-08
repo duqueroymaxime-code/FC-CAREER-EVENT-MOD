@@ -528,7 +528,14 @@ export default function PlayerMercato({
     socialText,
     actionType = null
   ) {
-    const nextWorld = buildWorldUpdate(world, title, body, type, author, socialText);
+    const nextWorld = buildWorldUpdate(
+      world,
+      title,
+      body,
+      type,
+      author,
+      socialText
+    );
 
     const pendingResponse = actionType
       ? makePendingResponse(actionType, nextCareer, marketScore)
@@ -911,7 +918,9 @@ export default function PlayerMercato({
       {activeOffer ? (
         <section className="panel">
           <p style={{ color: "#22d3ee", fontWeight: 900 }}>Offre reçue</p>
+
           <h2>{activeOffer.club}</h2>
+
           <p className="muted">
             {activeOffer.display} · {activeOffer.role} ·{" "}
             {activeOffer.contractYears} ans
@@ -937,7 +946,7 @@ export default function PlayerMercato({
           {activeOffer.status === "accepted" ? (
             <p className="muted" style={{ marginTop: 12 }}>
               Accord trouvé. Si tu veux que le club change partout dans
-              l’application, il faudra brancher aussi le club racine dans
+              l’application, il faudra aussi brancher le club racine dans
               CareerApp.
             </p>
           ) : null}

@@ -6336,14 +6336,45 @@ case "player-mercato":
       playerCareer={career.playerCareer || {}}
       onUpdate={(nextPlayerCareer) =>
         setCareers((list) =>
-          list.map((item) =>
-            item.id === career.id
-              ? normalizeCareer({
-                  ...item,
-                  playerCareer: nextPlayerCareer,
-                })
-              : item
-          )
+          list.map((item) => {
+            if (item.id !== career.id) return item;
+
+            // 🔥 DETECTION TRANSFERT ACCEPTE
+            const transfer = nextPlayerCareer?.world?.transferOutcome;
+
+            let updatedCareer = {
+              ...item,
+              playerCareer: nextPlayerCareer,
+            };
+
+            // ✅ SI TRANSFERT ACCEPTE → CHANGER CLUB GLOBAL
+            if (transfer?.accepted) {
+              updatedCareer = {
+                ...updatedCareer,
+
+                // ⭐ CLUB PRINCIPAL
+                club: {
+                  ...updatedCareer.club,
+                  name: transfer.newClub,
+                },
+
+                // ⭐ EVENT GLOBAL
+                world: {
+                  ...(updatedCareer.world || {}),
+                  news: [
+                    {
+                      id: Date.now(),
+                      title: "Transfert officiel",
+                      body: `Le joueur rejoint ${transfer.newClub} pour ${transfer.amount}€`,
+                    },
+                    ...((updatedCareer.world || {}).news || []),
+                  ],
+                },
+              };
+            }
+
+            return normalizeCareer(updatedCareer);
+          })
         )
       }
     />

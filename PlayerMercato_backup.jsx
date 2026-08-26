@@ -745,7 +745,7 @@ export default function PlayerMercato({
   function acceptOffer() {
     if (!activeOffer) return;
 
-    const title = "Transfert officiel";
+    const title = "Accord de transfert trouvé";
     const body =
       "Le joueur et le club trouvent un terrain d’entente. Le transfert est prêt à être finalisé.";
 
@@ -1001,4 +1001,3 @@ export default function PlayerMercato({
     </div>
   );
 }
-

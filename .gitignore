@@ -55,3 +55,9 @@ dist
 .env.production
 .DS_Store
 .vercel
+# fichiers de sauvegarde manuelle / brouillons (a ne jamais committer)
+*.bak
+*.bak-*
+*_backup*
+*_test*
+*.before_world_fix.*
